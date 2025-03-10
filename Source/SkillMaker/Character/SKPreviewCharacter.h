@@ -11,6 +11,7 @@ class USpringArmComponent;
 class UCameraComponent;
 class UInputMappingContext;
 class UInputAction;
+class UAnimMontage;
 
 /**
  * 
@@ -20,6 +21,28 @@ class SKILLMAKER_API ASKPreviewCharacter : public ASKBaseCharacter
 {
 	GENERATED_BODY()
 
+public:
+	ASKPreviewCharacter();
+	
+	UFUNCTION(BlueprintCallable, Category = "Skill Preview")
+	void PlayPreviewAnimation(UAnimMontage* Montage);
+
+	UFUNCTION(BlueprintCallable, Category = "Skill Preview")
+	void SetPreviewAnimationTime(float Time);
+
+	UFUNCTION(BlueprintCallable, Category = "Skill Preview")
+	float GetPreviewAnimationTime() const;
+
+	UFUNCTION(BlueprintCallable, Category = "Skill Preview")
+	UAnimMontage* GetPreviewMontage() const;
+
+	UFUNCTION(BlueprintCallable, Category = "Skill Preview")
+	void SetPreviewMontage(UAnimMontage* Montage);
+
+protected:
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Skill Preview")
+	TObjectPtr<UAnimMontage> PreviewMontage;
+	
 	/** Camera boom positioning the camera behind the character */
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera, meta = (AllowPrivateAccess = "true"))
 	TObjectPtr<USpringArmComponent> CameraBoom;
@@ -44,10 +67,6 @@ class SKILLMAKER_API ASKPreviewCharacter : public ASKBaseCharacter
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
 	TObjectPtr<UInputAction> LookAction;
 	
-public:
-	ASKPreviewCharacter();
-
-protected:
 	/*
 	 * 언리얼 엔진의 Input System에서 입력 액션과 선언한 Move, Look 함수를 서로 매핑시켜주는 역할을 함.
 	 */

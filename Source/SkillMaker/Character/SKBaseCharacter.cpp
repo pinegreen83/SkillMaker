@@ -4,6 +4,7 @@
 #include "SKBaseCharacter.h"
 #include "Components/CapsuleComponent.h"
 #include "GameFramework/CharacterMovementComponent.h"
+#include "Skill/SKSkillData.h"
 
 DEFINE_LOG_CATEGORY(LogSKCharacter);
 
@@ -42,3 +43,22 @@ ASKBaseCharacter::ASKBaseCharacter()
 		GetMesh()->SetAnimInstanceClass(AnimInstanceClassRef.Class);
 	}
 }
+
+void ASKBaseCharacter::BeginPlay()
+{
+	Super::BeginPlay();
+}
+
+void ASKBaseCharacter::UseSkillAsset(USKSkillData* SkillDataAsset)
+{
+	if(!SkillDataAsset) return;
+
+	const FSkillData& Skill = SkillDataAsset->SkillData;
+	UE_LOG(LogTemp, Log, TEXT("Using Skill: %s (Damage = %.2f)"), *Skill.SkillName.ToString(), Skill.Damage);
+
+	if(Skill.SkillMontage && GetMesh() && GetMesh()->GetAnimInstance())
+	{
+		GetMesh()->GetAnimInstance()->Montage_Play(Skill.SkillMontage);
+	}
+}
+

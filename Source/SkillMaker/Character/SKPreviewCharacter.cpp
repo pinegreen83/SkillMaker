@@ -44,6 +44,42 @@ ASKPreviewCharacter::ASKPreviewCharacter()
 	}
 }
 
+void ASKPreviewCharacter::PlayPreviewAnimation(UAnimMontage* Montage)
+{
+	if(!Montage || !GetMesh() || !GetMesh()->GetAnimInstance()) return;
+
+	PreviewMontage = Montage;
+	GetMesh()->GetAnimInstance()->Montage_Play(PreviewMontage, 1.0f);
+}
+
+void ASKPreviewCharacter::SetPreviewAnimationTime(float Time)
+{
+	if(!PreviewMontage || !GetMesh() || !GetMesh()->GetAnimInstance()) return;
+
+	GetMesh()->GetAnimInstance()->Montage_JumpToSection(FName("Default"), PreviewMontage);
+	GetMesh()->GetAnimInstance()->Montage_SetPosition(PreviewMontage, Time);
+}
+
+float ASKPreviewCharacter::GetPreviewAnimationTime() const
+{
+	if(!PreviewMontage || !GetMesh() || !GetMesh()->GetAnimInstance()) return -1.0f;
+
+	return GetMesh()->GetAnimInstance()->Montage_GetPosition(PreviewMontage);
+}
+
+UAnimMontage* ASKPreviewCharacter::GetPreviewMontage() const
+{
+	return PreviewMontage;
+}
+
+void ASKPreviewCharacter::SetPreviewMontage(UAnimMontage* Montage)
+{
+	if(Montage)
+	{
+		PreviewMontage = Montage;
+	}
+}
+
 void ASKPreviewCharacter::BeginPlay()
 {
 	Super::BeginPlay();

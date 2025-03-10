@@ -2,6 +2,7 @@
 
 
 #include "GameMode/SKGameMode.h"
+#include "UI/SKSKillMakerHUD.h"
 
 ASKGameMode::ASKGameMode()
 {
@@ -16,6 +17,8 @@ ASKGameMode::ASKGameMode()
 	{
 		PlayerControllerClass = PlayerControllerClassRef.Class;
 	}
+
+	HUDClass = ASKSKillMakerHUD::StaticClass();
 }
 
 void ASKGameMode::BeginPlay()
