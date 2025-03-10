@@ -1,0 +1,72 @@
+# macOS 관련 파일
+.DS_Store
+
+# Visual Studio 2015 및 Xcode 관련 사용자/프로젝트 파일
+.vs/
+*.xcodeproj
+*.xcworkspace
+*.xcuserdata
+*.xcuserstate
+*.sln
+*.suo
+*.opensdf
+*.sdf
+*.VC.db
+*.VC.opendb
+
+# 컴파일된 오브젝트 및 바이너리 파일들
+*.slo
+*.lo
+*.o
+*.obj
+
+# Precompiled Headers
+*.gch
+*.pch
+
+# 컴파일된 동적/정적 라이브러리
+*.so
+*.dylib
+*.dll
+*.lai
+*.la
+*.a
+*.lib
+
+# 실행 파일들
+*.exe
+*.out
+*.app
+*.ipa
+
+# 엔진이 생성할 수 있는 프로젝트 관련 파일 (예: Xcode, Visual Studio)
+# (이미 SourceArt 폴더를 사용한다면 아래 항목도 필요)
+SourceArt/**/*.png
+SourceArt/**/*.tga
+
+# 빌드 산출물
+Binaries/*
+Plugins/*/Binaries/*
+
+# 빌드 디렉터리 (일부 파일은 예외 처리)
+Build/*
+!Build/*/
+Build/*/**
+!Build/*/PakBlacklist*.txt
+!Build/**/*.ico
+
+# 맵 빌드 데이터
+*_BuiltData.uasset
+
+# 에디터가 생성한 설정 및 캐시 파일들
+Saved/*
+Intermediate/*
+Plugins/*/Intermediate/*
+DerivedDataCache/*
+
+# 리소스 파일은 무시 (예: 이미지 등)
+Content/*
+
+# 프로젝트 파일과 코드 추적 (필요한 항목만 커밋)
+!*.uproject
+!Source/
