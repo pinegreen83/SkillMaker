@@ -4,19 +4,18 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/GameModeBase.h"
-#include "SKGameMode.generated.h"
+#include "SKSkillMakerGameMode.generated.h"
 
 /**
  * 
  */
 UCLASS()
-class SKILLMAKER_API ASKGameMode : public AGameModeBase
+class SKILLMAKER_API ASKSkillMakerGameMode : public AGameModeBase
 {
 	GENERATED_BODY()
 
 public:
-	ASKGameMode();
+	ASKSkillMakerGameMode();
 
-protected:
 	virtual void BeginPlay() override;
 };

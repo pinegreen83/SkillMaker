@@ -3,7 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "Character/SKBaseCharacter.h"
+#include "SKBaseCharacter.h"
 #include "SKAICharacter.generated.h"
 
 /**
