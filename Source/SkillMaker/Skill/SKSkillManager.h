@@ -5,13 +5,9 @@
 #include "CoreMinimal.h"
 #include "UObject/NoExportTypes.h"
 #include "Engine/DataTable.h"
+#include "SKSkillData.h"
 #include "SKSkillManager.generated.h"
 
-struct SKSkillData;
-
-/**
- * 
- */
 UCLASS()
 class SKILLMAKER_API USKSkillManager : public UObject
 {
@@ -27,7 +23,7 @@ public:
 	TArray<FSKSkillData> GetSkillList();
 
 	UFUNCTION(BlueprintCallable, Category = "Data")
-	TOptional<FSKSkillData> GetSkillDataByName(const FString& SkillName);
+	TOptional<FSKSkillData> GetSkillDataByID(const FName& SkillID);
 
 	UFUNCTION(BlueprintCallable, Category = "Data")
 	void SaveSkillData(const FSKSkillData& SkillData);

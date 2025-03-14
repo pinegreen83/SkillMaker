@@ -39,16 +39,16 @@ void ASKSkillMakerHUD::InitializeNewSkill()
 	UE_LOG(LogTemp, Log, TEXT("새로운 스킬 초기화됨."));
 }
 
-void ASKSkillMakerHUD::LoadSkillForEditing(const FString& SkillName)
+void ASKSkillMakerHUD::LoadSkillForEditing(const FName& SkillID)
 {
-	if(TOptional<FSKSkillData> SkillData = USKSkillManager::Get()->GetSkillDataByName(SkillName))
+	if(TOptional<FSKSkillData> SkillData = USKSkillManager::Get()->GetSkillDataByID(SkillID))
 	{
 		CurrentEditingSkill = SkillData.GetValue();
 		UE_LOG(LogTemp, Log, TEXT("스킬 로드 완료 : %s"), *CurrentEditingSkill.SkillName);
 	}
 	else
 	{
-		UE_LOG(LogTemp, Log, TEXT("스킬을 찾을 수 없음. : %s"), *SkillName);
+		UE_LOG(LogTemp, Log, TEXT("스킬을 찾을 수 없음. : %s"), *SkillID.ToString());
 	}
 }
 

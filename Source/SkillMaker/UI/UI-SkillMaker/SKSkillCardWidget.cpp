@@ -1,7 +1,7 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 
-#include "UI/SKSkillCardWidget.h"
+#include "SKSkillCardWidget.h"
 #include "Components/Button.h"
 #include "Components/Image.h"
 #include "Components/TextBlock.h"
@@ -20,8 +20,9 @@ bool USKSkillCardWidget::Initialize()
 	return true;
 }
 
-void USKSkillCardWidget::SetSkillInfo(const FString& SkillName, UTexture2D* Thumbnail)
+void USKSkillCardWidget::SetSkillInfo(const FName& SkillID, const FString& SkillName, UTexture2D* Thumbnail)
 {
+	StoredSkillID = SkillID;
 	StoredSkillName = SkillName;
 	
 	if(SkillNameText)
@@ -37,5 +38,5 @@ void USKSkillCardWidget::SetSkillInfo(const FString& SkillName, UTexture2D* Thum
 
 void USKSkillCardWidget::HandleSkillSelected()
 {
-	OnSkillCardSelected.Broadcast(StoredSkillName);
+	OnSkillCardSelected.Broadcast(StoredSkillID);
 }

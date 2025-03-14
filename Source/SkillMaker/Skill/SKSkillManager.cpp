@@ -38,7 +38,7 @@ TArray<FSKSkillData> USKSkillManager::GetSkillList()
 	return SkillList;
 }
 
-TOptional<FSKSkillData> USKSkillManager::GetSkillDataByName(const FString& SkillName)
+TOptional<FSKSkillData> USKSkillManager::GetSkillDataByID(const FName& SkillID)
 {
 	if(!SkillDataTable)
 	{
@@ -49,11 +49,10 @@ TOptional<FSKSkillData> USKSkillManager::GetSkillDataByName(const FString& Skill
 	TArray<FName> RowNames = SkillDataTable->GetRowNames();
 	for(FName RowName : RowNames)
 	{
-		
 		if(FSKSkillData* Row = SkillDataTable->FindRow<FSKSkillData>(RowName, TEXT("")))
 		{
 			UE_LOG(LogTemp, Log, TEXT("스킬 이름 : %s"), *Row->SkillName);
-			if(Row->SkillName == SkillName)
+			if(Row->SkillID == SkillID)
 			{
 				return *Row;
 			}

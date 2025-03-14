@@ -2,7 +2,7 @@
 
 
 #include "SKSkillMakerGameMode.h"
-#include "UI/SKSkillMakerHUD.h"
+#include "UI/UI-SkillMaker/SKSkillMakerHUD.h"
 #include "Data/SKDataManager.h"
 #include "Skill/SKSkillManager.h"
 

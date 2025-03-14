@@ -119,7 +119,7 @@ void USKSkillMakerMainWidget::OnCreateSkillClicked()
 	SetSkillMakerState(ESKSkillMakerState::ChooseWeapon);
 }
 
-void USKSkillMakerMainWidget::OnSkillSelected(const FString& SkillName)
+void USKSkillMakerMainWidget::OnSkillSelected(const FName& SkillID)
 {
 	if(!HUDReference)
 	{
@@ -127,8 +127,8 @@ void USKSkillMakerMainWidget::OnSkillSelected(const FString& SkillName)
 		return;
 	}
 	
-	HUDReference->LoadSkillForEditing(SkillName);
-	UE_LOG(LogTemp, Log, TEXT("스킬 선택됨 : %s"), *SkillName);
+	HUDReference->LoadSkillForEditing(SkillID);
+	UE_LOG(LogTemp, Log, TEXT("스킬 선택됨 : %s"), *SkillID.ToString());
 	SetSkillMakerState(ESKSkillMakerState::ChooseWeapon);
 }
 

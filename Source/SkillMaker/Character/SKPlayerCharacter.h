@@ -9,7 +9,6 @@
 
 class USpringArmComponent;
 class UCameraComponent;
-class UAnimMontage;
 
 UCLASS()
 class SKILLMAKER_API ASKPlayerCharacter : public ASKBaseCharacter
@@ -29,7 +28,12 @@ protected:
 	TObjectPtr<UCameraComponent> FollowCamera;
 	
 public:
+	/** 이동 */
 	void Move(const FInputActionValue& Value);
+
+	/** 카메라 회전 */
 	void Look(const FInputActionValue& Value);
-	void UseSkillAction();
+
+	/** 스킬 사용 */
+	virtual void UseSkill(const FName& SkillID) override;
 };

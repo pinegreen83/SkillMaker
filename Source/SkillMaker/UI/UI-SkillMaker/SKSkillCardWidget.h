@@ -6,7 +6,7 @@
 #include "Blueprint/UserWidget.h"
 #include "SKSkillCardWidget.generated.h"
 
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnSkillCardSelected, const FString&, SkillName);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnSkillCardSelected, const FName&, SkillID);
 
 class UButton;
 class UImage;
@@ -21,7 +21,7 @@ public:
 	virtual bool Initialize() override;
 
 	UFUNCTION(BlueprintCallable, Category = "Skill Selection")
-	void SetSkillInfo(const FString& SkillName, UTexture2D* Thumbnail);
+	void SetSkillInfo(const FName& SkillID, const FString& SkillName, UTexture2D* Thumbnail);
 
 	UPROPERTY(BlueprintAssignable, Category = "Skill Selection")
 	FOnSkillCardSelected OnSkillCardSelected;
@@ -36,6 +36,7 @@ protected:
 	UPROPERTY(meta = (BindWidget))
 	TObjectPtr<UTextBlock> SkillNameText;
 
+	FName StoredSkillID;
 	FString StoredSkillName;
 
 	UFUNCTION()

@@ -23,7 +23,7 @@ public:
 	void InitializeNewSkill();
 
 	UFUNCTION(BlueprintCallable, Category = "Skill")
-	void LoadSkillForEditing(const FString& SkillName);
+	void LoadSkillForEditing(const FName& SkillID);
 
 	UFUNCTION(BlueprintCallable, Category = "Skill")
 	const FSKSkillData& GetCurrentSkillData() const;

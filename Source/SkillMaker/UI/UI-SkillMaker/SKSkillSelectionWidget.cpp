@@ -24,28 +24,27 @@ void USKSkillSelectionWidget::LoadSkillList()
 	{
 		UE_LOG(LogTemp, Log, TEXT("스킬 로드 : %s"), *Skill.SkillName);
 
-		// CreateSkillCard(Skill.SkillName, Skill.SkillThumbnail, index);
-		CreateSkillCard(Skill.SkillName, nullptr, index);
+		CreateSkillCard(Skill.SkillID, Skill.SkillName, nullptr, index);
 		index++;
 	}
 }
 
-void USKSkillSelectionWidget::CreateSkillCard(const FString& SkillName, UTexture2D* Thumbnail, const int32 SkillIndex)
+void USKSkillSelectionWidget::CreateSkillCard(const FName& SkillID, const FString& SkillName, UTexture2D* Thumbnail, const int32 SkillIndex)
 {
 	if(!SkillGridPanel || !WBP_SKSkillCard)
 		return;
 
 	if(USKSkillCardWidget* SkillCard = CreateWidget<USKSkillCardWidget>(GetWorld(), WBP_SKSkillCard))
 	{
-		SkillCard->SetSkillInfo(SkillName, Thumbnail);
+		SkillCard->SetSkillInfo(SkillID, SkillName, Thumbnail);
 		SkillCard->OnSkillCardSelected.AddDynamic(this, &USKSkillSelectionWidget::SelectSkill);
 		SkillGridPanel->AddChildToUniformGrid(SkillCard, SkillIndex/4, SkillIndex%4);
 	}
 }
 
-void USKSkillSelectionWidget::SelectSkill(const FString& SkillName)
+void USKSkillSelectionWidget::SelectSkill(const FName& SkillID)
 {
-	UE_LOG(LogTemp, Log, TEXT("선택된 스킬 : %s"), *SkillName);
+	UE_LOG(LogTemp, Log, TEXT("선택된 스킬 : %s"), *SkillID.ToString());
 
-	OnSkillSelected.Broadcast(SkillName);
+	OnSkillSelected.Broadcast(SkillID);
 }

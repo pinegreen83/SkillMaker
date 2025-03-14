@@ -32,7 +32,7 @@ protected:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
 	TObjectPtr<UInputAction> LookAction;
 	
-	/** Jump Input Action */
+	/** Jumping Input Action */
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
 	TObjectPtr<UInputAction> JumpAction;
 
@@ -40,7 +40,28 @@ protected:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
 	TObjectPtr<UInputAction> SkillAction;
 
+	/** 캐릭터의 스킬 슬롯 */
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Skill")
+	TArray<FName> SkillSlots;
 
+	/** 키-스킬 슬롯 매핑 */
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Skill")
+	TMap<FKey, int32> KeyToSkillSlotMap;
+
+public:
+	/** 특정 슬롯의 스킬을 변경하는 함수 */
+	UFUNCTION(BlueprintCallable, Category = "Skill")
+	void SetSkillInSlot(int32 SlotIndex, FName SkillID);
+
+	/** 특정 슬롯의 스킬을 가져오는 함수 */
+	UFUNCTION(BlueprintCallable, Category = "Skill")
+	FName GetSkillInSlot(int32 SlotIndex) const;
+
+	/** 키를 특정 스킬 슬롯에 매핑 */
+	UFUNCTION(BlueprintCallable, Category = "Skill")
+	void SetKeyForSkillSlot(FKey NewKey, int32 SlotIndex);
+
+protected:
 	/** 캐릭터 이동 */
 	void Move(const FInputActionValue& Value);
 
@@ -49,7 +70,7 @@ protected:
 
 	void Jump();
 	void StopJumping();
-
-	/** 스킬 사용 */
-	void UseSkill();
+	
+	/** 특정 키로 스킬 사용 */
+	void UseSkillByKey(FKey PressedKey);
 };

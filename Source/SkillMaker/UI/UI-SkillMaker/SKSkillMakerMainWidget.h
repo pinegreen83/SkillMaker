@@ -82,7 +82,7 @@ protected:
 	void OnCreateSkillClicked();
 
 	UFUNCTION()
-	void OnSkillSelected(const FString& SkillName);
+	void OnSkillSelected(const FName& SkillID);
 	
 	UFUNCTION()
 	void OnWeaponSelected(const FString& WeaponName);

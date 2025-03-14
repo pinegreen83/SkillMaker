@@ -4,7 +4,6 @@
 #include "SKPlayerCharacter.h"
 #include "GameFramework/SpringArmComponent.h"
 #include "Camera/CameraComponent.h"
-#include "Animation/AnimInstance.h"
 
 ASKPlayerCharacter::ASKPlayerCharacter()
 {
@@ -53,10 +52,7 @@ void ASKPlayerCharacter::Look(const FInputActionValue& Value)
 	}
 }
 
-void ASKPlayerCharacter::UseSkillAction()
+void ASKPlayerCharacter::UseSkill(const FName& SkillID)
 {
-	if(SkillComponent)
-	{
-		SkillComponent->UseSkill("Test1");
-	}
+	Super::UseSkill(SkillID);
 }

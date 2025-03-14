@@ -7,8 +7,6 @@
 #include "SKSkillData.h"
 #include "SKSkillComponent.generated.h"
 
-class UAnimMontage;
-
 UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
 class SKILLMAKER_API USKSkillComponent : public UActorComponent
 {
@@ -17,26 +15,44 @@ class SKILLMAKER_API USKSkillComponent : public UActorComponent
 public:	
 	USKSkillComponent();
 
+	/** 클라이언트가 서버에 스킬 사용 요청을 보내는 함수 */
+	UFUNCTION(BlueprintCallable, Server, Reliable, WithValidation, Category = "Skill")
+	void ServerUseSkill(const FName& SkillID);
+
+	UFUNCTION(NetMulticast, Reliable, Category = "Skill")
+	void MulticastExecuteSkill(const FSKSkillData& SkillData);
+
+	UFUNCTION(BlueprintCallable, Category = "Skill")
+	void ClientRequestUseSkill(const FName& SkillID);
+	
+	UFUNCTION(BlueprintPure, Category = "Skill")
+	bool IsSkillAvailable(const FName& SkillID) const;
+
+	UFUNCTION(BlueprintPure, Category = "Skill")
+	float GetSkillCooldownRemaining(const FName& SkillID) const;
+
 protected:
-	// Called when the game starts
-	virtual void BeginPlay() override;
+	/** 스킬 실행 */
+	void ExecuteSkill(const FSKSkillData& SkillData);
 
-public:
-	UFUNCTION(BlueprintCallable, Category = "Skill")
-	void UseSkill(const FString& SkillName);
+	/** 쿨다운 적용 */
+	void ApplyCooldown(const FName& SkillID, float CooldownTime);
 
-	UFUNCTION(BlueprintCallable, Category = "Skill")
-	bool IsSkillAvailable(const FString& SkillName) const;
+	/** 타이머가 끝나면 쿨다운 제거 */
+	void ClearCooldown(FName SkillID);
+	
+	/** 서버가 클라이언트의 요청을 검증하는 함수 */
+	bool ServerUseSkill_Validate(const FName& SkillID);
 
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Skill")
-	TArray<FString> ActiveSkills;
+	/** 서버에서 실행될 함수의 실제 구현 */
+	void ServerUseSkill_Implementation(const FName& SkillID);
 
-private:
-	void HandleSkillExecution(const FSKSkillData& SkillData);
-
-	void ApplyCooldown(const FString& SkillName, float CooldownTime);
+	/** 멀티캐스트 함수의 실제 구현 */
+	void MulticastExecuteSkill_Implementation(const FSKSkillData& SkillData);
 
 	UPROPERTY()
-	TMap<FString, float> SkillCooldowns;
-	
+	TMap<FName, float> SkillCooldowns;
+
+	UPROPERTY()
+	TMap<FName, FTimerHandle> CooldownTimers;
 };

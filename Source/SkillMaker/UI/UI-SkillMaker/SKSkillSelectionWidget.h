@@ -6,7 +6,7 @@
 #include "Blueprint/UserWidget.h"
 #include "SKSkillSelectionWidget.generated.h"
 
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnSkillSelected, const FString&, SkillName);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnSkillSelected, const FName&, SkillID);
 
 class UUniformGridPanel;
 class USKSkillCardWidget;
@@ -36,8 +36,8 @@ protected:
 	UPROPERTY(EditAnywhere, Category = "UI")
 	TSubclassOf<USKSkillCardWidget> WBP_SKSkillCard;
 
-	void CreateSkillCard(const FString& SkillName, UTexture2D* Thumbnail, const int32 SkillIndex);
+	void CreateSkillCard(const FName& SkillID, const FString& SkillName, UTexture2D* Thumbnail, const int32 SkillIndex);
 
 	UFUNCTION()
-	void SelectSkill(const FString& SkillName);
+	void SelectSkill(const FName& SkillID);
 };
