@@ -4,13 +4,14 @@
 #include "SKBaseCharacter.h"
 #include "Components/CapsuleComponent.h"
 #include "GameFramework/CharacterMovementComponent.h"
-#include "Skill/SKSkillData.h"
 
 DEFINE_LOG_CATEGORY(LogSKCharacter);
 
 // Sets default values
 ASKBaseCharacter::ASKBaseCharacter()
 {
+	PrimaryActorTick.bCanEverTick = true;
+	
 	GetCapsuleComponent()->InitCapsuleSize(42.f, 96.0f);
 	
 	bUseControllerRotationPitch = false;
@@ -42,23 +43,11 @@ ASKBaseCharacter::ASKBaseCharacter()
 	{
 		GetMesh()->SetAnimInstanceClass(AnimInstanceClassRef.Class);
 	}
+
+	SkillComponent = CreateDefaultSubobject<USKSkillComponent>(TEXT("SkillComponent"));
 }
 
 void ASKBaseCharacter::BeginPlay()
 {
 	Super::BeginPlay();
 }
-
-void ASKBaseCharacter::UseSkillAsset(USKSkillData* SkillDataAsset)
-{
-	if(!SkillDataAsset) return;
-
-	const FSkillData& Skill = SkillDataAsset->SkillData;
-	UE_LOG(LogTemp, Log, TEXT("Using Skill: %s (Damage = %.2f)"), *Skill.SkillName.ToString(), Skill.Damage);
-
-	if(Skill.SkillMontage && GetMesh() && GetMesh()->GetAnimInstance())
-	{
-		GetMesh()->GetAnimInstance()->Montage_Play(Skill.SkillMontage);
-	}
-}
-

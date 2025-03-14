@@ -6,7 +6,7 @@
 #include "Blueprint/UserWidget.h"
 #include "SKAnimationSelectionWidget.generated.h"
 
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnAnimationChosen, UAnimMontage*, SelectedMontage);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnAnimationSelected, UAnimMontage*, SelectedMontage);
 
 class UUniformGridPanel;
 class USKAnimationCardWidget;
@@ -18,13 +18,11 @@ class SKILLMAKER_API USKAnimationSelectionWidget : public UUserWidget
 	GENERATED_BODY()
 
 public:
-	virtual bool Initialize() override;
-
 	UFUNCTION(BlueprintCallable, Category = "Animation Selection")
 	void LoadAnimationsForWeapon(const FString& WeaponName);
 	
 	UPROPERTY(BlueprintAssignable, Category = "Animation Selection")
-	FOnAnimationChosen OnAnimationChosen;
+	FOnAnimationSelected OnAnimationSelected;
 
 protected:
 	UPROPERTY(meta = (BindWidget))
@@ -36,5 +34,5 @@ protected:
 	void CreateAnimationCard(UAnimMontage* Montage, UTexture2D* Thumbnail, const int32 AnimIndex);
 
 	UFUNCTION()
-	void OnAnimationSelected(UAnimMontage* SelectedMontage);
+	void AnimationSelected(UAnimMontage* SelectedMontage);
 };

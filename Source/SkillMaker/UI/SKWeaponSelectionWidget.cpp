@@ -13,14 +13,9 @@ void USKWeaponSelectionWidget::NativeConstruct()
 	LoadWeaponList();
 }
 
-bool USKWeaponSelectionWidget::Initialize()
-{
-	return Super::Initialize();
-}
-
 void USKWeaponSelectionWidget::LoadWeaponList()
 {
-	UE_LOG(LogTemp, Log, TEXT("무기 목록을 불러옵니다"));
+	UE_LOG(LogTemp, Log, TEXT("무기 목록을 불러옵니다."));
 
 	WeaponList = USKDataManager::Get()->GetWeaponList();
 
@@ -36,30 +31,18 @@ void USKWeaponSelectionWidget::LoadWeaponList()
 
 void USKWeaponSelectionWidget::CreateWeaponCard(const FString& WeaponName, UTexture2D* Thumbnail, const FString& WeaponType, const int32 WeaponIndex)
 {
-	if(!WeaponGridPanel)
-	{
-		UE_LOG(LogTemp, Error, TEXT("WeaponGridPanel이 nullptr임."));
-		return;
-	}
-
-	if (!WBP_SKWeaponCard)
-	{
-		UE_LOG(LogTemp, Error, TEXT("WBP_SKWeaponCard가 nullptr임."));
-		return;
-	}
-	
-	if(!WBP_SKWeaponCard || !WeaponGridPanel)
+	if(!WeaponGridPanel || !WBP_SKWeaponCard)
 		return;
 
 	if(USKWeaponCardWidget* WeaponCard = CreateWidget<USKWeaponCardWidget>(GetWorld(), WBP_SKWeaponCard))
 	{
 		WeaponCard->SetWeaponInfo(WeaponName, Thumbnail, WeaponType);
-		WeaponCard->OnWeaponCardSelected.AddDynamic(this, &USKWeaponSelectionWidget::SelectWeapon);
+		WeaponCard->OnWeaponCardSelected.AddDynamic(this, &USKWeaponSelectionWidget::WeaponSelected);
 		WeaponGridPanel->AddChildToUniformGrid(WeaponCard, WeaponIndex/2, WeaponIndex%2);
 	}
 }
 
-void USKWeaponSelectionWidget::SelectWeapon(const FString& WeaponName)
+void USKWeaponSelectionWidget::WeaponSelected(const FString& WeaponName)
 {
 	UE_LOG(LogTemp, Log, TEXT("선택된 무기 : %s"), *WeaponName);
 

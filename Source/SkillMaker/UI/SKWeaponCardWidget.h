@@ -20,6 +20,7 @@ class SKILLMAKER_API USKWeaponCardWidget : public UUserWidget
 public:
 	virtual bool Initialize() override;
 
+	UFUNCTION(BlueprintCallable, Category = "Weapon Selection")
 	void SetWeaponInfo(const FString& WeaponName, UTexture2D* Thumbnail, const FString& InWeaponType);
 
 	UPROPERTY(BlueprintAssignable, Category = "Weapon Selection")
@@ -35,7 +36,6 @@ protected:
 	UPROPERTY(meta = (BindWidget))
 	TObjectPtr<UTextBlock> WeaponNameText;
 	
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Weapon")
 	FString WeaponType;
 
 	UFUNCTION()

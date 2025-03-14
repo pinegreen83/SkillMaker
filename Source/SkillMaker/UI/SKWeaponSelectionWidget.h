@@ -19,8 +19,6 @@ class SKILLMAKER_API USKWeaponSelectionWidget : public UUserWidget
 
 public:
 	virtual void NativeConstruct() override;
-	
-	virtual bool Initialize() override;
 
 	UFUNCTION(BlueprintCallable, Category = "Weapon Selection")
 	void LoadWeaponList();
@@ -41,5 +39,5 @@ protected:
 	void CreateWeaponCard(const FString& WeaponName, UTexture2D* Thumbnail, const FString& WeaponType, const int32 WeaponIndex);
 
 	UFUNCTION()
-	void SelectWeapon(const FString& WeaponName);
+	void WeaponSelected(const FString& WeaponName);
 };

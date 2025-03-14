@@ -42,7 +42,10 @@ TArray<FSKAnimationData> USKDataManager::GetAnimationsForWeapon(const FString& W
 	TArray<FSKAnimationData> AnimationList;
 
 	if(!AnimationDataTable)
-		return AnimationList;
+	{
+		UE_LOG(LogTemp, Error, TEXT("AnimationDataTable이 nullptr임."));
+		return AnimationList;	
+	}
 
 	TArray<FName> RowNames = AnimationDataTable->GetRowNames();
 	for(FName RowName : RowNames)

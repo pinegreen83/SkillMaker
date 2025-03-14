@@ -7,11 +7,6 @@
 #include "Data/SKDataManager.h"
 #include "SKAnimationCardWidget.h"
 
-bool USKAnimationSelectionWidget::Initialize()
-{
-	return Super::Initialize();
-}
-
 void USKAnimationSelectionWidget::LoadAnimationsForWeapon(const FString& WeaponType)
 {
 	UE_LOG(LogTemp, Log, TEXT("%s에 대한 애니메이션 로드"), *WeaponType);
@@ -30,7 +25,7 @@ void USKAnimationSelectionWidget::LoadAnimationsForWeapon(const FString& WeaponT
 
 void USKAnimationSelectionWidget::CreateAnimationCard(UAnimMontage* Montage, UTexture2D* Thumbnail, const int32 AnimIndex)
 {
-	if(!WBP_SKAnimationCard || !AnimationGridPanel)
+	if(!AnimationGridPanel || !WBP_SKAnimationCard)
 		return;
 
 	USKAnimationCardWidget* AnimationCard = CreateWidget<USKAnimationCardWidget>(GetWorld(), WBP_SKAnimationCard);
@@ -38,17 +33,17 @@ void USKAnimationSelectionWidget::CreateAnimationCard(UAnimMontage* Montage, UTe
 	if(AnimationCard)
 	{
 		AnimationCard->SetAnimationInfo(Montage, Thumbnail);
-		AnimationCard->OnAnimationSelected.AddDynamic(this, &USKAnimationSelectionWidget::OnAnimationSelected);
+		AnimationCard->OnAnimationCardSelected.AddDynamic(this, &USKAnimationSelectionWidget::AnimationSelected);
 		AnimationGridPanel->AddChildToUniformGrid(AnimationCard, AnimIndex/2, AnimIndex%2);
 	}
 }
 
-void USKAnimationSelectionWidget::OnAnimationSelected(UAnimMontage* SelectedMontage)
+void USKAnimationSelectionWidget::AnimationSelected(UAnimMontage* SelectedMontage)
 {
 	if(!SelectedMontage)
 		return;
 
 	UE_LOG(LogTemp, Log, TEXT("선택된 애니메이션 : %s"), *SelectedMontage->GetName());
 
-	OnAnimationChosen.Broadcast(SelectedMontage);
+	OnAnimationSelected.Broadcast(SelectedMontage);
 }

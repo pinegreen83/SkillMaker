@@ -6,7 +6,7 @@
 #include "Blueprint/UserWidget.h"
 #include "SKAnimationCardWidget.generated.h"
 
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnAnimationSelected, UAnimMontage*, SelectedMontage);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnAnimationCardSelected, UAnimMontage*, SelectedMontage);
 
 class UButton;
 class UImage;
@@ -21,10 +21,11 @@ class SKILLMAKER_API USKAnimationCardWidget : public UUserWidget
 public:
 	virtual bool Initialize() override;
 
+	UFUNCTION(BlueprintCallable, Category = "Animation Selection")
 	void SetAnimationInfo(UAnimMontage* Montage, UTexture2D* Thumbnail);
 
 	UPROPERTY(BlueprintAssignable, Category = "Animation Selection")
-	FOnAnimationSelected OnAnimationSelected;
+	FOnAnimationCardSelected OnAnimationCardSelected;
 
 protected:
 	UPROPERTY(meta = (BindWidget))
@@ -35,6 +36,9 @@ protected:
 	
 	UPROPERTY(meta = (BindWidget))
 	TObjectPtr<UTextBlock> AnimationNameText;
+
+	UPROPERTY()
+	TObjectPtr<UAnimMontage> SelectedMontage;
 
 	UFUNCTION()
 	void HandleAnimationSelected();

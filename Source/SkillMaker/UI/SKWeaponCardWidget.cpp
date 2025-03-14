@@ -9,7 +9,8 @@
 bool USKWeaponCardWidget::Initialize()
 {
 	bool Success = Super::Initialize();
-	if(!Success) return false;
+	if(!Success)
+		return false;
 
 	if(WeaponButton)
 	{

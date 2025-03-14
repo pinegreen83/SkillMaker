@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/HUD.h"
+#include "Skill/SKSkillData.h"
 #include "SKSkillMakerHUD.generated.h"
 
 class USKSkillMakerMainWidget;
@@ -18,10 +19,34 @@ public:
 	
 	virtual void BeginPlay() override;
 
+	UFUNCTION(BlueprintCallable, Category = "Skill")
+	void InitializeNewSkill();
+
+	UFUNCTION(BlueprintCallable, Category = "Skill")
+	void LoadSkillForEditing(const FString& SkillName);
+
+	UFUNCTION(BlueprintCallable, Category = "Skill")
+	const FSKSkillData& GetCurrentSkillData() const;
+	
+	UFUNCTION(BlueprintCallable, Category = "Skill")
+	void SetSkillName(const FString& WeaponName);
+
+	UFUNCTION(BlueprintCallable, Category = "Skill")
+	void SetSkillWeaponType(const FString& WeaponType);
+	
+	UFUNCTION(BlueprintCallable, Category = "Skill")
+	void SetSkillMontage(UAnimMontage* AnimationMontage);
+
+	UFUNCTION(BlueprintCallable, Category = "Skill")
+	void LogCurrentSkillData();
+
 protected:
 	UPROPERTY(EditDefaultsOnly, Category = "UI")
 	TSubclassOf<USKSkillMakerMainWidget> MainWidgetClass;
 
 	UPROPERTY()
-	USKSkillMakerMainWidget* MainWidget;
+	TObjectPtr<USKSkillMakerMainWidget> MainWidget;
+
+	UPROPERTY(BlueprintReadWrite, Category = "Skill")
+	FSKSkillData CurrentEditingSkill;
 };
