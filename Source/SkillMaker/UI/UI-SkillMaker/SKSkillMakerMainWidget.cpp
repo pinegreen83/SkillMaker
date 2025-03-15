@@ -74,7 +74,7 @@ void USKSkillMakerMainWidget::SetSkillMakerState(ESKSkillMakerState NewState)
 
 	if (static_cast<int32>(NewState) >= SkillMakerSwitcher->GetNumWidgets())
 	{
-		UE_LOG(LogTemp, Error, TEXT("❌ 잘못된 WidgetSwitcher 인덱스! NewState: %d, 총 위젯 개수: %d"),
+		UE_LOG(LogTemp, Error, TEXT("잘못된 WidgetSwitcher 인덱스 NewState : %d, 총 위젯 개수 : %d"),
 			   static_cast<int32>(NewState), SkillMakerSwitcher->GetNumWidgets());
 		return;
 	}
@@ -166,7 +166,7 @@ void USKSkillMakerMainWidget::OnAnimationSelected(UAnimMontage* AnimationMontage
 		HUDReference->SetSkillMontage(AnimationMontage);
 		UE_LOG(LogTemp, Log, TEXT("선택된 애니메이션 : %s"), *AnimationMontage->GetName());
 
-		SetSkillMakerState(ESKSkillMakerState::EditSkill);
+		SetSkillMakerState(ESKSkillMakerState::SkillDetail);
 	}
 	else
 	{

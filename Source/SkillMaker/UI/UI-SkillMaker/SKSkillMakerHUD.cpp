@@ -57,6 +57,11 @@ const FSKSkillData& ASKSkillMakerHUD::GetCurrentSkillData() const
 	return CurrentEditingSkill;
 }
 
+void ASKSkillMakerHUD::SetCurrentSkillData(FSKSkillData SkillData)
+{
+	CurrentEditingSkill = SkillData;
+}
+
 void ASKSkillMakerHUD::SetSkillName(const FString& SkillName)
 {
 	CurrentEditingSkill.SkillName = SkillName;

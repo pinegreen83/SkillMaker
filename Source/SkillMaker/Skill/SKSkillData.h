@@ -4,6 +4,14 @@
 #include "GameFramework/Actor.h"
 #include "SKSkillData.generated.h"
 
+UENUM(BlueprintType)
+enum class ESkillType : uint8
+{
+	Attack UMETA(DisplayName = "Attack"),
+	Buff UMETA(DisplayName = "Buff"),
+	Debuff UMETA(DisplayName = "Debuff")
+};
+
 USTRUCT(BlueprintType)
 struct FSoundEffectMapping
 {
@@ -25,13 +33,17 @@ public:
 UENUM(BlueprintType)
 enum class EStatusEffect : uint8
 {
-	None UMETA(DisplayName = "None"),
-	Stun UMETA(DisplayName = "Stun"),
-	Slow UMETA(DisplayName = "Slow"),
-	Burn UMETA(DisplayName = "Burn"),
-	Freeze UMETA(DisplayName = "Freeze"),
-	Poison UMETA(DisplayName = "Poison")
+	None        UMETA(DisplayName = "None"),
+	Stun        UMETA(DisplayName = "Stun"),       // 이동 및 행동 불가
+	Slow        UMETA(DisplayName = "Slow"),       // 이동 속도 감소
+	Burn        UMETA(DisplayName = "Burn"),       // 지속 피해 (화상)
+	Freeze      UMETA(DisplayName = "Freeze"),     // 일정 시간 동안 얼음 상태
+	Poison      UMETA(DisplayName = "Poison"),     // 지속 피해 (중독)
+	Shock       UMETA(DisplayName = "Shock"),      // 감전 효과 (일시적 기절)
+	Curse       UMETA(DisplayName = "Curse")       // 디버프 효과 (방어력 감소 등)
 };
+
+ENUM_RANGE_BY_COUNT(EStatusEffect, EStatusEffect::Curse)
 
 USTRUCT(BlueprintType)
 struct FStatusEffectData
@@ -39,15 +51,40 @@ struct FStatusEffectData
 	GENERATED_BODY()
 
 public:
+	/** 적용할 상태이상 유형 */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "StatusEffect")
 	EStatusEffect EffectType;
 
+	/** 상태이상 지속 시간 (초) */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "StatusEffect")
 	float Duration;
 
-	FStatusEffectData() : 
-		EffectType(EStatusEffect::None),
-		Duration(0.0f)
+	/** 초당 지속 피해량 (화상, 중독 등의 경우) */
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "StatusEffect")
+	float DamagePerSecond;
+
+	/** 스택 가능 여부 (같은 상태이상 중첩 가능 여부) */
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "StatusEffect")
+	bool bCanStack;
+
+	/** 상태이상의 최대 스택 수 (0이면 무제한) */
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "StatusEffect")
+	int32 MaxStack;
+
+	FStatusEffectData() 
+		: EffectType(EStatusEffect::None)
+		, Duration(0.0f)
+		, DamagePerSecond(0.0f)
+		, bCanStack(false)
+		, MaxStack(1) 
+	{}
+
+	FStatusEffectData(EStatusEffect InEffectType, float InDuration, float InDamagePerSecond, bool InCanStack = false, int32 InMaxStack = 1)
+	: EffectType(InEffectType)
+	, Duration(InDuration)
+	, DamagePerSecond(InDamagePerSecond)
+	, bCanStack(InCanStack)
+	, MaxStack(InMaxStack)
 	{}
 };
 
@@ -63,6 +100,9 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Skill")
 	FString SkillName;
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Skill")
+	ESkillType SkillType;
+	
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Skill")
 	FString WeaponType;
 	

@@ -11,6 +11,7 @@ class UButton;
 class USKWeaponSelectionWidget;
 class USKAnimationSelectionWidget;
 class USKSkillSelectionWidget;
+class USKSkillDetailWidget;
 class UEditableTextBox;
 class ASKSkillMakerHUD;
 
@@ -21,7 +22,7 @@ enum class ESKSkillMakerState : uint8
 	ChooseSkill,
 	ChooseWeapon,
 	ChooseAnimation,
-	EditSkill,
+	SkillDetail,
 	SaveSkill
 };
 
@@ -74,7 +75,8 @@ protected:
 	TObjectPtr<ASKSkillMakerHUD> HUDReference;
 
 	FString SelectedWeaponType;
-	
+
+private:
 	UFUNCTION()
 	void OnModifySkillClicked();
 
@@ -99,7 +101,6 @@ protected:
 	UFUNCTION()
 	void OnBackClicked();
 
-private:
 	ESKSkillMakerState CurrentState;
 	TArray<ESKSkillMakerState> PreviousStates;
 };

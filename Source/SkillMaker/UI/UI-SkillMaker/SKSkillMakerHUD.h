@@ -27,6 +27,9 @@ public:
 
 	UFUNCTION(BlueprintCallable, Category = "Skill")
 	const FSKSkillData& GetCurrentSkillData() const;
+
+	UFUNCTION(BlueprintCallable, Category = "Skill")
+	void SetCurrentSkillData(FSKSkillData SkillData);
 	
 	UFUNCTION(BlueprintCallable, Category = "Skill")
 	void SetSkillName(const FString& WeaponName);
