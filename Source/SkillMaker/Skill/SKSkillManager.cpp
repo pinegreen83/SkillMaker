@@ -70,19 +70,16 @@ void USKSkillManager::SaveSkillData(const FSKSkillData& SkillData)
 		return;
 	}
 
-	TArray<FName> RowNames = SkillDataTable->GetRowNames();
-	for(FName RowName : RowNames)
+	FSKSkillData* ExistingSkill = SkillDataTable->FindRow<FSKSkillData>(SkillData.SkillID, TEXT(""));
+	if (ExistingSkill)
 	{
-		FSKSkillData* ExistingSkill = SkillDataTable->FindRow<FSKSkillData>(RowName, TEXT(""));
-		if(ExistingSkill && ExistingSkill->SkillName == SkillData.SkillName)
-		{
-			*ExistingSkill = SkillData;
-			UE_LOG(LogTemp, Log, TEXT("스킬 업데이트 완료 : %s"), *SkillData.SkillName);
-			return;
-		}
+		*ExistingSkill = SkillData;
+		UE_LOG(LogTemp, Log, TEXT("스킬 데이터 업데이트 완료: %s"), *SkillData.SkillName);
 	}
-
-	FName NewRowName = FName(*SkillData.SkillName);
-	SkillDataTable->AddRow(NewRowName, SkillData);
-	UE_LOG(LogTemp, Log, TEXT("새로운 스킬 추가 완료 : %s"), *SkillData.SkillName);
+	else
+	{
+		// 새로운 스킬 추가
+		SkillDataTable->AddRow(SkillData.SkillID, SkillData);
+		UE_LOG(LogTemp, Log, TEXT("새로운 스킬 저장 완료: %s"), *SkillData.SkillName);
+	}
 }

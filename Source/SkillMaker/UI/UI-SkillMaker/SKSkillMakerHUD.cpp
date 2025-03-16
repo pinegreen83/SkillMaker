@@ -4,7 +4,12 @@
 #include "SKSkillMakerHUD.h"
 #include "SKSkillMakerMainWidget.h"
 #include "Skill/SKSkillManager.h"
+#include "Skill/SKSkillEffectActor.h"
+#include "Animation/SKSkillAnimNotify_Trigger.h"
 #include "Engine/Texture2D.h"
+#include "Character/SKPreviewCharacter.h"
+#include "GameFramework/PlayerController.h"
+#include "Kismet/GameplayStatics.h"
 
 ASKSkillMakerHUD::ASKSkillMakerHUD()
 {
@@ -30,6 +35,15 @@ void ASKSkillMakerHUD::BeginPlay()
 	}
 
 	InitializeNewSkill();
+
+	FActorSpawnParameters SpawnParams;
+	SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
+	PreviewCharacter = GetWorld()->SpawnActor<ASKPreviewCharacter>(ASKPreviewCharacter::StaticClass(), FVector(0, 0, 100), FRotator::ZeroRotator, SpawnParams);
+
+	if (PreviewCharacter)
+	{
+		UE_LOG(LogTemp, Log, TEXT("프리뷰 캐릭터 생성 완료."));
+	}
 }
 
 void ASKSkillMakerHUD::InitializeNewSkill()
@@ -84,36 +98,6 @@ void ASKSkillMakerHUD::SetSkillMontage(UAnimMontage* Montage)
 	}
 }
 
-// void ASKSkillMakerHUD::SetSelectedAnimation(UAnimMontage* AnimationMontage)
-// {
-// 	if(AnimationMontage)
-// 	{
-// 		CurrentEditingSkill.SkillMontage = AnimationMontage;
-// 		CurrentEditingSkill.SkillDuration = AnimationMontage->GetPlayLength();
-// 		UE_LOG(LogTemp, Log, TEXT("애니메이션 선택 : %s, 길이 : %f"), *AnimationMontage->GetName(), CurrentEditingSkill.SkillDuration);
-// 	}
-// }
-//
-// void ASKSkillMakerHUD::AddEffectToSkill(const FName& NotifyName, const FName& EffectName)
-// {
-// 	if(!CurrentEditingSkill.EffectNotifyNames.Contains(NotifyName))
-// 	{
-// 		CurrentEditingSkill.EffectNotifyNames.Add(NotifyName);
-// 	}
-// 	CurrentEditingSkill.EffectSoundMapping.Add(NotifyName, EffectName);
-// 	UE_LOG(LogTemp, Log, TEXT("이펙트 추가 : %s -> %s"), *NotifyName.ToString(), *EffectName.ToString());
-// }
-//
-// void ASKSkillMakerHUD::AddSoundToSkill(const FName& NotifyName, const FName& SoundName)
-// {
-// 	if(!CurrentEditingSkill.SoundNotifyNames.Contains(NotifyName))
-// 	{
-// 		CurrentEditingSkill.SoundNotifyNames.Add(NotifyName);
-// 	}
-// 	CurrentEditingSkill.EffectSoundMapping.Add(NotifyName, SoundName);
-// 	UE_LOG(LogTemp, Log, TEXT("사운드 추가 : %s -> %s"), *NotifyName.ToString(), *SoundName.ToString());
-// }
-
 void ASKSkillMakerHUD::LogCurrentSkillData()
 {
 	UE_LOG(LogTemp, Log, TEXT("==== 현재 스킬 데이터 ===="));
@@ -129,4 +113,16 @@ void ASKSkillMakerHUD::LogCurrentSkillData()
 	// 	UE_LOG(LogTemp, Log, TEXT(" - %s -> %s"), *Effect.ToString(), *CurrentEditingSkill.EffectSoundMapping[Effect].ToString());
 	// }
 	UE_LOG(LogTemp, Log, TEXT("=================="));
+}
+
+void ASKSkillMakerHUD::PreviewSkillEffect(const FSKSkillData& SkillData)
+{
+	if (!PreviewCharacter || !SkillData.SkillMontage)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("미리보기 실행 불가: 캐릭터 또는 애니메이션 없음."));
+		return;
+	}
+
+	PreviewCharacter->SetSkillData(SkillData);
+	PreviewCharacter->UseSkill(SkillData.SkillID); 
 }

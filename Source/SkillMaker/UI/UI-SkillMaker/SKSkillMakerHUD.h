@@ -8,6 +8,7 @@
 #include "SKSkillMakerHUD.generated.h"
 
 class USKSkillMakerMainWidget;
+class ASKPreviewCharacter;
 
 UCLASS()
 class SKILLMAKER_API ASKSkillMakerHUD : public AHUD
@@ -39,9 +40,12 @@ public:
 	
 	UFUNCTION(BlueprintCallable, Category = "Skill")
 	void SetSkillMontage(UAnimMontage* AnimationMontage);
-
+	
 	UFUNCTION(BlueprintCallable, Category = "Skill")
 	void LogCurrentSkillData();
+
+	UFUNCTION(BlueprintCallable, Category = "Skill")
+	void PreviewSkillEffect(const FSKSkillData& SkillData);
 
 protected:
 	UPROPERTY(EditDefaultsOnly, Category = "UI")
@@ -52,4 +56,7 @@ protected:
 
 	UPROPERTY(BlueprintReadWrite, Category = "Skill")
 	FSKSkillData CurrentEditingSkill;
+
+	UPROPERTY()
+	TObjectPtr<ASKPreviewCharacter> PreviewCharacter;
 };

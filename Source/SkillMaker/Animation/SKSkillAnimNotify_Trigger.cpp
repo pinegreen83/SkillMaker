@@ -7,38 +7,52 @@
 #include "Character/SKBaseCharacter.h"
 #include "Combat/SKCombatComponent.h"
 #include "Kismet/GameplayStatics.h"
+#include "Skill/SKSkillEffectActor.h"
 
 void USKSkillAnimNotify_Trigger::Notify(USkeletalMeshComponent* MeshComp, UAnimSequenceBase* Animation,
-	const FAnimNotifyEventReference& EventReference)
+                                        const FAnimNotifyEventReference& EventReference)
 {
 	Super::Notify(MeshComp, Animation, EventReference);
 
-	if(!MeshComp)
-		return;
-	
+	if (!MeshComp) return;
+
 	ASKBaseCharacter* Character = Cast<ASKBaseCharacter>(MeshComp->GetOwner());
-	if(!Character)
-		return;
-	
+	if (!Character) return;
+
 	TOptional<FSKSkillData> SkillDataOpt = Character->GetCurrentSkillData();
-	if (!SkillDataOpt.IsSet())
+	if (!SkillDataOpt.IsSet()) 
+	{
+		UE_LOG(LogTemp, Error, TEXT("❌ 스킬 데이터가 없음!"));
 		return;
+	}
+
 	const FSKSkillData& SkillData = SkillDataOpt.GetValue();
-		
-	if (!EffectName.IsNone())
+
+	// ✅ SkillData 내부 확인 로그 추가
+	UE_LOG(LogTemp, Log, TEXT("✔ SkillData 확인 - 이펙트: %s, 사운드: %s"),
+		SkillData.EffectSoundData.EffectClass ? *SkillData.EffectSoundData.EffectClass->GetName() : TEXT("None"),
+		SkillData.EffectSoundData.Sound ? *SkillData.EffectSoundData.Sound->GetName() : TEXT("None")
+	);
+
+	// ✅ 현재 애니메이션 진행 시간 가져오기
+	UAnimInstance* AnimInstance = MeshComp->GetAnimInstance();
+	if (!AnimInstance) return;
+
+	float CurrentMontageTime = AnimInstance->Montage_GetPosition(AnimInstance->GetCurrentActiveMontage());
+
+	// ✅ 저장된 NotifyTime과 비교
+	if (FMath::IsNearlyEqual(SkillData.EffectSoundData.NotifyTime, CurrentMontageTime, 0.01f))
 	{
-		UE_LOG(LogTemp, Log, TEXT("이펙트 실행: %s"), *EffectName.ToString());
+		UE_LOG(LogTemp, Log, TEXT("🎯 애님 노티파이 실행됨: %s (%.2f초)"), *EffectName.ToString(), CurrentMontageTime);
+
+		SpawnSkillEffect(Character, SkillData);
 	}
 
-	if (!SoundName.IsNone())
-	{
-		UE_LOG(LogTemp, Log, TEXT("사운드 실행: %s"), *SoundName.ToString());
-	}
-
-	OnSkillNotifyTriggered.Broadcast(EffectName);
-
-	ApplyAOEEffect(Character, SkillData);
-	SpawnProjectile(Character, SkillData);
+	// OnSkillNotifyTriggered.Broadcast(EffectName);
+	
+	// SpawnSkillEffect(Character, SkillData);
+	// ApplyAOEEffect(Character, SkillData);
+	// SpawnProjectile(Character, SkillData);
 }
 
 FString USKSkillAnimNotify_Trigger::GetNotifyName_Implementation() const
@@ -98,5 +112,25 @@ void USKSkillAnimNotify_Trigger::SpawnProjectile(ASKBaseCharacter* Character, co
 	if (SpawnedProjectile)
 	{
 		UE_LOG(LogTemp, Log, TEXT("발사체 생성: %s"), *SpawnedProjectile->GetName());
+	}
+}
+
+void USKSkillAnimNotify_Trigger::SpawnSkillEffect(ASKBaseCharacter* Character, const FSKSkillData& SkillData)
+{
+	if (!Character || !SkillData.EffectSoundData.EffectClass) return;
+
+	FVector SpawnLocation = Character->GetActorLocation() + Character->GetActorForwardVector() * 50.0f;
+	FRotator SpawnRotation = Character->GetActorRotation();
+
+	ASKSkillEffectActor* SpawnedEffect = Character->GetWorld()->SpawnActor<ASKSkillEffectActor>(
+		SkillData.EffectSoundData.EffectClass,
+		SpawnLocation,
+		SpawnRotation
+	);
+
+	if (SpawnedEffect)
+	{
+		SpawnedEffect->PlayEffect(Character, SkillData);
+		UE_LOG(LogTemp, Log, TEXT("애님 노티파이에서 이펙트 생성: %s"), *SpawnedEffect->GetName());
 	}
 }

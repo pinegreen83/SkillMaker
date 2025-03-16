@@ -59,6 +59,10 @@ protected:
 	UPROPERTY(meta = (BindWidget))
 	TObjectPtr<UImage> SelectedEffectPreview;
 
+	/** 선택된 이펙트 이름 */
+	UPROPERTY(meta = (BindWidget))
+	TObjectPtr<UTextBlock> SelectedEffectText;
+
 	/** 선택된 사운드 이름 */
 	UPROPERTY(meta = (BindWidget))
 	TObjectPtr<UTextBlock> SelectedSoundText;

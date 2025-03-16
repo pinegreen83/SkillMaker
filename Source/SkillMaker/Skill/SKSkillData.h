@@ -23,6 +23,9 @@ public:
 	FName NotifyName;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Effect")
+	float NotifyTime;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Effect")
 	TSubclassOf<AActor> EffectClass;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Effect")
@@ -33,6 +36,7 @@ public:
 
 	FEffectSoundData()
 	: NotifyName(NAME_None)
+	, NotifyTime(0.0f)
 	, EffectClass(nullptr)
 	, Sound(nullptr)
 	, EffectRelativeLocation(FVector::ZeroVector)

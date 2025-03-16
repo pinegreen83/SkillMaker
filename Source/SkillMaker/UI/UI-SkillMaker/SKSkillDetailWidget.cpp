@@ -3,6 +3,7 @@
 
 #include "SKSkillDetailWidget.h"
 #include "SKEffectSoundSelectionWidget.h"
+#include "SKAnimNotifySelectionWidget.h"
 #include "Components/ComboBoxString.h"
 #include "Components/EditableTextBox.h"
 #include "Components/Slider.h"
@@ -32,9 +33,9 @@ void USKSkillDetailWidget::NativeConstruct()
 		EffectSoundTabButton->OnClicked.AddDynamic(this, &USKSkillDetailWidget::OnEffectSoundTabClicked);
 	}
 
-	if (ProjectileTabButton)
+	if (AnimNotifyTabButton)
 	{
-		ProjectileTabButton->OnClicked.AddDynamic(this, &USKSkillDetailWidget::OnAnimNotifyTabClicked);
+		AnimNotifyTabButton->OnClicked.AddDynamic(this, &USKSkillDetailWidget::OnAnimNotifyTabClicked);
 	}
 	
 	if(SkillTypeComboBox)
@@ -57,14 +58,24 @@ void USKSkillDetailWidget::NativeConstruct()
 		MaxRangeSlider->OnValueChanged.AddDynamic(this, &USKSkillDetailWidget::OnMaxRangeChanged);
 	}
 	
-	if(SaveSkillButton)
+	if (PreviewSkillButton)
 	{
-		SaveSkillButton->OnClicked.AddDynamic(this, &USKSkillDetailWidget::OnSaveSkillClicked);
+		PreviewSkillButton->OnClicked.AddDynamic(this, &USKSkillDetailWidget::OnPreviewSkillClicked);
 	}
+	
+	// if(SaveSkillButton)
+	// {
+	// 	SaveSkillButton->OnClicked.AddDynamic(this, &USKSkillDetailWidget::OnSaveSkillClicked);
+	// }
 
 	if (EffectSoundSelectionWidget)
 	{
 		EffectSoundSelectionWidget->OnEffectSoundSelected.AddDynamic(this, &USKSkillDetailWidget::OnEffectSoundSelected);
+	}
+
+	if (AnimNotifySelectionWidget)
+	{
+		AnimNotifySelectionWidget->OnAnimNotifySelected.AddDynamic(this, &USKSkillDetailWidget::OnNotifySelected);
 	}
 	
 	PopulateStatusEffectList();
@@ -99,6 +110,7 @@ void USKSkillDetailWidget::OnAnimNotifyTabClicked()
 	if (TabSwitcher)
 	{
 		TabSwitcher->SetActiveWidgetIndex(3);
+		PopulateAnimNotifyList();
 	}
 }
 
@@ -197,6 +209,13 @@ void USKSkillDetailWidget::PopulateStatusEffectList()
 			StatusEffectListBox->AddChild(StatusEffectCard);
 		}
 	}
+}
+
+void USKSkillDetailWidget::PopulateAnimNotifyList()
+{
+	if (!AnimNotifySelectionWidget || !EditingSkillData.IsSet()) return;
+	
+	AnimNotifySelectionWidget->PopulateNotifyList(EditingSkillData->SkillMontage);
 }
 
 void USKSkillDetailWidget::SaveSkillData()
@@ -335,6 +354,24 @@ void USKSkillDetailWidget::OnEffectSoundSelected(const FEffectSoundData& Selecte
 		*SelectedEffectSound.NotifyName.ToString(),
 		SelectedEffectSound.EffectClass ? *SelectedEffectSound.EffectClass->GetName() : TEXT("None"),
 		SelectedEffectSound.Sound ? *SelectedEffectSound.Sound->GetName() : TEXT("None"));
+}
+
+void USKSkillDetailWidget::OnNotifySelected(FName NotifyName, float NotifyTime)
+{
+	if (!EditingSkillData.IsSet()) return;
+
+	EditingSkillData->EffectSoundData.NotifyName = NotifyName;
+	EditingSkillData->EffectSoundData.NotifyTime = NotifyTime;
+	
+	UE_LOG(LogTemp, Log, TEXT("애님 노티파이 선택됨: %s"), *NotifyName.ToString());
+}
+
+void USKSkillDetailWidget::OnPreviewSkillClicked()
+{
+	if (!HUDReference || !EditingSkillData.IsSet()) return;
+	
+	HUDReference->PreviewSkillEffect(EditingSkillData.GetValue());
+	UE_LOG(LogTemp, Log, TEXT("스킬 미리보기 실행"));
 }
 
 void USKSkillDetailWidget::OnSaveSkillClicked()

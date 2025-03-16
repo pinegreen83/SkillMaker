@@ -67,30 +67,27 @@ void ASKBaseCharacter::BeginPlay()
 
 void ASKBaseCharacter::UseSkill(const FName& SkillID)
 {
-	if(SkillComponent)
-	{
-		if(TOptional<FSKSkillData> SkillData = USKSkillManager::Get()->GetSkillDataByID(SkillID))
-		{
-			CurrentSkillData = SkillData;
-			UE_LOG(LogTemp, Log, TEXT("현재 사용중인 스킬 저장 : %s"), *SkillData->SkillName);
-			
-			SkillComponent->ClientRequestUseSkill(SkillID);
+	if (!SkillComponent) return;
 
-			if(SkillData->SkillDuration > 0.0f)
-			{
-				// 애니메이션 인스턴스 설정
-				if (USKPlayerAnimInstance* AnimInstance = Cast<USKPlayerAnimInstance>(GetMesh()->GetAnimInstance()))
-				{
-					AnimInstance->SetSkillAnimationState(true, SkillData->bCanMoveWhileCasting, SkillData->MoveSkillBlendSpace);
-				}
-				
-				GetWorld()->GetTimerManager().SetTimer(
-					SkillEndTimer,
-					[this]() { EndSkillAction(); },
-					SkillData->SkillDuration,
-					false
-				);
-			}
+	if (CurrentSkillData.IsSet())
+	{
+		UE_LOG(LogTemp, Log, TEXT("스킬 실행: %s"), *CurrentSkillData->SkillName);
+		
+		SkillComponent->ClientRequestUseSkill(SkillID);
+
+		if (CurrentSkillData->SkillMontage)
+		{
+			PlayAnimMontage(CurrentSkillData->SkillMontage);
+		}
+
+		if (CurrentSkillData->SkillDuration > 0.0f)
+		{
+			GetWorld()->GetTimerManager().SetTimer(
+				SkillEndTimer,
+				[this]() { EndSkillAction(); },
+				CurrentSkillData->SkillDuration,
+				false
+			);
 		}
 	}
 }
@@ -144,4 +141,9 @@ void ASKBaseCharacter::HandleSkillNotify(FName EffectName, FName SoundName, FNam
 TOptional<FSKSkillData> ASKBaseCharacter::GetCurrentSkillData() const
 {
 	return CurrentSkillData;
+}
+
+void ASKBaseCharacter::SetSkillData(FSKSkillData SkillData)
+{
+	CurrentSkillData = SkillData;
 }

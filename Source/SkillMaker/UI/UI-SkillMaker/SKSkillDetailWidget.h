@@ -16,7 +16,7 @@ class UScrollBox;
 class UWidgetSwitcher;
 class USKStatusEffectCardWidget;
 class USKEffectSoundSelectionWidget;
-// class USKAnimNotifyConfigWidget;
+class USKAnimNotifySelectionWidget;
 
 UCLASS()
 class SKILLMAKER_API USKSkillDetailWidget : public UUserWidget
@@ -58,7 +58,7 @@ protected:
 	TObjectPtr<UButton> EffectSoundTabButton;
 
 	UPROPERTY(meta = (BindWidget))
-	TObjectPtr<UButton> ProjectileTabButton;
+	TObjectPtr<UButton> AnimNotifyTabButton;
 	
 	/** 스킬 타입 선택 */
 	UPROPERTY(meta = (BindWidget))
@@ -79,13 +79,13 @@ protected:
 	UPROPERTY(meta = (BindWidget))
 	TObjectPtr<USKEffectSoundSelectionWidget> EffectSoundSelectionWidget;
 
-	// /** 애님 노티파이 설정 위젯 */
-	// UPROPERTY(meta = (BindWidget))
-	// TObjectPtr<USKAnimNotifyConfigWidget> AnimNotifyConfigWidget;
-	
-	/** 투사체 위치 조정 버튼 */
+	/** 애님 노티파이 선택 위젯 */
 	UPROPERTY(meta = (BindWidget))
-	TObjectPtr<UButton> AdjustProjectilePositionButton;
+	TObjectPtr<USKAnimNotifySelectionWidget> AnimNotifySelectionWidget;
+	
+	// /** 투사체 위치 조정 버튼 */
+	// UPROPERTY(meta = (BindWidget))
+	// TObjectPtr<UButton> AdjustProjectilePositionButton;
 
 	/** 최소 사거리 슬라이더 */
 	UPROPERTY(meta = (BindWidget))
@@ -95,9 +95,13 @@ protected:
 	UPROPERTY(meta = (BindWidget))
 	TObjectPtr<USlider> MaxRangeSlider;
 
-	/** 저장 버튼 */
+	/** 미리보기 버튼 */
 	UPROPERTY(meta = (BindWidget))
-	TObjectPtr<UButton> SaveSkillButton;
+	TObjectPtr<UButton> PreviewSkillButton;
+
+	// /** 저장 버튼 */
+	// UPROPERTY(meta = (BindWidget))
+	// TObjectPtr<UButton> SaveSkillButton;
 
 private:
 	/** UI 요소 -> HUD 데이터로 초기화 */
@@ -106,6 +110,9 @@ private:
 	/** 상태이상 선택 창 초기화 */
 	void PopulateStatusEffectList();
 
+	/** 애님 노티파이 리스트 초기화 */
+	void PopulateAnimNotifyList();
+	
 	/** UI 값 변경 -> HUD 데이터에 저장 */
 	void SaveSkillDetails();
 
@@ -145,6 +152,14 @@ private:
 	/** 이펙트 & 사운드 선택 완료 이벤트 */
 	UFUNCTION()
 	void OnEffectSoundSelected(const FEffectSoundData& SelectedEffectSound);
+
+	/** 애님 노티파이 선택 이벤트 */
+	UFUNCTION()
+	void OnNotifySelected(FName NotifyName, float NotifyTime);
+	
+	/** 미리보기 실행 */
+	UFUNCTION()
+	void OnPreviewSkillClicked();
 	
 	/** 저장 버튼 클릭 */
 	UFUNCTION()

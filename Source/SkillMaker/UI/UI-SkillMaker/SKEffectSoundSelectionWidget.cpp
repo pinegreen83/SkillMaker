@@ -56,12 +56,16 @@ void USKEffectSoundSelectionWidget::PopulateEffectList()
 	
 	FAssetRegistryModule& AssetRegistry = FModuleManager::LoadModuleChecked<FAssetRegistryModule>("AssetRegistry");
 	TArray<FAssetData> EffectAssets;
-	FTopLevelAssetPath EffectAssetPath(TEXT("/Script/Engine.Actor"));
-	AssetRegistry.Get().GetAssetsByClass(EffectAssetPath, EffectAssets);
-	
+
+	FName EffectAssetPath = FName(TEXT("/Game/SkillMaker/Skill/Effect"));
+	AssetRegistry.Get().GetAssetsByPath(EffectAssetPath, EffectAssets, true); 
+
 	for (const FAssetData& AssetData : EffectAssets)
 	{
-		TSubclassOf<AActor> EffectClass = Cast<UClass>(AssetData.GetAsset());
+		UBlueprint* Blueprint = Cast<UBlueprint>(AssetData.GetAsset());
+		if (!Blueprint) continue;
+
+		TSubclassOf<AActor> EffectClass = TSubclassOf<AActor>(Blueprint->GeneratedClass);
 		if (!EffectClass) continue;
 	
 		USKEffectCardWidget* EffectCard = CreateWidget<USKEffectCardWidget>(this, WBP_EffectCard);
@@ -82,12 +86,14 @@ void USKEffectSoundSelectionWidget::PopulateSoundList()
 	
 	FAssetRegistryModule& AssetRegistry = FModuleManager::LoadModuleChecked<FAssetRegistryModule>("AssetRegistry");
 	TArray<FAssetData> SoundAssets;
-	FTopLevelAssetPath SoundAssetPath(TEXT("/Script/Engine.SoundBase"));
-	AssetRegistry.Get().GetAssetsByClass(SoundAssetPath, SoundAssets);
-	
+
+	FName SoundAssetPath = FName(TEXT("/Game/SkillMaker/Skill/Sound"));
+	AssetRegistry.Get().GetAssetsByPath(SoundAssetPath, SoundAssets, true);
+
 	for (const FAssetData& AssetData : SoundAssets)
 	{
 		USoundBase* Sound = Cast<USoundBase>(AssetData.GetAsset());
+
 		if (!Sound) continue;
 	
 		USKSoundCardWidget* SoundCard = CreateWidget<USKSoundCardWidget>(this, WBP_SoundCard);
@@ -132,6 +138,11 @@ void USKEffectSoundSelectionWidget::OnEffectSelected(TSubclassOf<AActor> Selecte
 	if (SelectedEffectPreview)
 	{
 		SelectedEffectPreview->SetVisibility(ESlateVisibility::Visible);
+	}
+
+	if(SelectedEffectText)
+	{
+		SelectedEffectText->SetText(FText::FromString(SelectedEffect->GetName()));
 	}
 }
 

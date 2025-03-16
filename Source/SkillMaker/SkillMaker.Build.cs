@@ -6,6 +6,7 @@ public class SkillMaker : ModuleRules
 {
 	public SkillMaker(ReadOnlyTargetRules Target) : base(Target)
 	{
+		PrivateDependencyModuleNames.AddRange(new string[] { "Niagara" });
 		PCHUsage = PCHUsageMode.UseExplicitOrSharedPCHs;
 
 		PublicIncludePaths.AddRange(new string[] { "SkillMaker" });

@@ -10,6 +10,7 @@
 #include "Components/WidgetSwitcher.h"
 #include "Components/EditableTextBox.h"
 #include "SKSkillMakerHUD.h"
+#include "Skill/SKSkillManager.h"
 
 bool USKSkillMakerMainWidget::Initialize()
 {
@@ -205,23 +206,33 @@ void USKSkillMakerMainWidget::OnFinishSkillEditing()
 
 void USKSkillMakerMainWidget::OnSaveSkillClicked()
 {
-	if(!HUDReference)
+	if (!HUDReference)
 	{
 		UE_LOG(LogTemp, Error, TEXT("HUD 레퍼런스 없음."));
 		return;
 	}
-	
+
 	FString SkillName = SkillNameInput->GetText().ToString();
-	if(SkillName.IsEmpty())
+	if (SkillName.IsEmpty())
 	{
 		UE_LOG(LogTemp, Error, TEXT("스킬 이름이 입력되지 않음."));
 		return;
 	}
 
 	HUDReference->SetSkillName(SkillName);
-	UE_LOG(LogTemp, Log, TEXT("스킬 %s 저장 완료"), *SkillName);
-	HUDReference->LogCurrentSkillData();
+	UE_LOG(LogTemp, Log, TEXT("스킬 %s 저장 진행 중..."), *SkillName);
+
+	FSKSkillData SkillData = HUDReference->GetCurrentSkillData();
+
+	if (SkillData.SkillID.IsNone())
+	{
+		SkillData.SkillID = FName(*FGuid::NewGuid().ToString());
+		UE_LOG(LogTemp, Log, TEXT("새로운 SkillID 생성: %s"), *SkillData.SkillID.ToString());
+	}
+	USKSkillManager::Get()->SaveSkillData(SkillData);
 	
+	UE_LOG(LogTemp, Log, TEXT("스킬 저장 완료: %s"), *SkillName);
+
 	SetSkillMakerState(ESKSkillMakerState::ChooseAction, false);
 }
 

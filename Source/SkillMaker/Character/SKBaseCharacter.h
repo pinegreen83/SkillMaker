@@ -51,4 +51,5 @@ public:
 	FTimerHandle SkillEndTimer;
 
 	TOptional<FSKSkillData> GetCurrentSkillData() const;
+	void SetSkillData(FSKSkillData SkillData);
 };
