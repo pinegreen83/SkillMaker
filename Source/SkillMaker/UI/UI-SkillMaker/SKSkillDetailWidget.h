@@ -12,9 +12,11 @@ class UComboBoxString;
 class UEditableTextBox;
 class USlider;
 class UButton;
-class UVerticalBox;
+class UScrollBox;
 class UWidgetSwitcher;
 class USKStatusEffectCardWidget;
+class USKEffectSoundSelectionWidget;
+// class USKAnimNotifyConfigWidget;
 
 UCLASS()
 class SKILLMAKER_API USKSkillDetailWidget : public UUserWidget
@@ -68,8 +70,19 @@ protected:
 
 	/** 상태 이상 효과 리스트 */
 	UPROPERTY(meta = (BindWidget))
-	TObjectPtr<UVerticalBox> StatusEffectListBox;
+	TObjectPtr<UScrollBox> StatusEffectListBox;
+	
+	UPROPERTY(EditAnywhere, Category = "UI")
+	TSubclassOf<USKStatusEffectCardWidget> WBP_SKStatusEffectCard;
 
+	/** 이펙트 & 사운드 선택 위젯 */
+	UPROPERTY(meta = (BindWidget))
+	TObjectPtr<USKEffectSoundSelectionWidget> EffectSoundSelectionWidget;
+
+	// /** 애님 노티파이 설정 위젯 */
+	// UPROPERTY(meta = (BindWidget))
+	// TObjectPtr<USKAnimNotifyConfigWidget> AnimNotifyConfigWidget;
+	
 	/** 투사체 위치 조정 버튼 */
 	UPROPERTY(meta = (BindWidget))
 	TObjectPtr<UButton> AdjustProjectilePositionButton;
@@ -107,7 +120,7 @@ private:
 	void OnEffectSoundTabClicked();
 
 	UFUNCTION()
-	void OnProjectileTabClicked();
+	void OnAnimNotifyTabClicked();
 
 	/** 콤보박스 선택 시(스킬 타입 변경) */
 	UFUNCTION()
@@ -128,6 +141,10 @@ private:
 	/** 최대 사거리 변경 */
 	UFUNCTION()
 	void OnMaxRangeChanged(float Value);
+
+	/** 이펙트 & 사운드 선택 완료 이벤트 */
+	UFUNCTION()
+	void OnEffectSoundSelected(const FEffectSoundData& SelectedEffectSound);
 	
 	/** 저장 버튼 클릭 */
 	UFUNCTION()

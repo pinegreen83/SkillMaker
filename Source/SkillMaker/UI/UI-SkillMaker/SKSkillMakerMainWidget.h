@@ -36,7 +36,7 @@ public:
 
 	void SetHUDReference(ASKSkillMakerHUD* InHUD);
 	
-	void SetSkillMakerState(ESKSkillMakerState NewState);
+	void SetSkillMakerState(ESKSkillMakerState NewState, bool bFromBackNavigation);
 
 	void GoBackToPreviousState();
 
@@ -53,6 +53,9 @@ protected:
 	UPROPERTY(meta = (BindWidget))
 	TObjectPtr<USKAnimationSelectionWidget> AnimationSelectionWidget;
 
+	UPROPERTY(meta = (BindWidget))
+	TObjectPtr<USKSkillDetailWidget> SkillDetailWidget;
+	
 	UPROPERTY(meta = (BindWidget))
 	TObjectPtr<UButton> ModifySkillButton;
 

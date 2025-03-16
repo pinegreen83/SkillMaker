@@ -4,6 +4,7 @@
 #include "SKSkillMakerMainWidget.h"
 #include "SKSkillSelectionWidget.h"
 #include "SKAnimationSelectionWidget.h"
+#include "SKSkillDetailWidget.h"
 #include "SKWeaponSelectionWidget.h"
 #include "Components/Button.h"
 #include "Components/WidgetSwitcher.h"
@@ -16,6 +17,8 @@ bool USKSkillMakerMainWidget::Initialize()
 	if(!Success)
 		return false;
 
+	PreviousStates.Add(ESKSkillMakerState::ChooseAction);
+	
 	if(SkillSelectionWidget)
 	{
 		SkillSelectionWidget->OnSkillSelected.AddDynamic(this, &USKSkillMakerMainWidget::OnSkillSelected);
@@ -29,6 +32,11 @@ bool USKSkillMakerMainWidget::Initialize()
 	if(AnimationSelectionWidget)
 	{
 		AnimationSelectionWidget->OnAnimationSelected.AddDynamic(this, &USKSkillMakerMainWidget::OnAnimationSelected);
+	}
+
+	if(SkillDetailWidget)
+	{
+		SkillDetailWidget->SetHUDReference(HUDReference);
 	}
 	
 	if(ModifySkillButton)
@@ -62,9 +70,14 @@ bool USKSkillMakerMainWidget::Initialize()
 void USKSkillMakerMainWidget::SetHUDReference(ASKSkillMakerHUD* InHUD)
 {
 	HUDReference = InHUD;
+
+	if(SkillDetailWidget)
+	{
+		SkillDetailWidget->SetHUDReference(HUDReference);
+	}
 }
 
-void USKSkillMakerMainWidget::SetSkillMakerState(ESKSkillMakerState NewState)
+void USKSkillMakerMainWidget::SetSkillMakerState(ESKSkillMakerState NewState, bool bFromBackNavigation)
 {
 	if(!SkillMakerSwitcher)
 	{
@@ -79,23 +92,23 @@ void USKSkillMakerMainWidget::SetSkillMakerState(ESKSkillMakerState NewState)
 		return;
 	}
 
-	if(CurrentState != NewState)
+	if (!bFromBackNavigation && CurrentState != NewState && NewState != ESKSkillMakerState::ChooseAction)
 	{
 		PreviousStates.Add(CurrentState);
 	}
 
+	if (BackButton)
+	{
+		BackButton->SetVisibility(PreviousStates.Num() > 1 ? ESlateVisibility::Visible : ESlateVisibility::Collapsed);
+	}
+
 	CurrentState = NewState;
 	SkillMakerSwitcher->SetActiveWidgetIndex(static_cast<int32>(NewState));
-
-	if(BackButton)
-	{
-		BackButton->SetVisibility(PreviousStates.Num() > 0 ? ESlateVisibility::Visible : ESlateVisibility::Collapsed);
-	}
 }
 
 void USKSkillMakerMainWidget::GoBackToPreviousState()
 {
-	if(PreviousStates.Num() == 0)
+	if(PreviousStates.Num() <= 1)
 	{
 		UE_LOG(LogTemp, Error, TEXT("이전 상태가 없으므로 뒤로 갈 수 없음."));
 		return;
@@ -104,19 +117,19 @@ void USKSkillMakerMainWidget::GoBackToPreviousState()
 	ESKSkillMakerState PreviousState = PreviousStates.Last();
 	PreviousStates.RemoveAt(PreviousStates.Num() - 1);
 
-	SetSkillMakerState(PreviousState);
+	SetSkillMakerState(PreviousState, true);
 }
 
 void USKSkillMakerMainWidget::OnModifySkillClicked()
 {
 	UE_LOG(LogTemp, Log, TEXT("기존 스킬 수정 시작"));
-	SetSkillMakerState(ESKSkillMakerState::ChooseSkill);
+	SetSkillMakerState(ESKSkillMakerState::ChooseSkill, false);
 }
 
 void USKSkillMakerMainWidget::OnCreateSkillClicked()
 {
 	UE_LOG(LogTemp, Log, TEXT("새로운 스킬 생성 시작"));
-	SetSkillMakerState(ESKSkillMakerState::ChooseWeapon);
+	SetSkillMakerState(ESKSkillMakerState::ChooseWeapon, false);
 }
 
 void USKSkillMakerMainWidget::OnSkillSelected(const FName& SkillID)
@@ -129,7 +142,13 @@ void USKSkillMakerMainWidget::OnSkillSelected(const FName& SkillID)
 	
 	HUDReference->LoadSkillForEditing(SkillID);
 	UE_LOG(LogTemp, Log, TEXT("스킬 선택됨 : %s"), *SkillID.ToString());
-	SetSkillMakerState(ESKSkillMakerState::ChooseWeapon);
+
+	if(SkillDetailWidget)
+	{
+		SkillDetailWidget->InitializeFromSkillData();
+	}
+
+	SetSkillMakerState(ESKSkillMakerState::SkillDetail, false);
 }
 
 void USKSkillMakerMainWidget::OnWeaponSelected(const FString& WeaponType)
@@ -150,7 +169,7 @@ void USKSkillMakerMainWidget::OnWeaponSelected(const FString& WeaponType)
 		AnimationSelectionWidget->LoadAnimationsForWeapon(WeaponType);
 	}
 
-	SetSkillMakerState(ESKSkillMakerState::ChooseAnimation);
+	SetSkillMakerState(ESKSkillMakerState::ChooseAnimation, false);
 }
 
 void USKSkillMakerMainWidget::OnAnimationSelected(UAnimMontage* AnimationMontage)
@@ -166,7 +185,12 @@ void USKSkillMakerMainWidget::OnAnimationSelected(UAnimMontage* AnimationMontage
 		HUDReference->SetSkillMontage(AnimationMontage);
 		UE_LOG(LogTemp, Log, TEXT("선택된 애니메이션 : %s"), *AnimationMontage->GetName());
 
-		SetSkillMakerState(ESKSkillMakerState::SkillDetail);
+		if(SkillDetailWidget)
+		{
+			SkillDetailWidget->InitializeFromSkillData();
+		}
+		
+		SetSkillMakerState(ESKSkillMakerState::SkillDetail, false);
 	}
 	else
 	{
@@ -176,7 +200,7 @@ void USKSkillMakerMainWidget::OnAnimationSelected(UAnimMontage* AnimationMontage
 
 void USKSkillMakerMainWidget::OnFinishSkillEditing()
 {
-	SetSkillMakerState(ESKSkillMakerState::SaveSkill);
+	SetSkillMakerState(ESKSkillMakerState::SaveSkill, false);
 }
 
 void USKSkillMakerMainWidget::OnSaveSkillClicked()
@@ -198,7 +222,7 @@ void USKSkillMakerMainWidget::OnSaveSkillClicked()
 	UE_LOG(LogTemp, Log, TEXT("스킬 %s 저장 완료"), *SkillName);
 	HUDReference->LogCurrentSkillData();
 	
-	SetSkillMakerState(ESKSkillMakerState::ChooseAction);
+	SetSkillMakerState(ESKSkillMakerState::ChooseAction, false);
 }
 
 void USKSkillMakerMainWidget::OnBackClicked()

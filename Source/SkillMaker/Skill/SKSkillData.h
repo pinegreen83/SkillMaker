@@ -2,6 +2,7 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
+#include "Sound/SoundBase.h"
 #include "SKSkillData.generated.h"
 
 UENUM(BlueprintType)
@@ -13,7 +14,7 @@ enum class ESkillType : uint8
 };
 
 USTRUCT(BlueprintType)
-struct FSoundEffectMapping
+struct FEffectSoundData
 {
 	GENERATED_BODY()
 
@@ -22,11 +23,19 @@ public:
 	FName NotifyName;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Effect")
-	FName EffectOrSound;
+	TSubclassOf<AActor> EffectClass;
 
-	FSoundEffectMapping() :
-		NotifyName(NAME_None),
-		EffectOrSound(NAME_None)
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Effect")
+	USoundBase* Sound;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Effect")
+	FVector EffectRelativeLocation;
+
+	FEffectSoundData()
+	: NotifyName(NAME_None)
+	, EffectClass(nullptr)
+	, Sound(nullptr)
+	, EffectRelativeLocation(FVector::ZeroVector)
 	{}
 };
 
@@ -137,7 +146,7 @@ public:
 	bool bAffectAllies;
 	
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Skill")
-	TArray<FSoundEffectMapping> EffectSoundMappings;
+	FEffectSoundData EffectSoundData;
 	
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Skill")
 	float MinRange;
@@ -155,7 +164,8 @@ public:
 	TSubclassOf<AActor> ProjectileClass;
 
 	FSKSkillData()
-		: SkillDuration(0.0f)
+		: SkillType(ESkillType::Attack)
+		, SkillDuration(0.0f)
 		, bCanMoveWhileCasting(false)
 		, CooldownTime(0.0f)
 		, Cost(0.0f)

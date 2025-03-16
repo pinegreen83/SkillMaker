@@ -8,7 +8,7 @@
 
 ASKSkillMakerHUD::ASKSkillMakerHUD()
 {
-	static ConstructorHelpers::FClassFinder<USKSkillMakerMainWidget> MainWidgetClassFinder(TEXT("/Game/SkillMaker/UI/WBP_SkillMakerMain.WBP_SkillMakerMain_C"));
+	static ConstructorHelpers::FClassFinder<USKSkillMakerMainWidget> MainWidgetClassFinder(TEXT("/Game/SkillMaker/UI/WBP_SKSkillMakerMain.WBP_SKSkillMakerMain_C"));
 	if(MainWidgetClassFinder.Class)
 	{
 		MainWidgetClass = MainWidgetClassFinder.Class;

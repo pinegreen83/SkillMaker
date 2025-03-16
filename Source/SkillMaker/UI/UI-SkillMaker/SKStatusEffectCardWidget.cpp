@@ -5,6 +5,7 @@
 #include "Components/CheckBox.h"
 #include "Components/EditableTextBox.h"
 #include "Components/Slider.h"
+#include "Components/TextBlock.h"
 
 bool USKStatusEffectCardWidget::Initialize()
 {
@@ -25,48 +26,118 @@ bool USKStatusEffectCardWidget::Initialize()
 		DOTSlider->OnValueChanged.AddDynamic(this, &USKStatusEffectCardWidget::OnDOTValueChanged);
 	}
 
+	if(StackCountTextBox)
+	{
+		StackCountTextBox->OnTextCommitted.AddDynamic(this, &USKStatusEffectCardWidget::OnStackCountChanged);
+	}
+	
 	return true;
 }
 
 void USKStatusEffectCardWidget::InitializeEffectEntry(EStatusEffect EffectType)
 {
 	CurrentEffectType = EffectType;
+	CurrentDuration = 0.0f;
+	CurrentDOT = 0.0f;
+	CurrentStackCount = 1;
 
-	if (EffectCheckBox)
+	if(EffectNameText)
+	{
+		FString EffectName;
+		switch(EffectType)
+		{
+		case EStatusEffect::Stun:	EffectName = "Stun"; break;
+		case EStatusEffect::Slow:	EffectName = "Slow"; break;
+		case EStatusEffect::Burn:	EffectName = "Burn"; break;
+		case EStatusEffect::Freeze:	EffectName = "Freeze"; break;
+		case EStatusEffect::Poison:	EffectName = "Poison"; break;
+		case EStatusEffect::Shock:	EffectName = "Shock"; break;
+		case EStatusEffect::Curse:	EffectName = "Curse"; break;
+		default:										break;
+		}
+		EffectNameText->SetText(FText::FromString(EffectName));
+	}
+	
+	if(EffectCheckBox)
 	{
 		EffectCheckBox->SetIsChecked(false);
 	}
 
-	if (DurationTextBox)
+	if(DurationTextBox)
 	{
 		DurationTextBox->SetText(FText::AsNumber(0.0f));
 	}
 
-	if (DOTSlider)
+	if(DOTSlider)
 	{
 		DOTSlider->SetValue(0.0f);
 	}
+
+	if(StackCountTextBox)
+	{
+		StackCountTextBox->SetText(FText::AsNumber(1));
+	}
+}
+
+void USKStatusEffectCardWidget::SetStatusEffectData(const FStatusEffectData& EffectData)
+{
+	CurrentDuration = EffectData.Duration;
+	CurrentDOT = EffectData.DamagePerSecond;
+	CurrentStackCount = EffectData.MaxStack;
+
+	if(EffectCheckBox)
+	{
+		EffectCheckBox->SetIsChecked(true);
+	}
+
+	if(DurationTextBox)
+	{
+		DurationTextBox->SetText(FText::AsNumber(EffectData.Duration));
+	}
+
+	if(DOTSlider)
+	{
+		DOTSlider->SetValue(EffectData.DamagePerSecond);
+	}
+
+	if(StackCountTextBox)
+	{
+		StackCountTextBox->SetText(FText::AsNumber(EffectData.MaxStack));
+	}
+}
+
+FStatusEffectData USKStatusEffectCardWidget::GetCurrentStatusEffectData() const
+{
+	FStatusEffectData EffectData;
+	EffectData.EffectType = CurrentEffectType;
+	EffectData.Duration = CurrentDuration;
+	EffectData.DamagePerSecond = CurrentDOT;
+	EffectData.MaxStack = CurrentStackCount;
+
+	return EffectData;
 }
 
 void USKStatusEffectCardWidget::OnEffectToggled(bool bIsChecked)
 {
-	float Duration = FCString::Atof(*DurationTextBox->GetText().ToString());
-	float DOT = DOTSlider->GetValue();
-	OnStatusEffectToggled.Broadcast(CurrentEffectType, bIsChecked, Duration, DOT);
+	if (!bIsChecked)
+	{
+		CurrentDuration = 0.0f;
+		CurrentDOT = 0.0f;
+		CurrentStackCount = 1;
+	}
 }
 
 void USKStatusEffectCardWidget::OnDurationChanged(const FText& Text, ETextCommit::Type CommitMethod)
 {
-	if (EffectCheckBox && EffectCheckBox->IsChecked())
-	{
-		OnEffectToggled(true);
-	}
+	CurrentDuration = FCString::Atof(*Text.ToString());
 }
 
 void USKStatusEffectCardWidget::OnDOTValueChanged(float Value)
 {
-	if (EffectCheckBox && EffectCheckBox->IsChecked())
-	{
-		OnEffectToggled(true);
-	}
+	CurrentDOT = Value;
+}
+
+void USKStatusEffectCardWidget::OnStackCountChanged(const FText& Text, ETextCommit::Type CommitMethod)
+{
+	CurrentStackCount = FCString::Atoi(*Text.ToString());
 }

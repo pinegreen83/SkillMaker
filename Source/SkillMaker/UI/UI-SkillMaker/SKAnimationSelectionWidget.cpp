@@ -28,9 +28,7 @@ void USKAnimationSelectionWidget::CreateAnimationCard(UAnimMontage* Montage, UTe
 	if(!AnimationGridPanel || !WBP_SKAnimationCard)
 		return;
 
-	USKAnimationCardWidget* AnimationCard = CreateWidget<USKAnimationCardWidget>(GetWorld(), WBP_SKAnimationCard);
-
-	if(AnimationCard)
+	if(USKAnimationCardWidget* AnimationCard = CreateWidget<USKAnimationCardWidget>(GetWorld(), WBP_SKAnimationCard))
 	{
 		AnimationCard->SetAnimationInfo(Montage, Thumbnail);
 		AnimationCard->OnAnimationCardSelected.AddDynamic(this, &USKAnimationSelectionWidget::AnimationSelected);

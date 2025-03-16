@@ -9,6 +9,11 @@
 ASKSkillMakerGameMode::ASKSkillMakerGameMode()
 {
 	HUDClass = ASKSkillMakerHUD::StaticClass();
+	static ConstructorHelpers::FClassFinder<APlayerController> PlayerControllerClassRef(TEXT("/Script/Engine.Blueprint'/Game/SkillMaker/Blueprint/BP_SKSkillMakerController.BP_SKSkillMakerController_C'"));
+	if(PlayerControllerClassRef.Class)
+	{
+		PlayerControllerClass = PlayerControllerClassRef.Class;
+	}
 }
 
 void ASKSkillMakerGameMode::BeginPlay()

@@ -2,6 +2,7 @@
 
 
 #include "SKSkillDetailWidget.h"
+#include "SKEffectSoundSelectionWidget.h"
 #include "Components/ComboBoxString.h"
 #include "Components/EditableTextBox.h"
 #include "Components/Slider.h"
@@ -9,7 +10,8 @@
 #include "Components/WidgetSwitcher.h"
 #include "SKSkillMakerHUD.h"
 #include "SKStatusEffectCardWidget.h"
-#include "Components/VerticalBox.h"
+#include "Components/ScrollBox.h"
+#include "GameFramework/Actor.h"
 
 void USKSkillDetailWidget::NativeConstruct()
 {
@@ -32,7 +34,7 @@ void USKSkillDetailWidget::NativeConstruct()
 
 	if (ProjectileTabButton)
 	{
-		ProjectileTabButton->OnClicked.AddDynamic(this, &USKSkillDetailWidget::OnProjectileTabClicked);
+		ProjectileTabButton->OnClicked.AddDynamic(this, &USKSkillDetailWidget::OnAnimNotifyTabClicked);
 	}
 	
 	if(SkillTypeComboBox)
@@ -60,6 +62,11 @@ void USKSkillDetailWidget::NativeConstruct()
 		SaveSkillButton->OnClicked.AddDynamic(this, &USKSkillDetailWidget::OnSaveSkillClicked);
 	}
 
+	if (EffectSoundSelectionWidget)
+	{
+		EffectSoundSelectionWidget->OnEffectSoundSelected.AddDynamic(this, &USKSkillDetailWidget::OnEffectSoundSelected);
+	}
+	
 	PopulateStatusEffectList();
 }
 
@@ -87,7 +94,7 @@ void USKSkillDetailWidget::OnEffectSoundTabClicked()
 	}
 }
 
-void USKSkillDetailWidget::OnProjectileTabClicked()
+void USKSkillDetailWidget::OnAnimNotifyTabClicked()
 {
 	if (TabSwitcher)
 	{
@@ -164,14 +171,30 @@ void USKSkillDetailWidget::PopulateStatusEffectList()
 
 	StatusEffectListBox->ClearChildren();
 	
-	for (EStatusEffect EffectType : TEnumRange<EStatusEffect>())
+	TMap<EStatusEffect, FStatusEffectData> ExistingEffects;
+	if(EditingSkillData.IsSet())
 	{
-		USKStatusEffectCardWidget* StatusEffectWidget = CreateWidget<USKStatusEffectCardWidget>(this, USKStatusEffectCardWidget::StaticClass());
-		if (StatusEffectWidget)
+		for(const FStatusEffectData& Effect : EditingSkillData->StatusEffects)
 		{
-			StatusEffectWidget->InitializeEffectEntry(EffectType);
-			StatusEffectWidget->OnStatusEffectToggled.AddDynamic(this, &USKSkillDetailWidget::OnStatusEffectToggled);
-			StatusEffectListBox->AddChild(StatusEffectWidget);
+			ExistingEffects.Add(Effect.EffectType, Effect);
+		}
+	}
+
+	for(EStatusEffect EffectType : TEnumRange<EStatusEffect>())
+	{
+		if(EffectType == EStatusEffect::None) continue;
+		
+		USKStatusEffectCardWidget* StatusEffectCard = CreateWidget<USKStatusEffectCardWidget>(this, WBP_SKStatusEffectCard);
+		if(StatusEffectCard)
+		{
+			StatusEffectCard->InitializeEffectEntry(EffectType);
+
+			if(ExistingEffects.Contains(EffectType))
+			{
+				StatusEffectCard->SetStatusEffectData(ExistingEffects[EffectType]);
+			}
+
+			StatusEffectListBox->AddChild(StatusEffectCard);
 		}
 	}
 }
@@ -300,6 +323,18 @@ void USKSkillDetailWidget::OnMaxRangeChanged(float Value)
 		return;
 
 	EditingSkillData->MaxRange = Value;
+}
+
+void USKSkillDetailWidget::OnEffectSoundSelected(const FEffectSoundData& SelectedEffectSound)
+{
+	if (!EditingSkillData.IsSet()) return;
+
+	EditingSkillData->EffectSoundData = SelectedEffectSound;
+
+	UE_LOG(LogTemp, Log, TEXT("이펙트 및 사운드 추가됨: %s (이펙트: %s, 사운드: %s)"), 
+		*SelectedEffectSound.NotifyName.ToString(),
+		SelectedEffectSound.EffectClass ? *SelectedEffectSound.EffectClass->GetName() : TEXT("None"),
+		SelectedEffectSound.Sound ? *SelectedEffectSound.Sound->GetName() : TEXT("None"));
 }
 
 void USKSkillDetailWidget::OnSaveSkillClicked()
