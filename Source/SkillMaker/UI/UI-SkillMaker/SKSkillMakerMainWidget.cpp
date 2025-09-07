@@ -25,6 +25,7 @@ bool USKSkillMakerMainWidget::Initialize()
 	
 	if(SkillSelectionWidget)
 	{
+		SkillSelectionWidget->SetMainWidget(this);
 		SkillSelectionWidget->OnSkillSelected.AddDynamic(this, &USKSkillMakerMainWidget::OnSkillSelected);
 	}
 	
@@ -133,6 +134,7 @@ void USKSkillMakerMainWidget::GoBackToPreviousState()
 void USKSkillMakerMainWidget::OnModifySkillClicked()
 {
 	SK_LOG(LogSkillMaker, Log, TEXT("기존 스킬 수정 시작"));
+	OnSkillDataFromTable.Broadcast();
 	SetSkillMakerState(ESKSkillMakerState::ChooseSkill, false);
 }
 

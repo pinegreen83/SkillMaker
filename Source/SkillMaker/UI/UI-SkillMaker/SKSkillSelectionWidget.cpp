@@ -6,12 +6,30 @@
 #include "Skill/SKSkillData.h"
 #include "Skill/SKSkillManager.h"
 #include "SKSkillCardWidget.h"
+#include "SKSkillMakerMainWidget.h"
 #include "Logging/SKLogSkillMakerMacro.h"
 
 void USKSkillSelectionWidget::NativeConstruct()
 {
 	Super::NativeConstruct();
+
 	LoadSkillList();
+}
+
+void USKSkillSelectionWidget::SetMainWidget(USKSkillMakerMainWidget* Main)
+{
+	SK_LOG(LogSkillMaker, Log, TEXT("Begin"));
+	
+	MainWidget = Main;
+	
+	if (MainWidget)
+	{
+		MainWidget->OnSkillDataFromTable.AddDynamic(this, &USKSkillSelectionWidget::LoadSkillList);
+	}
+	else
+	{
+		SK_LOG(LogSkillMaker, Log, TEXT("No MainWidget"));
+	}
 }
 
 void USKSkillSelectionWidget::LoadSkillList()

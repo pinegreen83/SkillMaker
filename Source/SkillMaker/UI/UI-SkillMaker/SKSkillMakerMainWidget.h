@@ -6,6 +6,8 @@
 #include "Blueprint/UserWidget.h"
 #include "SKSkillMakerMainWidget.generated.h"
 
+DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnSkillDataFromTable);
+
 class UWidgetSwitcher;
 class UButton;
 class USKWeaponSelectionWidget;
@@ -40,6 +42,9 @@ public:
 
 	void GoBackToPreviousState();
 
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Skill")
+	FOnSkillDataFromTable OnSkillDataFromTable;
+	
 protected:
 	UPROPERTY(meta = (BindWidget))
 	TObjectPtr<UWidgetSwitcher> SkillMakerSwitcher;
