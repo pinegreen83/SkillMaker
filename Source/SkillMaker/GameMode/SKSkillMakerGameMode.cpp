@@ -4,6 +4,7 @@
 #include "SKSkillMakerGameMode.h"
 #include "UI/UI-SkillMaker/SKSkillMakerHUD.h"
 #include "Data/SKDataManager.h"
+#include "Logging/SKLogSkillMakerMacro.h"
 #include "Skill/SKSkillManager.h"
 
 ASKSkillMakerGameMode::ASKSkillMakerGameMode()
@@ -29,20 +30,20 @@ void ASKSkillMakerGameMode::BeginPlay()
 
 		if (USKDataManager::Get()->WeaponDataTable)
 		{
-			UE_LOG(LogTemp, Warning, TEXT("WeaponDataTable 초기화 완료."));
+			SK_LOG(LogSkillMaker, Warning, TEXT("WeaponDataTable 초기화 완료."));
 		}
 		else
 		{
-			UE_LOG(LogTemp, Error, TEXT("WeaponDataTable 초기화 실패!"));
+			SK_LOG(LogSkillMaker, Error, TEXT("WeaponDataTable 초기화 실패!"));
 		}
 
 		if (USKDataManager::Get()->AnimationDataTable)
 		{
-			UE_LOG(LogTemp, Warning, TEXT("AnimationDataTable 초기화 완료."));
+			SK_LOG(LogSkillMaker, Warning, TEXT("AnimationDataTable 초기화 완료."));
 		}
 		else
 		{
-			UE_LOG(LogTemp, Error, TEXT("AnimationDataTable 초기화 실패!"));
+			SK_LOG(LogSkillMaker, Error, TEXT("AnimationDataTable 초기화 실패!"));
 		}
 	}
 
@@ -54,11 +55,11 @@ void ASKSkillMakerGameMode::BeginPlay()
 
 		if(USKSkillManager::Get()->SkillDataTable)
 		{
-			UE_LOG(LogTemp, Warning, TEXT("SkillDataTable 초기화 완료."));
+			SK_LOG(LogSkillMaker, Warning, TEXT("SkillDataTable 초기화 완료."));
 		}
 		else
 		{
-			UE_LOG(LogTemp, Error, TEXT("SkillDataTable 초기화 실패!"));
+			SK_LOG(LogSkillMaker, Error, TEXT("SkillDataTable 초기화 실패!"));
 		}
 	}
 }

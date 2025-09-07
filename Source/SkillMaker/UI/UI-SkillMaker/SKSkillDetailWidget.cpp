@@ -13,6 +13,7 @@
 #include "SKStatusEffectCardWidget.h"
 #include "Components/ScrollBox.h"
 #include "GameFramework/Actor.h"
+#include "Logging/SKLogSkillMakerMacro.h"
 
 void USKSkillDetailWidget::NativeConstruct()
 {
@@ -227,7 +228,7 @@ void USKSkillDetailWidget::SaveSkillData()
 
 	HUDReference->SetCurrentSkillData(EditingSkillData.GetValue());
 
-	UE_LOG(LogTemp, Log, TEXT("스킬 데이터 저장 완료."));
+	SK_LOG(LogSkillMaker, Log, TEXT("스킬 데이터 저장 완료."));
 }
 
 void USKSkillDetailWidget::SaveSkillDetails()
@@ -325,7 +326,7 @@ void USKSkillDetailWidget::OnStatusEffectToggled(EStatusEffect EffectType, bool 
 		});
 	}
 
-	UE_LOG(LogTemp, Log, TEXT("상태 이상 업데이트됨. 총 개수: %d"), SkillData.StatusEffects.Num());
+	SK_LOG(LogSkillMaker, Log, TEXT("상태 이상 업데이트됨. 총 개수: %d"), SkillData.StatusEffects.Num());
 }
 
 void USKSkillDetailWidget::OnMinRangeChanged(float Value)
@@ -350,7 +351,7 @@ void USKSkillDetailWidget::OnEffectSoundSelected(const FEffectSoundData& Selecte
 
 	EditingSkillData->EffectSoundData = SelectedEffectSound;
 
-	UE_LOG(LogTemp, Log, TEXT("이펙트 및 사운드 추가됨: %s (이펙트: %s, 사운드: %s)"), 
+	SK_LOG(LogSkillMaker, Log, TEXT("이펙트 및 사운드 추가됨: %s (이펙트: %s, 사운드: %s)"), 
 		*SelectedEffectSound.NotifyName.ToString(),
 		SelectedEffectSound.EffectClass ? *SelectedEffectSound.EffectClass->GetName() : TEXT("None"),
 		SelectedEffectSound.Sound ? *SelectedEffectSound.Sound->GetName() : TEXT("None"));
@@ -363,7 +364,7 @@ void USKSkillDetailWidget::OnNotifySelected(FName NotifyName, float NotifyTime)
 	EditingSkillData->EffectSoundData.NotifyName = NotifyName;
 	EditingSkillData->EffectSoundData.NotifyTime = NotifyTime;
 	
-	UE_LOG(LogTemp, Log, TEXT("애님 노티파이 선택됨: %s"), *NotifyName.ToString());
+	SK_LOG(LogSkillMaker, Log, TEXT("애님 노티파이 선택됨: %s"), *NotifyName.ToString());
 }
 
 void USKSkillDetailWidget::OnPreviewSkillClicked()
@@ -371,7 +372,7 @@ void USKSkillDetailWidget::OnPreviewSkillClicked()
 	if (!HUDReference || !EditingSkillData.IsSet()) return;
 	
 	HUDReference->PreviewSkillEffect(EditingSkillData.GetValue());
-	UE_LOG(LogTemp, Log, TEXT("스킬 미리보기 실행"));
+	SK_LOG(LogSkillMaker, Log, TEXT("스킬 미리보기 실행"));
 }
 
 void USKSkillDetailWidget::OnSaveSkillClicked()

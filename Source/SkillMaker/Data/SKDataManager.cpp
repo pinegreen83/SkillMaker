@@ -5,11 +5,14 @@
 #include "SKWeaponData.h"
 #include "SKAnimationData.h"
 #include "Engine/DataTable.h"
+#include "Logging/SKLogSkillMakerMacro.h"
 
 USKDataManager* USKDataManager::Instance = nullptr;
 
 USKDataManager* USKDataManager::Get()
 {
+	SK_LOG(LogSkillMaker, Log, TEXT("Begin"));
+	
 	if(!Instance)
 	{
 		Instance = NewObject<USKDataManager>();
@@ -20,6 +23,8 @@ USKDataManager* USKDataManager::Get()
 
 TArray<FSKWeaponData> USKDataManager::GetWeaponList()
 {
+	SK_LOG(LogSkillMaker, Log, TEXT("Begin"));
+	
 	TArray<FSKWeaponData> WeaponList;
 
 	if(!WeaponDataTable)
@@ -39,11 +44,13 @@ TArray<FSKWeaponData> USKDataManager::GetWeaponList()
 
 TArray<FSKAnimationData> USKDataManager::GetAnimationsForWeapon(const FString& WeaponType)
 {
+	SK_LOG(LogSkillMaker, Log, TEXT("Begin"));
+	
 	TArray<FSKAnimationData> AnimationList;
 
 	if(!AnimationDataTable)
 	{
-		UE_LOG(LogTemp, Error, TEXT("AnimationDataTable이 nullptr임."));
+		SK_LOG(LogSkillMaker, Error, TEXT("AnimationDataTable이 nullptr임."));
 		return AnimationList;	
 	}
 

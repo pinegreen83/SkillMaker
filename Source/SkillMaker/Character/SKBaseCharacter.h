@@ -7,8 +7,6 @@
 #include "Skill/SKSkillData.h"
 #include "SKBaseCharacter.generated.h"
 
-DECLARE_LOG_CATEGORY_EXTERN(LogSKCharacter, Log, All);
-
 class USKSkillComponent;
 class USKCombatComponent;
 
@@ -51,5 +49,6 @@ public:
 	FTimerHandle SkillEndTimer;
 
 	TOptional<FSKSkillData> GetCurrentSkillData() const;
+	
 	void SetSkillData(FSKSkillData SkillData);
 };

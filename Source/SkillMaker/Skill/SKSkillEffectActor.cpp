@@ -49,10 +49,13 @@ void ASKSkillEffectActor::Tick(float DeltaTime)
 
 void ASKSkillEffectActor::PlayEffect(ACharacter* InSkillOwner, const FSKSkillData& SkillData)
 {
+	UE_LOG(LogTemp, Log, TEXT("ASKSkillEffectActor::PlayEffect() Begin"));
+	
 	SkillOwner = InSkillOwner;
 
 	if (SkillData.EffectSoundData.Sound && SkillOwner)
 	{
+		UE_LOG(LogTemp, Log, TEXT("ASKSkillEffectActor::PlayEffect() Play Sound"));
 		UGameplayStatics::PlaySoundAtLocation(this, SkillData.EffectSoundData.Sound, SkillOwner->GetActorLocation());
 	}
 	

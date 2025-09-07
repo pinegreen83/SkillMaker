@@ -3,14 +3,17 @@
 
 #include "SKSkillAnimNotify_HitCheck.h"
 #include "Character/SKBaseCharacter.h"
-#include "Kismet/KismetSystemLibrary.h"
+#include "Logging/SKLogSkillMakerMacro.h"
 
 void USKSkillAnimNotify_HitCheck::Notify(USkeletalMeshComponent* MeshComp, UAnimSequenceBase* Animation,
-	const FAnimNotifyEventReference& EventReference)
+                                         const FAnimNotifyEventReference& EventReference)
 {
+	SK_LOG(LogSkillMaker, Log, TEXT("Begin"));
+	
 	Super::Notify(MeshComp, Animation, EventReference);
 	
 	if (!MeshComp) return;
+	
 	AActor* Owner = MeshComp->GetOwner();
 	ASKBaseCharacter* Character = Cast<ASKBaseCharacter>(Owner);
 	if (!Character) return;
@@ -26,6 +29,8 @@ void USKSkillAnimNotify_HitCheck::Notify(USkeletalMeshComponent* MeshComp, UAnim
 
 void USKSkillAnimNotify_HitCheck::PerformMeleeAttack(ASKBaseCharacter* Character, const FSKSkillData& SkillData)
 {
+	SK_LOG(LogSkillMaker, Log, TEXT("Begin"));
+	
 	if (!Character) return;
 
 	FVector Start = Character->GetActorLocation();
@@ -41,6 +46,7 @@ void USKSkillAnimNotify_HitCheck::PerformMeleeAttack(ASKBaseCharacter* Character
 		ECC_Pawn, CollisionShape
 	);
 
+	SK_LOG(LogSkillMaker, Log, TEXT("AttackHit"));
 	if (bHit)
 	{
 		for (const FHitResult& Hit : HitResults)
@@ -49,7 +55,7 @@ void USKSkillAnimNotify_HitCheck::PerformMeleeAttack(ASKBaseCharacter* Character
 			if (TargetCharacter && TargetCharacter != Character)
 			{
 				// TODO: 피해 적용 로직 추가
-				UE_LOG(LogTemp, Log, TEXT("근접 타격 성공: %s"), *TargetCharacter->GetName());
+				SK_LOG(LogSkillMaker, Log, TEXT("근접 타격 성공: %s"), *TargetCharacter->GetName());
 			}
 		}
 	}

@@ -4,6 +4,8 @@
 #include "SKPlayerCharacter.h"
 #include "GameFramework/SpringArmComponent.h"
 #include "Camera/CameraComponent.h"
+#include "Logging/SKLogSkillMakerMacro.h"
+#include "Skill/SKSkillManager.h"
 
 ASKPlayerCharacter::ASKPlayerCharacter()
 {
@@ -15,6 +17,20 @@ ASKPlayerCharacter::ASKPlayerCharacter()
 	FollowCamera = CreateDefaultSubobject<UCameraComponent>(TEXT("FollowCamera"));
 	FollowCamera->SetupAttachment(CameraBoom, USpringArmComponent::SocketName);
 	FollowCamera->bUsePawnControlRotation = false;
+}
+
+void ASKPlayerCharacter::BeginPlay()
+{
+	SK_LOG(LogSkillMaker, Log, TEXT("ASKPlayerCharacter::BeginPlay() Begin"));
+	
+	Super::BeginPlay();
+
+	CurrentSkillData = USKSkillManager::Get()->GetSkillDataByID("Test1");
+
+	if (CurrentSkillData.IsSet())
+	{
+		SK_LOG(LogSkillMaker, Log, TEXT("스킬 세팅 완료."));
+	}
 }
 
 void ASKPlayerCharacter::Move(const FInputActionValue& Value)
@@ -54,5 +70,7 @@ void ASKPlayerCharacter::Look(const FInputActionValue& Value)
 
 void ASKPlayerCharacter::UseSkill(const FName& SkillID)
 {
+	SK_LOG(LogSkillMaker, Log, TEXT("Begin"));
+	
 	Super::UseSkill(SkillID);
 }

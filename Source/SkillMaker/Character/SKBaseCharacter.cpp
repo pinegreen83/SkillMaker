@@ -7,10 +7,9 @@
 #include "Animation/AnimInstance.h"
 #include "Animation/SKPlayerAnimInstance.h"
 #include "Combat/SKCombatComponent.h"
+#include "Logging/SKLogSkillMakerMacro.h"
 #include "Skill/SKSkillComponent.h"
 #include "Skill/SKSkillManager.h"
-
-DEFINE_LOG_CATEGORY(LogSKCharacter);
 
 // Sets default values
 ASKBaseCharacter::ASKBaseCharacter()
@@ -67,11 +66,13 @@ void ASKBaseCharacter::BeginPlay()
 
 void ASKBaseCharacter::UseSkill(const FName& SkillID)
 {
+	SK_LOG(LogSkillMaker, Log, TEXT("Begin"));
+	
 	if (!SkillComponent) return;
 
 	if (CurrentSkillData.IsSet())
 	{
-		UE_LOG(LogTemp, Log, TEXT("스킬 실행: %s"), *CurrentSkillData->SkillName);
+		SK_LOG(LogSkillMaker, Log, TEXT("스킬 실행: %s"), *CurrentSkillData->SkillName);
 		
 		SkillComponent->ClientRequestUseSkill(SkillID);
 
@@ -94,6 +95,8 @@ void ASKBaseCharacter::UseSkill(const FName& SkillID)
 
 void ASKBaseCharacter::EndSkillAction()
 {
+	SK_LOG(LogSkillMaker, Log, TEXT("End"));
+	
 	// 애니메이션 상태 해제 (이동 가능하도록 설정)
 	if (USKPlayerAnimInstance* AnimInstance = Cast<USKPlayerAnimInstance>(GetMesh()->GetAnimInstance()))
 	{
@@ -105,12 +108,12 @@ void ASKBaseCharacter::EndSkillAction()
 	// 타이머 해제
 	GetWorld()->GetTimerManager().ClearTimer(SkillEndTimer);
 	
-	UE_LOG(LogTemp, Log, TEXT("스킬 종료 - CurrentSkillData 초기화 완료."));
+	SK_LOG(LogSkillMaker, Log, TEXT("스킬 종료 - CurrentSkillData 초기화 완료."));
 }
 
 void ASKBaseCharacter::HandleSkillNotify(FName EffectName, FName SoundName, FName StatusEffect, bool bTriggerHitDetection)
 {
-	UE_LOG(LogTemp, Log, TEXT("애님 노티파이 처리: 이펙트 %s, 사운드 %s, 상태이상 %s, 타격판정 %s"),
+	SK_LOG(LogSkillMaker, Log, TEXT("애님 노티파이 처리: 이펙트 %s, 사운드 %s, 상태이상 %s, 타격판정 %s"),
 		*EffectName.ToString(), *SoundName.ToString(), *StatusEffect.ToString(), bTriggerHitDetection ? TEXT("True") : TEXT("False"));
 
 	// 이펙트 실행

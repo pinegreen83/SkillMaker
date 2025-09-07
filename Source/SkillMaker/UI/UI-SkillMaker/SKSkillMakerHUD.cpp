@@ -10,6 +10,7 @@
 #include "Character/SKPreviewCharacter.h"
 #include "GameFramework/PlayerController.h"
 #include "Kismet/GameplayStatics.h"
+#include "Logging/SKLogSkillMakerMacro.h"
 
 ASKSkillMakerHUD::ASKSkillMakerHUD()
 {
@@ -42,27 +43,31 @@ void ASKSkillMakerHUD::BeginPlay()
 
 	if (PreviewCharacter)
 	{
-		UE_LOG(LogTemp, Log, TEXT("프리뷰 캐릭터 생성 완료."));
+		SK_LOG(LogSkillMaker, Log, TEXT("프리뷰 캐릭터 생성 완료."));
 	}
 }
 
 void ASKSkillMakerHUD::InitializeNewSkill()
 {
+	SK_LOG(LogSkillMaker, Log, TEXT("Begin"));
+	
 	CurrentEditingSkill = FSKSkillData();
 	CurrentEditingSkill.SkillName = TEXT("NewSkill");
-	UE_LOG(LogTemp, Log, TEXT("새로운 스킬 초기화됨."));
+	SK_LOG(LogSkillMaker, Log, TEXT("새로운 스킬 초기화됨."));
 }
 
 void ASKSkillMakerHUD::LoadSkillForEditing(const FName& SkillID)
 {
+	SK_LOG(LogSkillMaker, Log, TEXT("Begin"));
+	
 	if(TOptional<FSKSkillData> SkillData = USKSkillManager::Get()->GetSkillDataByID(SkillID))
 	{
 		CurrentEditingSkill = SkillData.GetValue();
-		UE_LOG(LogTemp, Log, TEXT("스킬 로드 완료 : %s"), *CurrentEditingSkill.SkillName);
+		SK_LOG(LogSkillMaker, Log, TEXT("스킬 로드 완료 : %s"), *CurrentEditingSkill.SkillName);
 	}
 	else
 	{
-		UE_LOG(LogTemp, Log, TEXT("스킬을 찾을 수 없음. : %s"), *SkillID.ToString());
+		SK_LOG(LogSkillMaker, Log, TEXT("스킬을 찾을 수 없음. : %s"), *SkillID.ToString());
 	}
 }
 
@@ -79,13 +84,13 @@ void ASKSkillMakerHUD::SetCurrentSkillData(FSKSkillData SkillData)
 void ASKSkillMakerHUD::SetSkillName(const FString& SkillName)
 {
 	CurrentEditingSkill.SkillName = SkillName;
-	UE_LOG(LogTemp, Log, TEXT("스킬 이름 설정 : %s"), *SkillName);
+	SK_LOG(LogSkillMaker, Log, TEXT("스킬 이름 설정 : %s"), *SkillName);
 }
 
 void ASKSkillMakerHUD::SetSkillWeaponType(const FString& WeaponType)
 {
 	CurrentEditingSkill.WeaponType = WeaponType;
-	UE_LOG(LogTemp, Log, TEXT("무기 타입 설정 : %s"), *WeaponType);
+	SK_LOG(LogSkillMaker, Log, TEXT("무기 타입 설정 : %s"), *WeaponType);
 }
 
 void ASKSkillMakerHUD::SetSkillMontage(UAnimMontage* Montage)
@@ -94,15 +99,15 @@ void ASKSkillMakerHUD::SetSkillMontage(UAnimMontage* Montage)
 	{
 		CurrentEditingSkill.SkillMontage = Montage;
 		CurrentEditingSkill.SkillDuration = Montage->GetPlayLength();
-		UE_LOG(LogTemp, Log, TEXT("애니메이션 설정 : %s (길이 : %f)"), *Montage->GetName(), CurrentEditingSkill.SkillDuration);
+		SK_LOG(LogSkillMaker, Log, TEXT("애니메이션 설정 : %s (길이 : %f)"), *Montage->GetName(), CurrentEditingSkill.SkillDuration);
 	}
 }
 
 void ASKSkillMakerHUD::LogCurrentSkillData()
 {
-	UE_LOG(LogTemp, Log, TEXT("==== 현재 스킬 데이터 ===="));
-	UE_LOG(LogTemp, Log, TEXT("스킬 이름 : %s"), *CurrentEditingSkill.SkillName);
-	UE_LOG(LogTemp, Log, TEXT("무기 타입 : %s"), *CurrentEditingSkill.WeaponType);
+	SK_LOG(LogSkillMaker, Log, TEXT("==== 현재 스킬 데이터 ===="));
+	SK_LOG(LogSkillMaker, Log, TEXT("스킬 이름 : %s"), *CurrentEditingSkill.SkillName);
+	SK_LOG(LogSkillMaker, Log, TEXT("무기 타입 : %s"), *CurrentEditingSkill.WeaponType);
 	if(CurrentEditingSkill.SkillMontage)
 	{
 		UE_LOG(LogTemp, Log, TEXT("애니메이션 : %s, 길이 : %f"), *CurrentEditingSkill.SkillMontage->GetName(), CurrentEditingSkill.SkillDuration);
@@ -112,14 +117,16 @@ void ASKSkillMakerHUD::LogCurrentSkillData()
 	// {
 	// 	UE_LOG(LogTemp, Log, TEXT(" - %s -> %s"), *Effect.ToString(), *CurrentEditingSkill.EffectSoundMapping[Effect].ToString());
 	// }
-	UE_LOG(LogTemp, Log, TEXT("=================="));
+	SK_LOG(LogSkillMaker, Log, TEXT("=================="));
 }
 
 void ASKSkillMakerHUD::PreviewSkillEffect(const FSKSkillData& SkillData)
 {
+	SK_LOG(LogSkillMaker, Log, TEXT("Begin"));
+	
 	if (!PreviewCharacter || !SkillData.SkillMontage)
 	{
-		UE_LOG(LogTemp, Warning, TEXT("미리보기 실행 불가: 캐릭터 또는 애니메이션 없음."));
+		SK_LOG(LogSkillMaker, Warning, TEXT("미리보기 실행 불가: 캐릭터 또는 애니메이션 없음."));
 		return;
 	}
 

@@ -7,6 +7,7 @@
 #include "Animation/AnimMontage.h"
 #include "Animation/AnimNotifies/AnimNotify.h"
 #include "Components/TextBlock.h"
+#include "Logging/SKLogSkillMakerMacro.h"
 
 bool USKAnimNotifySelectionWidget::Initialize()
 {
@@ -18,13 +19,15 @@ bool USKAnimNotifySelectionWidget::Initialize()
 
 void USKAnimNotifySelectionWidget::PopulateNotifyList(UAnimMontage* Montage)
 {
+	SK_LOG(LogSkillMaker, Log, TEXT("Begin"));
+	
 	if (!NotifyListBox || !Montage || !WBP_AnimNotifyCard)
 	{
-		UE_LOG(LogTemp, Error, TEXT("몽타주 없음."));
+		SK_LOG(LogSkillMaker, Error, TEXT("몽타주 없음."));
 		return;
 	}
 
-	UE_LOG(LogTemp, Log, TEXT("몽타주 이름 : %s"), *Montage->GetName());
+	SK_LOG(LogSkillMaker, Log, TEXT("몽타주 이름 : %s"), *Montage->GetName());
 
 	NotifyListBox->ClearChildren();
 	AvailableNotifies.Empty();
@@ -38,7 +41,7 @@ void USKAnimNotifySelectionWidget::PopulateNotifyList(UAnimMontage* Montage)
 		FString IndexedNotifyName = FString::Printf(TEXT("%d번 - %s (%.2f초)"), NotifyIndex, *NotifyName.ToString(), NotifyTime);
 		NotifyIndex++;
 
-		UE_LOG(LogTemp, Log, TEXT("애님 노티파이: %s"), *IndexedNotifyName);
+		SK_LOG(LogSkillMaker, Log, TEXT("애님 노티파이: %s"), *IndexedNotifyName);
 
 		USKAnimNotifyCardWidget* NotifyButton = CreateWidget<USKAnimNotifyCardWidget>(this, WBP_AnimNotifyCard);
 		if (!NotifyButton) continue;
@@ -52,6 +55,8 @@ void USKAnimNotifySelectionWidget::PopulateNotifyList(UAnimMontage* Montage)
 
 void USKAnimNotifySelectionWidget::ExtractNotifiesFromMontage(UAnimMontage* Montage)
 {
+	SK_LOG(LogSkillMaker, Log, TEXT("Begin"));
+	
 	if (!Montage) return;
 
 	for (const FAnimNotifyEvent& NotifyEvent : Montage->Notifies)
@@ -70,5 +75,5 @@ void USKAnimNotifySelectionWidget::OnNotifyButtonSelected(FName NotifyName, floa
 
 	SelectedNotifyText->SetText(FText::FromString(FString::Printf(TEXT("%s (%.2f초)"), *NotifyName.ToString(), NotifyTime)));
 	OnAnimNotifySelected.Broadcast(SelectedNotify, SelectedNotifyTime);  // NotifyTime 추가
-	UE_LOG(LogTemp, Log, TEXT("애님 노티파이 선택됨: %s (%.2f초)"), *NotifyName.ToString(), NotifyTime);
+	SK_LOG(LogSkillMaker, Log, TEXT("애님 노티파이 선택됨: %s (%.2f초)"), *NotifyName.ToString(), NotifyTime);
 }

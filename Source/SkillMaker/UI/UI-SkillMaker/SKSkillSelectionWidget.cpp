@@ -6,6 +6,7 @@
 #include "Skill/SKSkillData.h"
 #include "Skill/SKSkillManager.h"
 #include "SKSkillCardWidget.h"
+#include "Logging/SKLogSkillMakerMacro.h"
 
 void USKSkillSelectionWidget::NativeConstruct()
 {
@@ -15,14 +16,14 @@ void USKSkillSelectionWidget::NativeConstruct()
 
 void USKSkillSelectionWidget::LoadSkillList()
 {
-	UE_LOG(LogTemp, Log, TEXT("스킬 목록을 불러옵니다."));
+	SK_LOG(LogSkillMaker, Log, TEXT("스킬 목록을 불러옵니다."));
 
 	SkillList = USKSkillManager::Get()->GetSkillList();
 
 	int32 index = 0;
 	for(const auto& Skill : SkillList)
 	{
-		UE_LOG(LogTemp, Log, TEXT("스킬 로드 : %s"), *Skill.SkillName);
+		SK_LOG(LogSkillMaker, Log, TEXT("스킬 로드 : %s"), *Skill.SkillName);
 
 		CreateSkillCard(Skill.SkillID, Skill.SkillName, nullptr, index);
 		index++;
@@ -44,7 +45,7 @@ void USKSkillSelectionWidget::CreateSkillCard(const FName& SkillID, const FStrin
 
 void USKSkillSelectionWidget::SelectSkill(const FName& SkillID)
 {
-	UE_LOG(LogTemp, Log, TEXT("선택된 스킬 : %s"), *SkillID.ToString());
+	SK_LOG(LogSkillMaker, Log, TEXT("선택된 스킬 : %s"), *SkillID.ToString());
 
 	OnSkillSelected.Broadcast(SkillID);
 }

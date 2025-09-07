@@ -10,10 +10,13 @@
 #include "Components/WidgetSwitcher.h"
 #include "Components/EditableTextBox.h"
 #include "SKSkillMakerHUD.h"
+#include "Logging/SKLogSkillMakerMacro.h"
 #include "Skill/SKSkillManager.h"
 
 bool USKSkillMakerMainWidget::Initialize()
 {
+	SK_LOG(LogSkillMaker, Log, TEXT("Begin"));
+	
 	bool Success = Super::Initialize();
 	if(!Success)
 		return false;
@@ -70,6 +73,8 @@ bool USKSkillMakerMainWidget::Initialize()
 
 void USKSkillMakerMainWidget::SetHUDReference(ASKSkillMakerHUD* InHUD)
 {
+	SK_LOG(LogSkillMaker, Log, TEXT("Begin"));
+	
 	HUDReference = InHUD;
 
 	if(SkillDetailWidget)
@@ -80,15 +85,17 @@ void USKSkillMakerMainWidget::SetHUDReference(ASKSkillMakerHUD* InHUD)
 
 void USKSkillMakerMainWidget::SetSkillMakerState(ESKSkillMakerState NewState, bool bFromBackNavigation)
 {
+	SK_LOG(LogSkillMaker, Log, TEXT("Begin"));
+	
 	if(!SkillMakerSwitcher)
 	{
-		UE_LOG(LogTemp, Error, TEXT("WidgetSwitcher가 nullptr"));
+		SK_LOG(LogSkillMaker, Error, TEXT("WidgetSwitcher가 nullptr"));
 		return;
 	}
 
 	if (static_cast<int32>(NewState) >= SkillMakerSwitcher->GetNumWidgets())
 	{
-		UE_LOG(LogTemp, Error, TEXT("잘못된 WidgetSwitcher 인덱스 NewState : %d, 총 위젯 개수 : %d"),
+		SK_LOG(LogSkillMaker, Error, TEXT("잘못된 WidgetSwitcher 인덱스 NewState : %d, 총 위젯 개수 : %d"),
 			   static_cast<int32>(NewState), SkillMakerSwitcher->GetNumWidgets());
 		return;
 	}
@@ -109,9 +116,11 @@ void USKSkillMakerMainWidget::SetSkillMakerState(ESKSkillMakerState NewState, bo
 
 void USKSkillMakerMainWidget::GoBackToPreviousState()
 {
+	SK_LOG(LogSkillMaker, Log, TEXT("Begin"));
+	
 	if(PreviousStates.Num() <= 1)
 	{
-		UE_LOG(LogTemp, Error, TEXT("이전 상태가 없으므로 뒤로 갈 수 없음."));
+		SK_LOG(LogSkillMaker, Error, TEXT("이전 상태가 없으므로 뒤로 갈 수 없음."));
 		return;
 	}
 
@@ -123,26 +132,28 @@ void USKSkillMakerMainWidget::GoBackToPreviousState()
 
 void USKSkillMakerMainWidget::OnModifySkillClicked()
 {
-	UE_LOG(LogTemp, Log, TEXT("기존 스킬 수정 시작"));
+	SK_LOG(LogSkillMaker, Log, TEXT("기존 스킬 수정 시작"));
 	SetSkillMakerState(ESKSkillMakerState::ChooseSkill, false);
 }
 
 void USKSkillMakerMainWidget::OnCreateSkillClicked()
 {
-	UE_LOG(LogTemp, Log, TEXT("새로운 스킬 생성 시작"));
+	SK_LOG(LogSkillMaker, Log, TEXT("새로운 스킬 생성 시작"));
 	SetSkillMakerState(ESKSkillMakerState::ChooseWeapon, false);
 }
 
 void USKSkillMakerMainWidget::OnSkillSelected(const FName& SkillID)
 {
+	SK_LOG(LogSkillMaker, Log, TEXT("Begin"));
+	
 	if(!HUDReference)
 	{
-		UE_LOG(LogTemp, Error, TEXT("HUD 레퍼런스 없음."));
+		SK_LOG(LogSkillMaker, Error, TEXT("HUD 레퍼런스 없음."));
 		return;
 	}
 	
 	HUDReference->LoadSkillForEditing(SkillID);
-	UE_LOG(LogTemp, Log, TEXT("스킬 선택됨 : %s"), *SkillID.ToString());
+	SK_LOG(LogSkillMaker, Log, TEXT("스킬 선택됨 : %s"), *SkillID.ToString());
 
 	if(SkillDetailWidget)
 	{
@@ -154,14 +165,16 @@ void USKSkillMakerMainWidget::OnSkillSelected(const FName& SkillID)
 
 void USKSkillMakerMainWidget::OnWeaponSelected(const FString& WeaponType)
 {
+	SK_LOG(LogSkillMaker, Log, TEXT("Begin"));
+	
 	if(!HUDReference)
 	{
-		UE_LOG(LogTemp, Error, TEXT("HUD 레퍼런스 없음."));
+		SK_LOG(LogSkillMaker, Error, TEXT("HUD 레퍼런스 없음."));
 		return;
 	}
 	
 	SelectedWeaponType = WeaponType;
-	UE_LOG(LogTemp, Log, TEXT("선택된 무기 : %s"), *SelectedWeaponType);
+	SK_LOG(LogSkillMaker, Log, TEXT("선택된 무기 : %s"), *SelectedWeaponType);
 	
 	HUDReference->SetSkillWeaponType(WeaponType);
 	
@@ -175,16 +188,18 @@ void USKSkillMakerMainWidget::OnWeaponSelected(const FString& WeaponType)
 
 void USKSkillMakerMainWidget::OnAnimationSelected(UAnimMontage* AnimationMontage)
 {
+	SK_LOG(LogSkillMaker, Log, TEXT("Begin"));
+	
 	if(!HUDReference)
 	{
-		UE_LOG(LogTemp, Error, TEXT("HUD 레퍼런스 없음."));
+		SK_LOG(LogSkillMaker, Error, TEXT("HUD 레퍼런스 없음."));
 		return;
 	}
 
 	if(AnimationMontage)
 	{
 		HUDReference->SetSkillMontage(AnimationMontage);
-		UE_LOG(LogTemp, Log, TEXT("선택된 애니메이션 : %s"), *AnimationMontage->GetName());
+		SK_LOG(LogSkillMaker, Log, TEXT("선택된 애니메이션 : %s"), *AnimationMontage->GetName());
 
 		if(SkillDetailWidget)
 		{
@@ -195,43 +210,47 @@ void USKSkillMakerMainWidget::OnAnimationSelected(UAnimMontage* AnimationMontage
 	}
 	else
 	{
-		UE_LOG(LogTemp, Warning, TEXT("애니메이션이 선택되지 않음."));
+		SK_LOG(LogSkillMaker, Warning, TEXT("애니메이션이 선택되지 않음."));
 	}
 }
 
 void USKSkillMakerMainWidget::OnFinishSkillEditing()
 {
+	SK_LOG(LogSkillMaker, Log, TEXT("Begin"));
+	
 	SetSkillMakerState(ESKSkillMakerState::SaveSkill, false);
 }
 
 void USKSkillMakerMainWidget::OnSaveSkillClicked()
 {
+	SK_LOG(LogSkillMaker, Log, TEXT("Begin"));
+	
 	if (!HUDReference)
 	{
-		UE_LOG(LogTemp, Error, TEXT("HUD 레퍼런스 없음."));
+		SK_LOG(LogSkillMaker, Error, TEXT("HUD 레퍼런스 없음."));
 		return;
 	}
 
 	FString SkillName = SkillNameInput->GetText().ToString();
 	if (SkillName.IsEmpty())
 	{
-		UE_LOG(LogTemp, Error, TEXT("스킬 이름이 입력되지 않음."));
+		SK_LOG(LogSkillMaker, Error, TEXT("스킬 이름이 입력되지 않음."));
 		return;
 	}
 
 	HUDReference->SetSkillName(SkillName);
-	UE_LOG(LogTemp, Log, TEXT("스킬 %s 저장 진행 중..."), *SkillName);
+	SK_LOG(LogSkillMaker, Log, TEXT("스킬 %s 저장 진행 중..."), *SkillName);
 
 	FSKSkillData SkillData = HUDReference->GetCurrentSkillData();
 
 	if (SkillData.SkillID.IsNone())
 	{
 		SkillData.SkillID = FName(*FGuid::NewGuid().ToString());
-		UE_LOG(LogTemp, Log, TEXT("새로운 SkillID 생성: %s"), *SkillData.SkillID.ToString());
+		SK_LOG(LogSkillMaker, Log, TEXT("새로운 SkillID 생성: %s"), *SkillData.SkillID.ToString());
 	}
 	USKSkillManager::Get()->SaveSkillData(SkillData);
 	
-	UE_LOG(LogTemp, Log, TEXT("스킬 저장 완료: %s"), *SkillName);
+	SK_LOG(LogSkillMaker, Log, TEXT("스킬 저장 완료: %s"), *SkillName);
 
 	SetSkillMakerState(ESKSkillMakerState::ChooseAction, false);
 }

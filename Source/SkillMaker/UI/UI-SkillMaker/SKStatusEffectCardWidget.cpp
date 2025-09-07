@@ -6,9 +6,12 @@
 #include "Components/EditableTextBox.h"
 #include "Components/Slider.h"
 #include "Components/TextBlock.h"
+#include "Logging/SKLogSkillMakerMacro.h"
 
 bool USKStatusEffectCardWidget::Initialize()
 {
+	SK_LOG(LogSkillMaker, Log, TEXT("Begin"));
+	
 	Super::Initialize();
 
 	if (EffectCheckBox)

@@ -2,6 +2,7 @@
 
 
 #include "SKSkillTrainGameMode.h"
+#include "Logging/SKLogSkillMakerMacro.h"
 #include "Skill/SKSkillManager.h"
 
 ASKSkillTrainGameMode::ASKSkillTrainGameMode()
@@ -23,19 +24,17 @@ void ASKSkillTrainGameMode::BeginPlay()
 {
 	Super::BeginPlay();
 
-	USKSkillManager::Get();
-
 	if(USKSkillManager::Get())
 	{
 		USKSkillManager::Get()->SkillDataTable = LoadObject<UDataTable>(nullptr, TEXT("/Game/SkillMaker/Data/DT_SkillData.DT_SkillData"));
 
 		if(USKSkillManager::Get()->SkillDataTable)
 		{
-			UE_LOG(LogTemp, Warning, TEXT("SkillDataTable 초기화 완료."));
+			SK_LOG(LogSkillMaker, Log, TEXT("SkillDataTable 초기화 완료."));
 		}
 		else
 		{
-			UE_LOG(LogTemp, Error, TEXT("SkillDataTable 초기화 실패!"));
+			SK_LOG(LogSkillMaker, Error, TEXT("SkillDataTable 초기화 실패!"));
 		}
 	}
 }

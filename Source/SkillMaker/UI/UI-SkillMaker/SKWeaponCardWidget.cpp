@@ -5,9 +5,12 @@
 #include "Components/Button.h"
 #include "Components/Image.h"
 #include "Components/TextBlock.h"
+#include "Logging/SKLogSkillMakerMacro.h"
 
 bool USKWeaponCardWidget::Initialize()
 {
+	SK_LOG(LogSkillMaker, Log, TEXT("Begin"));
+	
 	bool Success = Super::Initialize();
 	if(!Success)
 		return false;

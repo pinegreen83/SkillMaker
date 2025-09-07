@@ -13,8 +13,10 @@ USKSkillComponent::USKSkillComponent()
 	SetIsReplicatedByDefault(true);
 }
 
+// Component에서 스킬 실행
 void USKSkillComponent::ClientRequestUseSkill(const FName& SkillID)
 {
+	// 서버에서 스킬 실행
 	if(GetOwner()->HasAuthority())
 	{
 		TOptional<FSKSkillData> SkillData = USKSkillManager::Get()->GetSkillDataByID(SkillID);
@@ -23,6 +25,7 @@ void USKSkillComponent::ClientRequestUseSkill(const FName& SkillID)
 			ExecuteSkill(SkillData.GetValue());
 		}
 	}
+	// 클라이언트에서 요청
 	else
 	{
 		ServerUseSkill(SkillID);

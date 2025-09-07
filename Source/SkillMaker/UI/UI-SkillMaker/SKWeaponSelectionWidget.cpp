@@ -6,6 +6,7 @@
 #include "Data/SKDataManager.h"
 #include "Data/SKWeaponData.h"
 #include "SKWeaponCardWidget.h"
+#include "Logging/SKLogSkillMakerMacro.h"
 
 void USKWeaponSelectionWidget::NativeConstruct()
 {
@@ -15,14 +16,14 @@ void USKWeaponSelectionWidget::NativeConstruct()
 
 void USKWeaponSelectionWidget::LoadWeaponList()
 {
-	UE_LOG(LogTemp, Log, TEXT("무기 목록을 불러옵니다."));
+	SK_LOG(LogSkillMaker, Log, TEXT("무기 목록을 불러옵니다."));
 
 	WeaponList = USKDataManager::Get()->GetWeaponList();
 
 	int32 index = 0;
 	for(const auto& Weapon : WeaponList)
 	{
-		UE_LOG(LogTemp, Log, TEXT("무기 로드 : %s"), *Weapon.WeaponName);
+		SK_LOG(LogSkillMaker, Log, TEXT("무기 로드 : %s"), *Weapon.WeaponName);
 		
 		CreateWeaponCard(Weapon.WeaponName, Weapon.WeaponThumbnail, Weapon.WeaponType, index);
 		index++;
@@ -31,6 +32,8 @@ void USKWeaponSelectionWidget::LoadWeaponList()
 
 void USKWeaponSelectionWidget::CreateWeaponCard(const FString& WeaponName, UTexture2D* Thumbnail, const FString& WeaponType, const int32 WeaponIndex)
 {
+	SK_LOG(LogSkillMaker, Log, TEXT("Begin"));
+	
 	if(!WeaponGridPanel || !WBP_SKWeaponCard)
 		return;
 
@@ -44,7 +47,7 @@ void USKWeaponSelectionWidget::CreateWeaponCard(const FString& WeaponName, UText
 
 void USKWeaponSelectionWidget::WeaponSelected(const FString& WeaponName)
 {
-	UE_LOG(LogTemp, Log, TEXT("선택된 무기 : %s"), *WeaponName);
+	SK_LOG(LogSkillMaker, Log, TEXT("선택된 무기 : %s"), *WeaponName);
 
 	OnWeaponSelected.Broadcast(WeaponName);
 }

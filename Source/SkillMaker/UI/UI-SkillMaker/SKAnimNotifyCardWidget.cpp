@@ -4,6 +4,7 @@
 #include "SKAnimNotifyCardWidget.h"
 #include "Components/Button.h"
 #include "Components/TextBlock.h"
+#include "Logging/SKLogSkillMakerMacro.h"
 
 bool USKAnimNotifyCardWidget::Initialize()
 {
@@ -32,5 +33,5 @@ void USKAnimNotifyCardWidget::SetNotifyInfo(FName InNotifyName, float InNotifyTi
 void USKAnimNotifyCardWidget::HandleButtonClicked()
 {
 	OnNotifySelected.Broadcast(NotifyName, NotifyTime);
-	UE_LOG(LogTemp, Log, TEXT("노티파이 버튼 클릭됨: %s, %f"), *NotifyName.ToString(), NotifyTime);
+	SK_LOG(LogSkillMaker, Log, TEXT("노티파이 버튼 클릭됨: %s, %f"), *NotifyName.ToString(), NotifyTime);
 }

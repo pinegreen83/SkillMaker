@@ -38,7 +38,16 @@ protected:
 
 	/** 스킬 사용 액션 */
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
-	TObjectPtr<UInputAction> SkillAction;
+	TObjectPtr<UInputAction> SkillActionQ;
+	
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
+	TObjectPtr<UInputAction> SkillActionE;
+	
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
+	TObjectPtr<UInputAction> SkillActionR;
+	
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
+	TObjectPtr<UInputAction> SkillActionF;
 
 	/** 캐릭터의 스킬 슬롯 */
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Skill")
@@ -46,7 +55,10 @@ protected:
 
 	/** 키-스킬 슬롯 매핑 */
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Skill")
-	TMap<FKey, int32> KeyToSkillSlotMap;
+	TMap<FKey, TObjectPtr<UInputAction>> KeyToSkillSlotMap;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Skill")
+	TMap<FKey, int32> KeyToSkillIndexMap;
 
 public:
 	/** 특정 슬롯의 스킬을 변경하는 함수 */
@@ -62,6 +74,9 @@ public:
 	void SetKeyForSkillSlot(FKey NewKey, int32 SlotIndex);
 
 protected:
+	/** 스킬 입력 세팅 */
+	void SkillInputSetup();
+	
 	/** 캐릭터 이동 */
 	void Move(const FInputActionValue& Value);
 

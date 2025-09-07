@@ -5,6 +5,7 @@
 #include "Components/Button.h"
 #include "Components/Image.h"
 #include "Components/TextBlock.h"
+#include "Logging/SKLogSkillMakerMacro.h"
 
 bool USKSkillCardWidget::Initialize()
 {
@@ -25,7 +26,7 @@ void USKSkillCardWidget::SetSkillInfo(const FName& SkillID, const FString& Skill
 	StoredSkillID = SkillID;
 	StoredSkillName = SkillName;
 
-	UE_LOG(LogTemp, Log, TEXT("스킬 아이디 : %s, 스킬 이름 : %s"), *SkillID.ToString(), *SkillName);
+	SK_LOG(LogSkillMaker, Log, TEXT("스킬 아이디 : %s, 스킬 이름 : %s"), *SkillID.ToString(), *SkillName);
 	
 	if(SkillNameText)
 	{

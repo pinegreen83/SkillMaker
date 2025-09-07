@@ -18,6 +18,8 @@ class SKILLMAKER_API ASKPlayerCharacter : public ASKBaseCharacter
 public:
 	ASKPlayerCharacter();
 
+	virtual void BeginPlay() override;
+
 protected:
 	/** Camera boom positioning the camera behind the character */
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera, meta = (AllowPrivateAccess = "true"))
