@@ -12,10 +12,10 @@ struct FSKWeaponData : public FTableRowBase
 public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	FString WeaponName;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	UTexture2D* WeaponThumbnail;
-
+	
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	FString WeaponType;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	TSoftObjectPtr<UTexture2D> WeaponThumbnail;
 };

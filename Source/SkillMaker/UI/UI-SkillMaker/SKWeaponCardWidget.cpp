@@ -23,16 +23,16 @@ bool USKWeaponCardWidget::Initialize()
 	return true;
 }
 
-void USKWeaponCardWidget::SetWeaponInfo(const FString& WeaponName, UTexture2D* Thumbnail, const FString& InWeaponType)
+void USKWeaponCardWidget::SetWeaponInfo(const FString& InWeaponName, const FString& InWeaponType, UTexture2D* InThumbnail)
 {
 	if(WeaponNameText)
 	{
-		WeaponNameText->SetText(FText::FromString(WeaponName));
+		WeaponNameText->SetText(FText::FromString(InWeaponName));
 	}
 
 	if(WeaponThumbnail)
 	{
-		WeaponThumbnail->SetBrushFromTexture(Thumbnail);
+		WeaponThumbnail->SetBrushFromTexture(InThumbnail);
 	}
 
 	WeaponType = InWeaponType;

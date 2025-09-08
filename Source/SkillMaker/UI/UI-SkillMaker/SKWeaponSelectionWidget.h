@@ -10,7 +10,7 @@ DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnWeaponSelected, const FString&, W
 
 class UUniformGridPanel;
 class USKWeaponCardWidget;
-struct FSKWeaponData;
+struct FSKWeaponRow;
 
 UCLASS()
 class SKILLMAKER_API USKWeaponSelectionWidget : public UUserWidget
@@ -27,16 +27,13 @@ public:
 	FOnWeaponSelected OnWeaponSelected;
 	
 protected:
-	UPROPERTY()
-	TArray<FSKWeaponData> WeaponList;
-	
 	UPROPERTY(meta = (BindWidget))
 	TObjectPtr<UUniformGridPanel> WeaponGridPanel;
 
 	UPROPERTY(EditAnywhere, Category = "UI")
 	TSubclassOf<USKWeaponCardWidget> WBP_SKWeaponCard;
 
-	void CreateWeaponCard(const FString& WeaponName, UTexture2D* Thumbnail, const FString& WeaponType, const int32 WeaponIndex);
+	void CreateWeaponCard(const FSKWeaponRow& WeaponRow, const int32 WeaponIndex);
 
 	UFUNCTION()
 	void WeaponSelected(const FString& WeaponName);

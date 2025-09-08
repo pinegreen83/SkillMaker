@@ -21,7 +21,7 @@ public:
 	virtual bool Initialize() override;
 
 	UFUNCTION(BlueprintCallable, Category = "Weapon Selection")
-	void SetWeaponInfo(const FString& WeaponName, UTexture2D* Thumbnail, const FString& InWeaponType);
+	void SetWeaponInfo(const FString& InWeaponName, const FString& InWeaponType, UTexture2D* Thumbnail);
 
 	UPROPERTY(BlueprintAssignable, Category = "Weapon Selection")
 	FOnWeaponCardSelected OnWeaponCardSelected;

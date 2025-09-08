@@ -27,6 +27,7 @@ void ASKSkillMakerGameMode::BeginPlay()
 	{
 		USKDataManager::Get()->WeaponDataTable = LoadObject<UDataTable>(nullptr, TEXT("/Game/SkillMaker/Data/DT_WeaponData.DT_WeaponData"));
 		USKDataManager::Get()->AnimationDataTable = LoadObject<UDataTable>(nullptr, TEXT("/Game/SkillMaker/Data/DT_AnimationData.DT_AnimationData"));
+		USKDataManager::Get()->ProjectileDataTable = LoadObject<UDataTable>(nullptr, TEXT("/Game/SkillMaker/Data/DT_ProjectileData.DT_ProjectileData"));
 
 		if (USKDataManager::Get()->WeaponDataTable)
 		{

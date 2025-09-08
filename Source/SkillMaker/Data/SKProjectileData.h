@@ -2,23 +2,24 @@
 
 #include "CoreMinimal.h"
 #include "Engine/DataTable.h"
-#include "SKAnimationData.generated.h"
+#include "Skill/SKSkillEffectActor.h"
+#include "SKProjectileData.generated.h"
 
 USTRUCT(BlueprintType)
-struct FSKAnimationData : public FTableRowBase
+struct FSKProjectileData : public FTableRowBase
 {
 	GENERATED_BODY()
 
 public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	FString AnimationName;
+	FString ProjectileName;
 	
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	FString WeaponType;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	TSoftObjectPtr<UTexture2D> AnimationThumbnail;
+	FString Description;
 	
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	TSoftObjectPtr<UAnimMontage> AnimationMontage;
+	TSoftObjectPtr<UTexture2D> Thumbnail;
+	
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	TSoftClassPtr<ASKSkillEffectActor> ProjectileActor;
 };

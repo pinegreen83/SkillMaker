@@ -63,11 +63,6 @@ void USKSkillDetailWidget::NativeConstruct()
 	{
 		PreviewSkillButton->OnClicked.AddDynamic(this, &USKSkillDetailWidget::OnPreviewSkillClicked);
 	}
-	
-	// if(SaveSkillButton)
-	// {
-	// 	SaveSkillButton->OnClicked.AddDynamic(this, &USKSkillDetailWidget::OnSaveSkillClicked);
-	// }
 
 	if (EffectSoundSelectionWidget)
 	{

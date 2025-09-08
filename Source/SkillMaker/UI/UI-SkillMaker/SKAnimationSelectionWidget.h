@@ -11,6 +11,7 @@ DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnAnimationSelected, UAnimMontage*,
 class UUniformGridPanel;
 class USKAnimationCardWidget;
 class UAnimMontage;
+struct FSKAnimationRow;
 
 UCLASS()
 class SKILLMAKER_API USKAnimationSelectionWidget : public UUserWidget
@@ -31,7 +32,7 @@ protected:
 	UPROPERTY(EditAnywhere, Category = "UI")
 	TSubclassOf<USKAnimationCardWidget> WBP_SKAnimationCard;
 
-	void CreateAnimationCard(UAnimMontage* Montage, UTexture2D* Thumbnail, const int32 AnimIndex);
+	void CreateAnimationCard(const FSKAnimationRow& AnimationRow, const int32 AnimIndex);
 
 	UFUNCTION()
 	void AnimationSelected(UAnimMontage* SelectedMontage);

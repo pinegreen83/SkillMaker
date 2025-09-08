@@ -8,7 +8,6 @@
 #include "Logging/SKLogSkillMakerMacro.h"
 
 USKDataManager* USKDataManager::Instance = nullptr;
-
 USKDataManager* USKDataManager::Get()
 {
 	SK_LOG(LogSkillMaker, Log, TEXT("Begin"));
@@ -21,32 +20,33 @@ USKDataManager* USKDataManager::Get()
 	return Instance;
 }
 
-TArray<FSKWeaponData> USKDataManager::GetWeaponList()
+TArray<FSKWeaponRow> USKDataManager::GetWeaponList()
 {
 	SK_LOG(LogSkillMaker, Log, TEXT("Begin"));
 	
-	TArray<FSKWeaponData> WeaponList;
+	TArray<FSKWeaponRow> WeaponList;
 
 	if(!WeaponDataTable)
 		return WeaponList;
 
 	TArray<FName> RowNames = WeaponDataTable->GetRowNames();
-	for(FName RowName : RowNames)
+	for(const FName RowName : RowNames)
 	{
-		if(FSKWeaponData* Row = WeaponDataTable->FindRow<FSKWeaponData>(RowName, TEXT("")))
+		if(const FSKWeaponData* WeaponData = WeaponDataTable->FindRow<FSKWeaponData>(RowName, TEXT("")))
 		{
-			WeaponList.Add(*Row);
+			FSKWeaponRow NowWeaponRow(RowName, *WeaponData);
+			WeaponList.Add(NowWeaponRow);
 		}
 	}
 
 	return WeaponList;
 }
 
-TArray<FSKAnimationData> USKDataManager::GetAnimationsForWeapon(const FString& WeaponType)
+TArray<FSKAnimationRow> USKDataManager::GetAnimationsForWeapon(const FString& WeaponType)
 {
 	SK_LOG(LogSkillMaker, Log, TEXT("Begin"));
 	
-	TArray<FSKAnimationData> AnimationList;
+	TArray<FSKAnimationRow> AnimationList;
 
 	if(!AnimationDataTable)
 	{
@@ -55,16 +55,42 @@ TArray<FSKAnimationData> USKDataManager::GetAnimationsForWeapon(const FString& W
 	}
 
 	TArray<FName> RowNames = AnimationDataTable->GetRowNames();
-	for(FName RowName : RowNames)
+	for(const FName RowName : RowNames)
 	{
-		if(FSKAnimationData* Row = AnimationDataTable->FindRow<FSKAnimationData>(RowName, TEXT("")))
+		if(const FSKAnimationData* AnimationData = AnimationDataTable->FindRow<FSKAnimationData>(RowName, TEXT("")))
 		{
-			if(Row->WeaponType == WeaponType)
+			if(AnimationData->WeaponType == WeaponType)
 			{
-				AnimationList.Add(*Row);
+				FSKAnimationRow NowAnimationRow(RowName, *AnimationData);
+				AnimationList.Add(NowAnimationRow);
 			}
 		}
 	}
 
 	return AnimationList;
+}
+
+TArray<FSKProjectileRow> USKDataManager::GetProjectileList()
+{
+	SK_LOG(LogSkillMaker, Log, TEXT("Begin"))
+
+	TArray<FSKProjectileRow> ProjectileList;
+
+	if(!ProjectileDataTable)
+	{
+		SK_LOG(LogSkillMaker, Log, TEXT("ProjectileDataTable이 nullptr임."));
+		return ProjectileList;
+	}
+
+	TArray<FName> RowNames = ProjectileDataTable->GetRowNames();
+	for(const FName RowName : RowNames)
+	{
+		if(const FSKProjectileData* ProjectileData = WeaponDataTable->FindRow<FSKProjectileData>(RowName, TEXT("")))
+		{
+			FSKProjectileRow NowProjectileRow(RowName, *ProjectileData);
+			ProjectileList.Add(NowProjectileRow);
+		}
+	}
+	
+	return ProjectileList;
 }
