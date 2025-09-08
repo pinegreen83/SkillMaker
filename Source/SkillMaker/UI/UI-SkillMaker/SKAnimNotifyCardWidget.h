@@ -9,7 +9,7 @@
 class UButton;
 class UTextBlock;
 
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnNotifyButtonClicked, FName, NotifyName, float, NotifyTime);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnNotifyButtonClicked, FName, NotifyName);
 
 UCLASS()
 class SKILLMAKER_API USKAnimNotifyCardWidget : public UUserWidget
@@ -20,7 +20,7 @@ public:
 	virtual bool Initialize() override;
 
 	/** 노티파이 정보를 UI에 설정 */
-	void SetNotifyInfo(FName InNotifyName, float InNotifyTime);
+	void SetNotifyInfo(FName InNotifyType, FName InNotifyName, float InNotifyTime);
 
 	/** 노티파이 선택 시 브로드캐스트할 델리게이트 */
 	UPROPERTY(BlueprintAssignable, Category = "AnimNotify Selection")

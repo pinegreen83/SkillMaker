@@ -11,7 +11,7 @@ class UScrollBox;
 class UTextBlock;
 class USKAnimNotifyCardWidget;
 
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnAnimNotifySelected, FName, NotifyName, float, NotifyTime);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnAnimNotifySelected, FName, NotifyName);
 
 UCLASS()
 class SKILLMAKER_API USKAnimNotifySelectionWidget : public UUserWidget
@@ -53,5 +53,5 @@ private:
 
 	/** 리스트에서 특정 애님 노티파이를 선택했을 때 호출 */
 	UFUNCTION()
-	void OnNotifyButtonSelected(FName NotifyName, float NotifyTime);
+	void OnNotifyButtonSelected(FName NotifyName);
 };

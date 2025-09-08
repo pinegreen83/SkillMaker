@@ -10,7 +10,7 @@
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnSkillNotifyTriggered, FName, NotifyName);
 
 class ASKBaseCharacter;
-class ASKSkillEffectActor;
+class ASKProjectileActor;
 
 UCLASS()
 class SKILLMAKER_API USKSkillAnimNotify_Trigger : public UAnimNotify
@@ -26,26 +26,15 @@ protected:
 	void ApplyAOEEffect(ASKBaseCharacter* Character, const FSKSkillData& SkillData);
 
 	/** 발사체 생성 */
-	void SpawnProjectile(ASKBaseCharacter* Character, const FSKSkillData& SkillData);
-	
-	/** 이펙트 액터 생성 */
-	void SpawnSkillEffect(ASKBaseCharacter* Character, const FSKSkillData& SkillData);
+	void SpawnProjectile(ASKBaseCharacter* Character, const TSubclassOf<ASKProjectileActor> ProjectileClass);
 	
 public:
 	UPROPERTY(BlueprintAssignable, Category = "Skill")
 	FOnSkillNotifyTriggered OnSkillNotifyTriggered;
 
-	/** 애님 노티파이 트리거 시간 */
+	/** 애님 노티파이 트리거 이름 */
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Skill")
-	float NotifyTime;
-	
-	/** 이펙트 실행 */
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Skill")
-	FName EffectName;
-
-	/** 사운드 실행 */
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Skill")
-	FName SoundName;
+	FName NotifyTriggerName;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Skill")
 	TArray<FStatusEffectData> StatusEffects;

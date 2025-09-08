@@ -85,7 +85,7 @@ TArray<FSKProjectileRow> USKDataManager::GetProjectileList()
 	TArray<FName> RowNames = ProjectileDataTable->GetRowNames();
 	for(const FName RowName : RowNames)
 	{
-		if(const FSKProjectileData* ProjectileData = WeaponDataTable->FindRow<FSKProjectileData>(RowName, TEXT("")))
+		if(const FSKProjectileData* ProjectileData = ProjectileDataTable->FindRow<FSKProjectileData>(RowName, TEXT("")))
 		{
 			FSKProjectileRow NowProjectileRow(RowName, *ProjectileData);
 			ProjectileList.Add(NowProjectileRow);

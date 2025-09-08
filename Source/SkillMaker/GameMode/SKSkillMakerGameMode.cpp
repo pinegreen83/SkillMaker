@@ -10,7 +10,7 @@
 ASKSkillMakerGameMode::ASKSkillMakerGameMode()
 {
 	HUDClass = ASKSkillMakerHUD::StaticClass();
-	static ConstructorHelpers::FClassFinder<APlayerController> PlayerControllerClassRef(TEXT("/Script/Engine.Blueprint'/Game/SkillMaker/Blueprint/BP_SKSkillMakerController.BP_SKSkillMakerController_C'"));
+	static ConstructorHelpers::FClassFinder<APlayerController> PlayerControllerClassRef(TEXT("/Script/Engine.Blueprint'/Game/SkillMaker/Blueprint/Controller/BP_SKSkillMakerController.BP_SKSkillMakerController_C'"));
 	if(PlayerControllerClassRef.Class)
 	{
 		PlayerControllerClass = PlayerControllerClassRef.Class;
@@ -45,6 +45,14 @@ void ASKSkillMakerGameMode::BeginPlay()
 		else
 		{
 			SK_LOG(LogSkillMaker, Error, TEXT("AnimationDataTable 초기화 실패!"));
+		}
+		if (USKDataManager::Get()->ProjectileDataTable)
+		{
+			SK_LOG(LogSkillMaker, Warning, TEXT("ProjectileDataTable 초기화 완료."));
+		}
+		else
+		{
+			SK_LOG(LogSkillMaker, Error, TEXT("ProjectileDataTable 초기화 실패!"));
 		}
 	}
 

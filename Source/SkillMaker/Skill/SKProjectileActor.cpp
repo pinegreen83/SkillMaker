@@ -1,16 +1,16 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 
-#include "SKSkillEffectActor.h"
+#include "SKProjectileActor.h"
 #include "Particles/ParticleSystemComponent.h"
 #include "NiagaraComponent.h"
 #include "Components/SphereComponent.h"
-#include "Kismet/GameplayStatics.h"
 #include "GameFramework/Character.h"
 #include "GameFramework/ProjectileMovementComponent.h"
+#include "Logging/SKLogSkillMakerMacro.h"
 
 // Sets default values
-ASKSkillEffectActor::ASKSkillEffectActor()
+ASKProjectileActor::ASKProjectileActor()
 {
 	PrimaryActorTick.bCanEverTick = true;
 
@@ -18,7 +18,7 @@ ASKSkillEffectActor::ASKSkillEffectActor()
 	RootComponent = CollisionComponent;
 	CollisionComponent->InitSphereRadius(50.0f);
 	CollisionComponent->SetCollisionProfileName(TEXT("OverlapAllDynamic"));
-	CollisionComponent->OnComponentHit.AddDynamic(this, &ASKSkillEffectActor::OnHit);
+	CollisionComponent->OnComponentHit.AddDynamic(this, &ASKProjectileActor::OnHit);
 
 	ParticleComponent = CreateDefaultSubobject<UParticleSystemComponent>(TEXT("ParticleComponent"));
 	ParticleComponent->SetupAttachment(RootComponent);
@@ -35,37 +35,31 @@ ASKSkillEffectActor::ASKSkillEffectActor()
 }
 
 // Called when the game starts or when spawned
-void ASKSkillEffectActor::BeginPlay()
+void ASKProjectileActor::BeginPlay()
 {
 	Super::BeginPlay();
 	
 	SetLifeSpan(5.0f);
 }
 
-void ASKSkillEffectActor::Tick(float DeltaTime)
+void ASKProjectileActor::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 }
 
-void ASKSkillEffectActor::PlayEffect(ACharacter* InSkillOwner, const FSKSkillData& SkillData)
+void ASKProjectileActor::StartProject(ACharacter* InSkillOwner)
 {
-	UE_LOG(LogTemp, Log, TEXT("ASKSkillEffectActor::PlayEffect() Begin"));
+	SK_LOG(LogSkillMaker, Log, TEXT("Begin"));
 	
 	SkillOwner = InSkillOwner;
 
-	if (SkillData.EffectSoundData.Sound && SkillOwner)
-	{
-		UE_LOG(LogTemp, Log, TEXT("ASKSkillEffectActor::PlayEffect() Play Sound"));
-		UGameplayStatics::PlaySoundAtLocation(this, SkillData.EffectSoundData.Sound, SkillOwner->GetActorLocation());
-	}
-	
 	if (!ProjectileComponent || ProjectileComponent->InitialSpeed == 0.0f)
 	{
 		SetLifeSpan(3.0f);
 	}
 }
 
-void ASKSkillEffectActor::OnHit(UPrimitiveComponent* HitComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp,
+void ASKProjectileActor::OnHit(UPrimitiveComponent* HitComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp,
                                 FVector NormalImpulse, const FHitResult& Hit)
 {
 	if (OtherActor && OtherActor != this && OtherActor != SkillOwner)
@@ -79,7 +73,7 @@ void ASKSkillEffectActor::OnHit(UPrimitiveComponent* HitComponent, AActor* Other
 	}
 }
 
-void ASKSkillEffectActor::ApplyStatusEffect(ACharacter* TargetCharacter)
+void ASKProjectileActor::ApplyStatusEffect(ACharacter* TargetCharacter)
 {
 	if (!SkillOwner) return;
 

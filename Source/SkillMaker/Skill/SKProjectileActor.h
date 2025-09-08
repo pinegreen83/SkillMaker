@@ -4,8 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
-#include "SKSkillData.h"
-#include "SKSkillEffectActor.generated.h"
+#include "SKProjectileActor.generated.h"
 
 class ACharacter;
 class UNiagaraComponent;
@@ -15,13 +14,13 @@ class USoundBase;
 class UProjectileMovementComponent;
 
 UCLASS()
-class SKILLMAKER_API ASKSkillEffectActor : public AActor
+class SKILLMAKER_API ASKProjectileActor : public AActor
 {
 	GENERATED_BODY()
 	
 public:	
 	// Sets default values for this actor's properties
-	ASKSkillEffectActor();
+	ASKProjectileActor();
 
 protected:
 	// Called when the game starts or when spawned
@@ -30,31 +29,35 @@ protected:
 public:	
 	virtual void Tick(float DeltaTime) override;
 
-	/** 파티클 시스템 */
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Effect")
-	TObjectPtr<UParticleSystemComponent> ParticleComponent;
-
-	/** 나이아가라 시스템 */
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Effect")
-	TObjectPtr<UNiagaraComponent> NiagaraComponent;
-
-	/** 충돌 감지를 위한 콜리전 */
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Effect")
-	TObjectPtr<USphereComponent> CollisionComponent;
-
-	/** 투사체 이동을 위한 컴포넌트 */
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Effect")
-	TObjectPtr<UProjectileMovementComponent> ProjectileComponent;
+	/** 이펙트 실행 함수 */
+	UFUNCTION(BlueprintCallable, Category = "Effect")
+	void StartProject(ACharacter* InSkillOwner);
 	
 	/** 스킬을 사용한 캐릭터 */
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Effect")
 	TObjectPtr<ACharacter> SkillOwner;
 
-	/** 이펙트 실행 함수 */
-	UFUNCTION(BlueprintCallable, Category = "Effect")
-	void PlayEffect(ACharacter* InSkillOwner, const FSKSkillData& SkillData);
-	
 protected:
+	/** 파티클 시스템 */
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Projectile")
+	TObjectPtr<UParticleSystemComponent> ParticleComponent;
+
+	/** 나이아가라 시스템 */
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Projectile")
+	TObjectPtr<UNiagaraComponent> NiagaraComponent;
+
+	/** 충돌 감지를 위한 콜리전 */
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Projectile")
+	TObjectPtr<USphereComponent> CollisionComponent;
+
+	/** 투사체 이동을 위한 컴포넌트 */
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Projectile")
+	TObjectPtr<UProjectileMovementComponent> ProjectileComponent;
+
+	/** 발사체 사운드 */
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Projectile")
+	USoundBase* ProjectileSound;
+	
 	/** 충돌 처리 함수 */
 	UFUNCTION()
 	void OnHit(UPrimitiveComponent* HitComponent, AActor* OtherActor, 

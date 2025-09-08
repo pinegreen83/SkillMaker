@@ -8,7 +8,7 @@
 #include "Combat/SKCombatComponent.h"
 #include "Kismet/GameplayStatics.h"
 #include "Logging/SKLogSkillMakerMacro.h"
-#include "Skill/SKSkillEffectActor.h"
+#include "Skill/SKProjectileActor.h"
 
 void USKSkillAnimNotify_Trigger::Notify(USkeletalMeshComponent* MeshComp, UAnimSequenceBase* Animation,
 										const FAnimNotifyEventReference& EventReference)
@@ -30,28 +30,24 @@ void USKSkillAnimNotify_Trigger::Notify(USkeletalMeshComponent* MeshComp, UAnimS
 	}
 
 	const FSKSkillData& SkillData = SkillDataOpt.GetValue();
-
-	// ✅ SkillData 내부 확인 로그 추가
-	SK_LOG(LogSkillMaker, Log, TEXT("✔ SkillData 확인 - 이펙트: %s, 사운드: %s"),
-		SkillData.EffectSoundData.EffectClass ? *SkillData.EffectSoundData.EffectClass->GetName() : TEXT("None"),
-		SkillData.EffectSoundData.Sound ? *SkillData.EffectSoundData.Sound->GetName() : TEXT("None")
-	);
-
-	// ✅ 현재 애니메이션 진행 시간 가져오기
-	UAnimInstance* AnimInstance = MeshComp->GetAnimInstance();
-	if (!AnimInstance) return;
-
-	float CurrentMontageTime = AnimInstance->Montage_GetPosition(AnimInstance->GetCurrentActiveMontage());
-	SK_LOG(LogSkillMaker, Log, TEXT("Time diff comp Now Montage Time : %f / SetupMontage Time : %f"), CurrentMontageTime, SkillData.EffectSoundData.NotifyTime);
 	
-	// ✅ 저장된 NotifyTime과 비교
-	if (FMath::IsNearlyEqual(SkillData.EffectSoundData.NotifyTime, CurrentMontageTime, 0.1f))
+	SK_LOG(LogSkillMaker, Log, TEXT("Now Skill : %s"), *SkillData.SkillName);
+
+	// ✅ 저장된 NotifyName과 비교
+	if (NotifyTriggerName == SkillData.NotifyName)
 	{
-		SK_LOG(LogSkillMaker, Log, TEXT("애님 노티파이 실행됨: %s (%.2f초)"), *EffectName.ToString(), CurrentMontageTime);
-
-		SpawnSkillEffect(Character, SkillData);
+		SK_LOG(LogSkillMaker, Log, TEXT("애님 노티파이 실행됨: %s"), *SkillData.SkillName);
+		if (SkillData.ProjectileActor)
+		{
+			SK_LOG(LogSkillMaker, Log, TEXT("발사체 : %s 스폰"), *SkillData.ProjectileActor->GetName());
+			SpawnProjectile(Character, SkillData.ProjectileActor);
+		}
 	}
-
+	else
+	{
+		SK_LOG(LogSkillMaker, Log, TEXT("애님 노티파이 실행 실패: %s, 이름이 다름 : %s != %s"), *SkillData.SkillName, *NotifyTriggerName.ToString(), *SkillData.NotifyName.ToString());
+	}
+	
 	// OnSkillNotifyTriggered.Broadcast(EffectName);
 	
 	// SpawnSkillEffect(Character, SkillData);
@@ -107,41 +103,31 @@ void USKSkillAnimNotify_Trigger::ApplyAOEEffect(ASKBaseCharacter* Character, con
 	}
 }
 
-void USKSkillAnimNotify_Trigger::SpawnProjectile(ASKBaseCharacter* Character, const FSKSkillData& SkillData)
+void USKSkillAnimNotify_Trigger::SpawnProjectile(ASKBaseCharacter* Character, const TSubclassOf<ASKProjectileActor> ProjectileClass)
 {
 	SK_LOG(LogSkillMaker, Log, TEXT("Begin"));
-	
-	if(!Character || !SkillData.ProjectileClass)
-		return;
 
-	FVector SpawnLocation = Character->GetActorLocation() + Character->GetActorForwardVector() * 100.0f;
+	if(!Character || !ProjectileClass) return;
+
+	UWorld* World = Character->GetWorld();
+	if(!World) return;
+
+	FVector SpawnLocation = Character->GetActorLocation() + Character->GetActorForwardVector() * 100.f;
 	FRotator SpawnRotation = Character->GetActorRotation();
 
-	AActor* SpawnedProjectile = Character->GetWorld()->SpawnActor<AActor>(SkillData.ProjectileClass, SpawnLocation, SpawnRotation);
-	if (SpawnedProjectile)
-	{
-		SK_LOG(LogSkillMaker, Log, TEXT("발사체 생성: %s"), *SpawnedProjectile->GetName());
-	}
-}
+	FActorSpawnParameters SpawnParameters;
+	SpawnParameters.Owner = Character;
+	SpawnParameters.Instigator = Character;
 
-void USKSkillAnimNotify_Trigger::SpawnSkillEffect(ASKBaseCharacter* Character, const FSKSkillData& SkillData)
-{
-	SK_LOG(LogSkillMaker, Log, TEXT("USKSkillAnimNotify_Trigger::SpawnSkillEffect() Begin"));
-	
-	if (!Character || !SkillData.EffectSoundData.EffectClass) return;
-
-	FVector SpawnLocation = Character->GetActorLocation() + Character->GetActorForwardVector() * 50.0f;
-	FRotator SpawnRotation = Character->GetActorRotation();
-
-	ASKSkillEffectActor* SpawnedEffect = Character->GetWorld()->SpawnActor<ASKSkillEffectActor>(
-		SkillData.EffectSoundData.EffectClass,
+	ASKProjectileActor* Projectile = World->SpawnActor<ASKProjectileActor>(
+		ProjectileClass,
 		SpawnLocation,
-		SpawnRotation
+		SpawnRotation,
+		SpawnParameters
 	);
 
-	if (SpawnedEffect)
+	if(Projectile)
 	{
-		SpawnedEffect->PlayEffect(Character, SkillData);
-		SK_LOG(LogSkillMaker, Log, TEXT("애님 노티파이에서 이펙트 생성: %s"), *SpawnedEffect->GetName());
+		Projectile->StartProject(Character);
 	}
 }

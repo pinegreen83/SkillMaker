@@ -25,7 +25,7 @@ void ASKPlayerCharacter::BeginPlay()
 	
 	Super::BeginPlay();
 
-	CurrentSkillData = USKSkillManager::Get()->GetSkillDataByID("Test1");
+	CurrentSkillData = USKSkillManager::Get()->GetSkillDataByID("FireBall1");
 
 	if (CurrentSkillData.IsSet())
 	{

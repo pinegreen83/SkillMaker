@@ -19,19 +19,19 @@ bool USKAnimNotifyCardWidget::Initialize()
 	return true;
 }
 
-void USKAnimNotifyCardWidget::SetNotifyInfo(FName InNotifyName, float InNotifyTime)
+void USKAnimNotifyCardWidget::SetNotifyInfo(FName InNotifyType, FName InNotifyName, float InNotifyTime)
 {
 	NotifyName = InNotifyName;
 	NotifyTime = InNotifyTime;
 
 	if (NotifyText)
 	{
-		NotifyText->SetText(FText::FromString(FString::Printf(TEXT("%s (%.2f초)"), *NotifyName.ToString(), NotifyTime)));
+		NotifyText->SetText(FText::FromString(FString::Printf(TEXT("%s (%.2f초)"), *InNotifyType.ToString(), NotifyTime)));
 	}
 }
 
 void USKAnimNotifyCardWidget::HandleButtonClicked()
 {
-	OnNotifySelected.Broadcast(NotifyName, NotifyTime);
+	OnNotifySelected.Broadcast(NotifyName);
 	SK_LOG(LogSkillMaker, Log, TEXT("노티파이 버튼 클릭됨: %s, %f"), *NotifyName.ToString(), NotifyTime);
 }

@@ -15,7 +15,7 @@ class UButton;
 class UScrollBox;
 class UWidgetSwitcher;
 class USKStatusEffectCardWidget;
-class USKEffectSoundSelectionWidget;
+class USKProjectileSelectionWidget;
 class USKAnimNotifySelectionWidget;
 
 UCLASS()
@@ -75,9 +75,9 @@ protected:
 	UPROPERTY(EditAnywhere, Category = "UI")
 	TSubclassOf<USKStatusEffectCardWidget> WBP_SKStatusEffectCard;
 
-	/** 이펙트 & 사운드 선택 위젯 */
+	/** 발사체 선택 위젯 */
 	UPROPERTY(meta = (BindWidget))
-	TObjectPtr<USKEffectSoundSelectionWidget> EffectSoundSelectionWidget;
+	TObjectPtr<USKProjectileSelectionWidget> ProjectileSelectionWidget;
 
 	/** 애님 노티파이 선택 위젯 */
 	UPROPERTY(meta = (BindWidget))
@@ -98,10 +98,6 @@ protected:
 	/** 미리보기 버튼 */
 	UPROPERTY(meta = (BindWidget))
 	TObjectPtr<UButton> PreviewSkillButton;
-
-	// /** 저장 버튼 */
-	// UPROPERTY(meta = (BindWidget))
-	// TObjectPtr<UButton> SaveSkillButton;
 
 private:
 	/** UI 요소 -> HUD 데이터로 초기화 */
@@ -149,13 +145,13 @@ private:
 	UFUNCTION()
 	void OnMaxRangeChanged(float Value);
 
-	/** 이펙트 & 사운드 선택 완료 이벤트 */
+	/** 발사체 선택 완료 이벤트 */
 	UFUNCTION()
-	void OnEffectSoundSelected(const FEffectSoundData& SelectedEffectSound);
+	void OnProjectileSelected(const TSubclassOf<ASKProjectileActor> SelectedProjectileClass);
 
 	/** 애님 노티파이 선택 이벤트 */
 	UFUNCTION()
-	void OnNotifySelected(FName NotifyName, float NotifyTime);
+	void OnNotifySelected(FName NotifyName);
 	
 	/** 미리보기 실행 */
 	UFUNCTION()

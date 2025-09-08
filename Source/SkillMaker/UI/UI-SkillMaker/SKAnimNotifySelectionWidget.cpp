@@ -5,6 +5,7 @@
 #include "SKAnimNotifyCardWidget.h"
 #include "Components/ScrollBox.h"
 #include "Animation/AnimMontage.h"
+#include "Animation/SKSkillAnimNotify_Trigger.h"
 #include "Animation/AnimNotifies/AnimNotify.h"
 #include "Components/TextBlock.h"
 #include "Logging/SKLogSkillMakerMacro.h"
@@ -35,7 +36,12 @@ void USKAnimNotifySelectionWidget::PopulateNotifyList(UAnimMontage* Montage)
 	int32 NotifyIndex = 1;
 	for (const FAnimNotifyEvent& NotifyEvent : Montage->Notifies)
 	{
-		FName NotifyName = NotifyEvent.NotifyName;
+		FName NotifyName;
+
+		if(USKSkillAnimNotify_Trigger* TriggerNotify = Cast<USKSkillAnimNotify_Trigger>(NotifyEvent.Notify))
+		{
+			NotifyName = TriggerNotify->NotifyTriggerName;	
+		}
 		float NotifyTime = NotifyEvent.GetTime();
 
 		FString IndexedNotifyName = FString::Printf(TEXT("%d번 - %s (%.2f초)"), NotifyIndex, *NotifyName.ToString(), NotifyTime);
@@ -46,7 +52,7 @@ void USKAnimNotifySelectionWidget::PopulateNotifyList(UAnimMontage* Montage)
 		USKAnimNotifyCardWidget* NotifyButton = CreateWidget<USKAnimNotifyCardWidget>(this, WBP_AnimNotifyCard);
 		if (!NotifyButton) continue;
 
-		NotifyButton->SetNotifyInfo(NotifyName, NotifyTime); // 노티파이 이름과 시간 저장
+		NotifyButton->SetNotifyInfo(NotifyEvent.NotifyName, NotifyName, NotifyTime); // 노티파이 이름과 시간 저장
 		NotifyButton->OnNotifySelected.AddDynamic(this, &USKAnimNotifySelectionWidget::OnNotifyButtonSelected);
 
 		NotifyListBox->AddChild(NotifyButton);
@@ -68,12 +74,11 @@ void USKAnimNotifySelectionWidget::ExtractNotifiesFromMontage(UAnimMontage* Mont
 	}
 }
 
-void USKAnimNotifySelectionWidget::OnNotifyButtonSelected(FName NotifyName, float NotifyTime)
+void USKAnimNotifySelectionWidget::OnNotifyButtonSelected(FName NotifyName)
 {
 	SelectedNotify = NotifyName;
-	SelectedNotifyTime = NotifyTime;  
 
-	SelectedNotifyText->SetText(FText::FromString(FString::Printf(TEXT("%s (%.2f초)"), *NotifyName.ToString(), NotifyTime)));
-	OnAnimNotifySelected.Broadcast(SelectedNotify, SelectedNotifyTime);  // NotifyTime 추가
-	SK_LOG(LogSkillMaker, Log, TEXT("애님 노티파이 선택됨: %s (%.2f초)"), *NotifyName.ToString(), NotifyTime);
+	SelectedNotifyText->SetText(FText::FromString(FString::Printf(TEXT("%s"), *NotifyName.ToString())));
+	OnAnimNotifySelected.Broadcast(SelectedNotify);  // NotifyTime 추가
+	SK_LOG(LogSkillMaker, Log, TEXT("애님 노티파이 선택됨: %s (%.2f초)"), *NotifyName.ToString());
 }

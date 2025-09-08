@@ -2,7 +2,7 @@
 
 
 #include "SKSkillDetailWidget.h"
-#include "SKEffectSoundSelectionWidget.h"
+#include "SKProjectileSelectionWidget.h"
 #include "SKAnimNotifySelectionWidget.h"
 #include "Components/ComboBoxString.h"
 #include "Components/EditableTextBox.h"
@@ -64,9 +64,9 @@ void USKSkillDetailWidget::NativeConstruct()
 		PreviewSkillButton->OnClicked.AddDynamic(this, &USKSkillDetailWidget::OnPreviewSkillClicked);
 	}
 
-	if (EffectSoundSelectionWidget)
+	if (ProjectileSelectionWidget)
 	{
-		EffectSoundSelectionWidget->OnEffectSoundSelected.AddDynamic(this, &USKSkillDetailWidget::OnEffectSoundSelected);
+		ProjectileSelectionWidget->OnProjectileSelected.AddDynamic(this, &USKSkillDetailWidget::OnProjectileSelected);
 	}
 
 	if (AnimNotifySelectionWidget)
@@ -340,30 +340,32 @@ void USKSkillDetailWidget::OnMaxRangeChanged(float Value)
 	EditingSkillData->MaxRange = Value;
 }
 
-void USKSkillDetailWidget::OnEffectSoundSelected(const FEffectSoundData& SelectedEffectSound)
+void USKSkillDetailWidget::OnProjectileSelected(const TSubclassOf<ASKProjectileActor> SelectedProjectileClass)
 {
+	SK_LOG(LogSkillMaker, Log, TEXT("Begin"));
+	
 	if (!EditingSkillData.IsSet()) return;
 
-	EditingSkillData->EffectSoundData = SelectedEffectSound;
+	EditingSkillData->ProjectileActor = SelectedProjectileClass;
 
-	SK_LOG(LogSkillMaker, Log, TEXT("이펙트 및 사운드 추가됨: %s (이펙트: %s, 사운드: %s)"), 
-		*SelectedEffectSound.NotifyName.ToString(),
-		SelectedEffectSound.EffectClass ? *SelectedEffectSound.EffectClass->GetName() : TEXT("None"),
-		SelectedEffectSound.Sound ? *SelectedEffectSound.Sound->GetName() : TEXT("None"));
+	SK_LOG(LogSkillMaker, Log, TEXT("ProjectileSelected : %s"), *EditingSkillData->ProjectileActor->GetName());
 }
 
-void USKSkillDetailWidget::OnNotifySelected(FName NotifyName, float NotifyTime)
+void USKSkillDetailWidget::OnNotifySelected(FName NotifyName)
 {
+	SK_LOG(LogSkillMaker, Log, TEXT("Begin"));
+	
 	if (!EditingSkillData.IsSet()) return;
 
-	EditingSkillData->EffectSoundData.NotifyName = NotifyName;
-	EditingSkillData->EffectSoundData.NotifyTime = NotifyTime;
+	EditingSkillData->NotifyName = NotifyName;
 	
 	SK_LOG(LogSkillMaker, Log, TEXT("애님 노티파이 선택됨: %s"), *NotifyName.ToString());
 }
 
 void USKSkillDetailWidget::OnPreviewSkillClicked()
 {
+	SK_LOG(LogSkillMaker, Log, TEXT("Begin"));
+	
 	if (!HUDReference || !EditingSkillData.IsSet()) return;
 	
 	HUDReference->PreviewSkillEffect(EditingSkillData.GetValue());
@@ -372,5 +374,7 @@ void USKSkillDetailWidget::OnPreviewSkillClicked()
 
 void USKSkillDetailWidget::OnSaveSkillClicked()
 {
+	SK_LOG(LogSkillMaker, Log, TEXT("Begin"));
+	
 	SaveSkillData();
 }

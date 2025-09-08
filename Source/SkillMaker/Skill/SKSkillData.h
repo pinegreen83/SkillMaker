@@ -2,7 +2,7 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
-#include "Sound/SoundBase.h"
+#include "SKProjectileActor.h"
 #include "SKSkillData.generated.h"
 
 UENUM(BlueprintType)
@@ -11,36 +11,6 @@ enum class ESkillType : uint8
 	Attack UMETA(DisplayName = "Attack"),
 	Buff UMETA(DisplayName = "Buff"),
 	Debuff UMETA(DisplayName = "Debuff")
-};
-
-USTRUCT(BlueprintType)
-struct FEffectSoundData
-{
-	GENERATED_BODY()
-
-public:
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Effect")
-	FName NotifyName;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Effect")
-	float NotifyTime;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Effect")
-	TSubclassOf<AActor> EffectClass;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Effect")
-	USoundBase* Sound;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Effect")
-	FVector EffectRelativeLocation;
-
-	FEffectSoundData()
-	: NotifyName(NAME_None)
-	, NotifyTime(0.0f)
-	, EffectClass(nullptr)
-	, Sound(nullptr)
-	, EffectRelativeLocation(FVector::ZeroVector)
-	{}
 };
 
 UENUM(BlueprintType)
@@ -93,11 +63,11 @@ public:
 	{}
 
 	FStatusEffectData(EStatusEffect InEffectType, float InDuration, float InDamagePerSecond, bool InCanStack = false, int32 InMaxStack = 1)
-	: EffectType(InEffectType)
-	, Duration(InDuration)
-	, DamagePerSecond(InDamagePerSecond)
-	, bCanStack(InCanStack)
-	, MaxStack(InMaxStack)
+		: EffectType(InEffectType)
+		, Duration(InDuration)
+		, DamagePerSecond(InDamagePerSecond)
+		, bCanStack(InCanStack)
+		, MaxStack(InMaxStack)
 	{}
 };
 
@@ -126,7 +96,7 @@ public:
 	float SkillDuration;
 	
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Skill")
-	bool bCanMoveWhileCasting;
+	bool bCanMoveWhileChanneling;
 	
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Skill")
 	float CooldownTime;
@@ -150,7 +120,10 @@ public:
 	bool bAffectAllies;
 	
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Skill")
-	FEffectSoundData EffectSoundData;
+	TSubclassOf<ASKProjectileActor> ProjectileActor;
+	
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Effect")
+	FName NotifyName;
 	
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Skill")
 	float MinRange;
@@ -163,14 +136,11 @@ public:
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Skill")
 	TObjectPtr<UBlendSpace> MoveSkillBlendSpace;
-	
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Skill")
-	TSubclassOf<AActor> ProjectileClass;
 
 	FSKSkillData()
 		: SkillType(ESkillType::Attack)
 		, SkillDuration(0.0f)
-		, bCanMoveWhileCasting(false)
+		, bCanMoveWhileChanneling(false)
 		, CooldownTime(0.0f)
 		, Cost(0.0f)
 		, DamageValue(0.0f)
@@ -179,6 +149,5 @@ public:
 		, MinRange(0.0f)
 		, MaxRange(0.0f)
 		, bUseMoveBlendSpace(false)
-		, ProjectileClass(nullptr)
 	{}
 };

@@ -2,7 +2,7 @@
 
 #include "CoreMinimal.h"
 #include "Engine/DataTable.h"
-#include "Skill/SKSkillEffectActor.h"
+#include "Skill/SKProjectileActor.h"
 #include "SKProjectileData.generated.h"
 
 USTRUCT(BlueprintType)
@@ -21,5 +21,5 @@ public:
 	TSoftObjectPtr<UTexture2D> Thumbnail;
 	
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	TSoftClassPtr<ASKSkillEffectActor> ProjectileActor;
+	TSubclassOf<ASKProjectileActor> ProjectileActor;
 };

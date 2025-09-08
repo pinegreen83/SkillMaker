@@ -4,12 +4,9 @@
 #include "SKSkillMakerHUD.h"
 #include "SKSkillMakerMainWidget.h"
 #include "Skill/SKSkillManager.h"
-#include "Skill/SKSkillEffectActor.h"
-#include "Animation/SKSkillAnimNotify_Trigger.h"
 #include "Engine/Texture2D.h"
 #include "Character/SKPreviewCharacter.h"
 #include "GameFramework/PlayerController.h"
-#include "Kismet/GameplayStatics.h"
 #include "Logging/SKLogSkillMakerMacro.h"
 
 ASKSkillMakerHUD::ASKSkillMakerHUD()
@@ -110,13 +107,12 @@ void ASKSkillMakerHUD::LogCurrentSkillData()
 	SK_LOG(LogSkillMaker, Log, TEXT("무기 타입 : %s"), *CurrentEditingSkill.WeaponType);
 	if(CurrentEditingSkill.SkillMontage)
 	{
-		UE_LOG(LogTemp, Log, TEXT("애니메이션 : %s, 길이 : %f"), *CurrentEditingSkill.SkillMontage->GetName(), CurrentEditingSkill.SkillDuration);
+		SK_LOG(LogSkillMaker, Log, TEXT("애니메이션 : %s, 길이 : %f"), *CurrentEditingSkill.SkillMontage->GetName(), CurrentEditingSkill.SkillDuration);
 	}
-	// UE_LOG(LogTemp, Log, TEXT("이펙트 목록 : "));
-	// for(const auto& Effect : CurrentEditingSkill.EffectNotifyNames)
-	// {
-	// 	UE_LOG(LogTemp, Log, TEXT(" - %s -> %s"), *Effect.ToString(), *CurrentEditingSkill.EffectSoundMapping[Effect].ToString());
-	// }
+	if(CurrentEditingSkill.ProjectileActor)
+	{
+		SK_LOG(LogSkillMaker, Log, TEXT("발사체 설정 완료."));
+	}
 	SK_LOG(LogSkillMaker, Log, TEXT("=================="));
 }
 
