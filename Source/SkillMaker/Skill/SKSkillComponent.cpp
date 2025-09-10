@@ -5,6 +5,7 @@
 #include "SKSkillManager.h"
 #include "GameFramework/Character.h"
 #include "Animation/AnimInstance.h"
+#include "Logging/SKLogSkillMakerMacro.h"
 
 // Sets default values for this component's properties
 USKSkillComponent::USKSkillComponent()
@@ -16,6 +17,8 @@ USKSkillComponent::USKSkillComponent()
 // Component에서 스킬 실행
 void USKSkillComponent::ClientRequestUseSkill(const FName& SkillID)
 {
+	SK_LOG(LogSkillMaker, Log, TEXT("Begin"));
+	
 	// 서버에서 스킬 실행
 	if(GetOwner()->HasAuthority())
 	{
@@ -39,9 +42,11 @@ bool USKSkillComponent::ServerUseSkill_Validate(const FName& SkillID)
 
 void USKSkillComponent::ServerUseSkill_Implementation(const FName& SkillID)
 {
+	SK_LOG(LogSkillMaker, Log, TEXT("Begin"));
+	
 	if(!IsSkillAvailable(SkillID))
 	{
-		UE_LOG(LogTemp, Warning, TEXT("스킬 사용 불가(쿨다운 중) : %s"), *SkillID.ToString());
+		SK_LOG(LogSkillMaker, Warning, TEXT("스킬 사용 불가(쿨다운 중) : %s"), *SkillID.ToString());
 		return;
 	}
 
@@ -52,16 +57,18 @@ void USKSkillComponent::ServerUseSkill_Implementation(const FName& SkillID)
 	}
 	else
 	{
-		UE_LOG(LogTemp, Error, TEXT("스킬 데이터를 찾을 수 없음 : %s"), *SkillID.ToString());
+		SK_LOG(LogSkillMaker, Error, TEXT("스킬 데이터를 찾을 수 없음 : %s"), *SkillID.ToString());
 	}
 }
 
 void USKSkillComponent::MulticastExecuteSkill_Implementation(const FSKSkillData& SkillData)
 {
+	SK_LOG(LogSkillMaker, Log, TEXT("Begin"));
+	
 	ACharacter* OwnerCharacter = Cast<ACharacter>(GetOwner());
 	if(!OwnerCharacter || !SkillData.SkillMontage)
 	{
-		UE_LOG(LogTemp, Error, TEXT("스킬 실행 불가 : 캐릭터 또는 애니메이션 몽타주 없음."));
+		SK_LOG(LogSkillMaker, Error, TEXT("스킬 실행 불가 : 캐릭터 또는 애니메이션 몽타주 없음."));
 		return;
 	}
 
@@ -69,7 +76,7 @@ void USKSkillComponent::MulticastExecuteSkill_Implementation(const FSKSkillData&
 	if(AnimInstance)
 	{
 		AnimInstance->Montage_Play(SkillData.SkillMontage);
-		UE_LOG(LogTemp, Log, TEXT("애니메이션 실행 : %s"), *SkillData.SkillName);
+		SK_LOG(LogSkillMaker, Log, TEXT("애니메이션 실행 : %s"), *SkillData.SkillName);
 	}
 }
 
@@ -96,7 +103,7 @@ void USKSkillComponent::ApplyCooldown(const FName& SkillID, float CooldownTime)
 		);
 
 		CooldownTimers.Add(SkillID, CooldownTimerHandle);
-		UE_LOG(LogTemp, Log, TEXT("쿨다운 적용 : %s, %f초 후 해제"), *SkillID.ToString(), CooldownTime);
+		SK_LOG(LogSkillMaker, Log, TEXT("쿨다운 적용 : %s, %f초 후 해제"), *SkillID.ToString(), CooldownTime);
 	}
 }
 
@@ -104,17 +111,21 @@ void USKSkillComponent::ClearCooldown(FName SkillID)
 {
 	SkillCooldowns.Remove(SkillID);
 	CooldownTimers.Remove(SkillID);
-	UE_LOG(LogTemp, Log, TEXT("쿨다운 해제 됨 : %s"), *SkillID.ToString());
+	SK_LOG(LogSkillMaker, Log, TEXT("쿨다운 해제 됨 : %s"), *SkillID.ToString());
 }
 
 bool USKSkillComponent::IsSkillAvailable(const FName& SkillID) const
 {
+	SK_LOG(LogSkillMaker, Log, TEXT("Begin"));
+
 	const float* CooldownEnd = SkillCooldowns.Find(SkillID);
 	return !CooldownEnd || *CooldownEnd <= GetWorld()->GetTimeSeconds();
 }
 
 float USKSkillComponent::GetSkillCooldownRemaining(const FName& SkillID) const
 {
+	SK_LOG(LogSkillMaker, Log, TEXT("Begin"));
+	
 	if(const float* CooldownEnd = SkillCooldowns.Find(SkillID))
 	{
 		float RemainingTime = *CooldownEnd - GetWorld()->GetTimeSeconds();
