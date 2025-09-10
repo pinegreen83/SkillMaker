@@ -7,6 +7,6 @@
 void USKGameInstance::Init()
 {
 	Super::Init();
-
-	USKDataManager::Get();
+	
+	// USKDataManager::Get();
 }

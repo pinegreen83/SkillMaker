@@ -3,24 +3,27 @@
 
 #include "SKAnimationSelectionWidget.h"
 #include "Components/UniformGridPanel.h"
-#include "Data/SKDataManager.h"
 #include "Data/SKAnimationData.h"
 #include "SKAnimationCardWidget.h"
+#include "Game/SKDataManagerSubsystem.h"
 #include "Logging/SKLogSkillMakerMacro.h"
 
 void USKAnimationSelectionWidget::LoadAnimationsForWeapon(const FString& WeaponName)
 {
 	SK_LOG(LogSkillMaker, Log, TEXT("%s에 대한 애니메이션 로드"), *WeaponName);
-
-	TArray<FSKAnimationRow> AnimList = USKDataManager::Get()->GetAnimationsForWeapon(WeaponName);
-
-	int32 index = 0;
-	for(const auto& AnimData : AnimList)
+	
+	if(USKDataManagerSubsystem* DataManagerSubsystem = Cast<USKDataManagerSubsystem>(GetWorld()->GetGameInstance()))
 	{
-		SK_LOG(LogSkillMaker, Log, TEXT("불러온 애니메이션 : %s"), *AnimData.RowName.ToString());
+		TArray<FSKAnimationRow> AnimList = DataManagerSubsystem->GetAnimationsForWeapon(WeaponName);
+		
+		int32 index = 0;
+		for(const auto& AnimData : AnimList)
+		{
+			SK_LOG(LogSkillMaker, Log, TEXT("불러온 애니메이션 : %s"), *AnimData.RowName.ToString());
 
-		CreateAnimationCard(AnimData, index);
-		index++;
+			CreateAnimationCard(AnimData, index);
+			index++;
+		}
 	}
 }
 

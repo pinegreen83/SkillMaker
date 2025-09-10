@@ -3,9 +3,9 @@
 
 #include "SKWeaponSelectionWidget.h"
 #include "Components/UniformGridPanel.h"
-#include "Data/SKDataManager.h"
 #include "Data/SKWeaponData.h"
 #include "SKWeaponCardWidget.h"
+#include "Game/SKDataManagerSubsystem.h"
 #include "Logging/SKLogSkillMakerMacro.h"
 
 void USKWeaponSelectionWidget::NativeConstruct()
@@ -18,15 +18,18 @@ void USKWeaponSelectionWidget::LoadWeaponList()
 {
 	SK_LOG(LogSkillMaker, Log, TEXT("무기 목록을 불러옵니다."));
 
-	TArray<FSKWeaponRow> WeaponList = USKDataManager::Get()->GetWeaponList();
-
-	int32 index = 0;
-	for(const auto& WeaponData : WeaponList)
+	if(USKDataManagerSubsystem* DataManagerSubsystem = Cast<USKDataManagerSubsystem>(GetWorld()->GetGameInstance()))
 	{
-		SK_LOG(LogSkillMaker, Log, TEXT("무기 로드 : %s"), *WeaponData.RowName.ToString());
+		TArray<FSKWeaponRow> WeaponList = DataManagerSubsystem->GetWeaponList();
 		
-		CreateWeaponCard(WeaponData, index);
-		index++;
+		int32 index = 0;
+		for(const auto& WeaponData : WeaponList)
+		{
+			SK_LOG(LogSkillMaker, Log, TEXT("무기 로드 : %s"), *WeaponData.RowName.ToString());
+		
+			CreateWeaponCard(WeaponData, index);
+			index++;
+		}
 	}
 }
 

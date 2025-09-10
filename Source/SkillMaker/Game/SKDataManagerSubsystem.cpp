@@ -1,7 +1,7 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 
-#include "Data/SKDataManagerSubsystem.h"
+#include "SKDataManagerSubsystem.h"
 #include "Logging/SKLogSkillMakerMacro.h"
 
 TArray<FSKWeaponRow> USKDataManagerSubsystem::GetWeaponList()

@@ -7,7 +7,7 @@
 #include "Components/Image.h"
 #include "Components/Button.h"
 #include "Components/WidgetSwitcher.h"
-#include "Data/SKDataManager.h"
+#include "Game/SKDataManagerSubsystem.h"
 #include "Logging/SKLogSkillMakerMacro.h"
 
 void USKProjectileSelectionWidget::NativeConstruct()
@@ -40,17 +40,20 @@ void USKProjectileSelectionWidget::SetProjectileCard()
 	if (!ProjectileListBox || !WBP_ProjectileCard) return;
 	
 	ProjectileListBox->ClearChildren();
-
-	TArray<FSKProjectileRow> ProjectileList = USKDataManager::Get()->GetProjectileList();
-	for (auto& Projectile : ProjectileList)
+	
+	if(USKDataManagerSubsystem* DataManagerSubsystem = Cast<USKDataManagerSubsystem>(GetWorld()->GetGameInstance()))
 	{
-		USKProjectileCardWidget* ProjectileCard = CreateWidget<USKProjectileCardWidget>(this, WBP_ProjectileCard);
-		if (!ProjectileCard) continue;
+		TArray<FSKProjectileRow> ProjectileList = DataManagerSubsystem->GetProjectileList();
+		for (auto& Projectile : ProjectileList)
+		{
+			USKProjectileCardWidget* ProjectileCard = CreateWidget<USKProjectileCardWidget>(this, WBP_ProjectileCard);
+			if (!ProjectileCard) continue;
 	
-		ProjectileCard->SetProjectileInfo(Projectile.Data.ProjectileActor);
-		ProjectileCard->OnProjectileCardSelected.AddDynamic(this, &USKProjectileSelectionWidget::SelectedProjectile);
+			ProjectileCard->SetProjectileInfo(Projectile.Data.ProjectileActor);
+			ProjectileCard->OnProjectileCardSelected.AddDynamic(this, &USKProjectileSelectionWidget::SelectedProjectile);
 	
-		ProjectileListBox->AddChild(ProjectileCard);
+			ProjectileListBox->AddChild(ProjectileCard);
+		}
 	}
 }
 
