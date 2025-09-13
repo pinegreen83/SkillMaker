@@ -10,7 +10,7 @@ DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnSkillSelected, const FName&, Skil
 
 class UUniformGridPanel;
 class USKSkillCardWidget;
-class USKSkillMakerMainWidget;
+class USKSkillMakerEditorMainWidget;
 struct FSKSkillData;
 
 UCLASS()
@@ -22,7 +22,7 @@ public:
 	virtual void NativeConstruct() override;
 
 	UFUNCTION()
-	void SetMainWidget(USKSkillMakerMainWidget* Main);
+	void SetMainWidget(USKSkillMakerEditorMainWidget* Main);
 	
 	UFUNCTION(BlueprintCallable, Category = "Skill Selection")
 	void LoadSkillList();
@@ -32,7 +32,7 @@ public:
 
 protected:
 	UPROPERTY()
-	TObjectPtr<USKSkillMakerMainWidget> MainWidget;
+	TObjectPtr<USKSkillMakerEditorMainWidget> MainWidget;
 	
 	UPROPERTY()
 	TArray<FSKSkillData> SkillList;

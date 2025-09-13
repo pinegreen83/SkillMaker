@@ -17,14 +17,6 @@ void USKSkillAnimNotify_HitCheck::Notify(USkeletalMeshComponent* MeshComp, UAnim
 	AActor* Owner = MeshComp->GetOwner();
 	ASKBaseCharacter* Character = Cast<ASKBaseCharacter>(Owner);
 	if (!Character) return;
-
-	// 스킬 데이터 가져오기
-	TOptional<FSKSkillData> SkillDataOpt = Character->GetCurrentSkillData();
-	if (!SkillDataOpt.IsSet()) return;
-	const FSKSkillData& SkillData = SkillDataOpt.GetValue();
-
-	// 근접 타격 판정 실행
-	PerformMeleeAttack(Character, SkillData);
 }
 
 void USKSkillAnimNotify_HitCheck::PerformMeleeAttack(ASKBaseCharacter* Character, const FSKSkillData& SkillData)

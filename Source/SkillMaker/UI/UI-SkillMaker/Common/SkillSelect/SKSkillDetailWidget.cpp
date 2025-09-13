@@ -2,15 +2,16 @@
 
 
 #include "SKSkillDetailWidget.h"
-#include "SKProjectileSelectionWidget.h"
-#include "SKAnimNotifySelectionWidget.h"
+#include "UI/UI-SkillMaker/Common/ProjectileSelect/SKProjectileSelectionWidget.h"
+#include "UI/UI-SkillMaker/Common/AnimationSelect/SKAnimNotifySelectionWidget.h"
 #include "Components/ComboBoxString.h"
 #include "Components/EditableTextBox.h"
 #include "Components/Slider.h"
 #include "Components/Button.h"
 #include "Components/WidgetSwitcher.h"
-#include "SKSkillMakerHUD.h"
-#include "SKStatusEffectCardWidget.h"
+#include "UI/UI-SkillMaker/UEEditor/SKSkillMakerEditorHUD.h"
+#include "UI/UI-SkillMaker/TrainingRoom/SKSkillMakerTrainHUD.h"
+#include "UI/UI-SkillMaker/Common/StatusEffectSelect/SKStatusEffectCardWidget.h"
 #include "Components/ScrollBox.h"
 #include "GameFramework/Actor.h"
 #include "Logging/SKLogSkillMakerMacro.h"
@@ -77,6 +78,16 @@ void USKSkillDetailWidget::NativeConstruct()
 	PopulateStatusEffectList();
 }
 
+void USKSkillDetailWidget::SetSkillMakerEditorHUD(ASKSkillMakerEditorHUD* InHUD)
+{
+	SkillMakerEditorHUDReference = InHUD;
+
+	if(SkillMakerEditorHUDReference)
+	{
+		InitializeFromSkillData();
+	}
+}
+
 void USKSkillDetailWidget::OnGeneralTabClicked()
 {
 	if (TabSwitcher)
@@ -110,22 +121,12 @@ void USKSkillDetailWidget::OnAnimNotifyTabClicked()
 	}
 }
 
-void USKSkillDetailWidget::SetHUDReference(ASKSkillMakerHUD* InHUD)
-{
-	HUDReference = InHUD;
-
-	if(HUDReference)
-	{
-		InitializeFromSkillData();
-	}
-}
-
 void USKSkillDetailWidget::InitializeFromSkillData()
 {
-	if(!HUDReference)
+	if(!SkillMakerEditorHUDReference)
 			return;
 
-	EditingSkillData = HUDReference->GetCurrentSkillData();
+	EditingSkillData = SkillMakerEditorHUDReference->GetCurrentSkillData();
 
 	if(!EditingSkillData.IsSet())
 		return;
@@ -214,14 +215,24 @@ void USKSkillDetailWidget::PopulateAnimNotifyList()
 	AnimNotifySelectionWidget->PopulateNotifyList(EditingSkillData->SkillMontage);
 }
 
+void USKSkillDetailWidget::SetSkillMakerTrainHUD(ASKSkillMakerTrainHUD* InHUD)
+{
+	SkillMakerTrainHUDReference = InHUD;
+
+	if(SkillMakerTrainHUDReference)
+	{
+		InitializeFromSkillData();
+	}
+}
+
 void USKSkillDetailWidget::SaveSkillData()
 {
-	if(!EditingSkillData.IsSet() || !HUDReference)
+	if(!EditingSkillData.IsSet() || !SkillMakerEditorHUDReference)
 		return;
 
 	SaveSkillDetails();
 
-	HUDReference->SetCurrentSkillData(EditingSkillData.GetValue());
+	SkillMakerEditorHUDReference->SetCurrentSkillData(EditingSkillData.GetValue());
 
 	SK_LOG(LogSkillMaker, Log, TEXT("스킬 데이터 저장 완료."));
 }
@@ -366,9 +377,9 @@ void USKSkillDetailWidget::OnPreviewSkillClicked()
 {
 	SK_LOG(LogSkillMaker, Log, TEXT("Begin"));
 	
-	if (!HUDReference || !EditingSkillData.IsSet()) return;
+	if (!SkillMakerEditorHUDReference || !EditingSkillData.IsSet()) return;
 	
-	HUDReference->PreviewSkillEffect(EditingSkillData.GetValue());
+	SkillMakerEditorHUDReference->PreviewSkillEffect(EditingSkillData.GetValue());
 	SK_LOG(LogSkillMaker, Log, TEXT("스킬 미리보기 실행"));
 }
 

@@ -1,19 +1,19 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 
-#include "SKSkillMakerMainWidget.h"
-#include "SKSkillSelectionWidget.h"
-#include "SKAnimationSelectionWidget.h"
-#include "SKSkillDetailWidget.h"
-#include "SKWeaponSelectionWidget.h"
+#include "SKSkillMakerEditorMainWidget.h"
+#include "UI/UI-SkillMaker/Common/SkillSelect/SKSkillSelectionWidget.h"
+#include "UI/UI-SkillMaker/Common/AnimationSelect/SKAnimationSelectionWidget.h"
+#include "UI/UI-SkillMaker/Common/SkillSelect/SKSkillDetailWidget.h"
+#include "UI/UI-SkillMaker/Common/WeaponSelect/SKWeaponSelectionWidget.h"
 #include "Components/Button.h"
 #include "Components/WidgetSwitcher.h"
 #include "Components/EditableTextBox.h"
-#include "SKSkillMakerHUD.h"
+#include "SKSkillMakerEditorHUD.h"
 #include "Logging/SKLogSkillMakerMacro.h"
 #include "Skill/SKSkillManager.h"
 
-bool USKSkillMakerMainWidget::Initialize()
+bool USKSkillMakerEditorMainWidget::Initialize()
 {
 	SK_LOG(LogSkillMaker, Log, TEXT("Begin"));
 	
@@ -26,53 +26,53 @@ bool USKSkillMakerMainWidget::Initialize()
 	if(SkillSelectionWidget)
 	{
 		SkillSelectionWidget->SetMainWidget(this);
-		SkillSelectionWidget->OnSkillSelected.AddDynamic(this, &USKSkillMakerMainWidget::OnSkillSelected);
+		SkillSelectionWidget->OnSkillSelected.AddDynamic(this, &USKSkillMakerEditorMainWidget::OnSkillSelected);
 	}
 	
 	if(WeaponSelectionWidget)
 	{
-		WeaponSelectionWidget->OnWeaponSelected.AddDynamic(this, &USKSkillMakerMainWidget::OnWeaponSelected);
+		WeaponSelectionWidget->OnWeaponSelected.AddDynamic(this, &USKSkillMakerEditorMainWidget::OnWeaponSelected);
 	}
 
 	if(AnimationSelectionWidget)
 	{
-		AnimationSelectionWidget->OnAnimationSelected.AddDynamic(this, &USKSkillMakerMainWidget::OnAnimationSelected);
+		AnimationSelectionWidget->OnAnimationSelected.AddDynamic(this, &USKSkillMakerEditorMainWidget::OnAnimationSelected);
 	}
 
 	if(SkillDetailWidget)
 	{
-		SkillDetailWidget->SetHUDReference(HUDReference);
+		SkillDetailWidget->SetSkillMakerEditorHUD(HUDReference);
 	}
 	
 	if(ModifySkillButton)
 	{
-		ModifySkillButton->OnClicked.AddDynamic(this, &USKSkillMakerMainWidget::OnModifySkillClicked);
+		ModifySkillButton->OnClicked.AddDynamic(this, &USKSkillMakerEditorMainWidget::OnModifySkillClicked);
 	}
 
 	if(CreateSkillButton)
 	{
-		CreateSkillButton->OnClicked.AddDynamic(this, &USKSkillMakerMainWidget::OnCreateSkillClicked);
+		CreateSkillButton->OnClicked.AddDynamic(this, &USKSkillMakerEditorMainWidget::OnCreateSkillClicked);
 	}
 
 	if(FinishEditingSkillButton)
 	{
-		FinishEditingSkillButton->OnClicked.AddDynamic(this, &USKSkillMakerMainWidget::OnFinishSkillEditing);
+		FinishEditingSkillButton->OnClicked.AddDynamic(this, &USKSkillMakerEditorMainWidget::OnFinishSkillEditing);
 	}
 	
 	if(SaveSkillButton)
 	{
-		SaveSkillButton->OnClicked.AddDynamic(this, &USKSkillMakerMainWidget::OnSaveSkillClicked);
+		SaveSkillButton->OnClicked.AddDynamic(this, &USKSkillMakerEditorMainWidget::OnSaveSkillClicked);
 	}
 
 	if(BackButton)
 	{
-		BackButton->OnClicked.AddDynamic(this, &USKSkillMakerMainWidget::OnBackClicked);
+		BackButton->OnClicked.AddDynamic(this, &USKSkillMakerEditorMainWidget::OnBackClicked);
 	}
 
 	return true;
 }
 
-void USKSkillMakerMainWidget::SetHUDReference(ASKSkillMakerHUD* InHUD)
+void USKSkillMakerEditorMainWidget::SetHUDReference(ASKSkillMakerEditorHUD* InHUD)
 {
 	SK_LOG(LogSkillMaker, Log, TEXT("Begin"));
 	
@@ -80,11 +80,11 @@ void USKSkillMakerMainWidget::SetHUDReference(ASKSkillMakerHUD* InHUD)
 
 	if(SkillDetailWidget)
 	{
-		SkillDetailWidget->SetHUDReference(HUDReference);
+		SkillDetailWidget->SetSkillMakerEditorHUD(HUDReference);
 	}
 }
 
-void USKSkillMakerMainWidget::SetSkillMakerState(ESKSkillMakerState NewState, bool bFromBackNavigation)
+void USKSkillMakerEditorMainWidget::SetSkillMakerState(ESKSkillMakerState NewState, bool bFromBackNavigation)
 {
 	SK_LOG(LogSkillMaker, Log, TEXT("Begin"));
 	
@@ -115,7 +115,7 @@ void USKSkillMakerMainWidget::SetSkillMakerState(ESKSkillMakerState NewState, bo
 	SkillMakerSwitcher->SetActiveWidgetIndex(static_cast<int32>(NewState));
 }
 
-void USKSkillMakerMainWidget::GoBackToPreviousState()
+void USKSkillMakerEditorMainWidget::GoBackToPreviousState()
 {
 	SK_LOG(LogSkillMaker, Log, TEXT("Begin"));
 	
@@ -131,20 +131,20 @@ void USKSkillMakerMainWidget::GoBackToPreviousState()
 	SetSkillMakerState(PreviousState, true);
 }
 
-void USKSkillMakerMainWidget::OnModifySkillClicked()
+void USKSkillMakerEditorMainWidget::OnModifySkillClicked()
 {
 	SK_LOG(LogSkillMaker, Log, TEXT("기존 스킬 수정 시작"));
 	OnSkillDataFromTable.Broadcast();
 	SetSkillMakerState(ESKSkillMakerState::ChooseSkill, false);
 }
 
-void USKSkillMakerMainWidget::OnCreateSkillClicked()
+void USKSkillMakerEditorMainWidget::OnCreateSkillClicked()
 {
 	SK_LOG(LogSkillMaker, Log, TEXT("새로운 스킬 생성 시작"));
 	SetSkillMakerState(ESKSkillMakerState::ChooseWeapon, false);
 }
 
-void USKSkillMakerMainWidget::OnSkillSelected(const FName& SkillID)
+void USKSkillMakerEditorMainWidget::OnSkillSelected(const FName& SkillID)
 {
 	SK_LOG(LogSkillMaker, Log, TEXT("Begin"));
 	
@@ -165,7 +165,7 @@ void USKSkillMakerMainWidget::OnSkillSelected(const FName& SkillID)
 	SetSkillMakerState(ESKSkillMakerState::SkillDetail, false);
 }
 
-void USKSkillMakerMainWidget::OnWeaponSelected(const FString& WeaponType)
+void USKSkillMakerEditorMainWidget::OnWeaponSelected(const FString& WeaponType)
 {
 	SK_LOG(LogSkillMaker, Log, TEXT("Begin"));
 	
@@ -188,7 +188,7 @@ void USKSkillMakerMainWidget::OnWeaponSelected(const FString& WeaponType)
 	SetSkillMakerState(ESKSkillMakerState::ChooseAnimation, false);
 }
 
-void USKSkillMakerMainWidget::OnAnimationSelected(UAnimMontage* AnimationMontage)
+void USKSkillMakerEditorMainWidget::OnAnimationSelected(UAnimMontage* AnimationMontage)
 {
 	SK_LOG(LogSkillMaker, Log, TEXT("Begin"));
 	
@@ -216,14 +216,14 @@ void USKSkillMakerMainWidget::OnAnimationSelected(UAnimMontage* AnimationMontage
 	}
 }
 
-void USKSkillMakerMainWidget::OnFinishSkillEditing()
+void USKSkillMakerEditorMainWidget::OnFinishSkillEditing()
 {
 	SK_LOG(LogSkillMaker, Log, TEXT("Begin"));
 	
 	SetSkillMakerState(ESKSkillMakerState::SaveSkill, false);
 }
 
-void USKSkillMakerMainWidget::OnSaveSkillClicked()
+void USKSkillMakerEditorMainWidget::OnSaveSkillClicked()
 {
 	SK_LOG(LogSkillMaker, Log, TEXT("Begin"));
 	
@@ -257,7 +257,7 @@ void USKSkillMakerMainWidget::OnSaveSkillClicked()
 	SetSkillMakerState(ESKSkillMakerState::ChooseAction, false);
 }
 
-void USKSkillMakerMainWidget::OnBackClicked()
+void USKSkillMakerEditorMainWidget::OnBackClicked()
 {
 	GoBackToPreviousState();
 }

@@ -5,7 +5,8 @@
 #include "GameFramework/SpringArmComponent.h"
 #include "Camera/CameraComponent.h"
 #include "Logging/SKLogSkillMakerMacro.h"
-#include "Skill/SKSkillManager.h"
+#include "Player/SKPlayerController.h"
+#include "UI/UI-SkillMaker/TrainingRoom/SKSkillMakerTrainHUD.h"
 
 ASKPlayerCharacter::ASKPlayerCharacter()
 {
@@ -24,19 +25,12 @@ void ASKPlayerCharacter::BeginPlay()
 	SK_LOG(LogSkillMaker, Log, TEXT("ASKPlayerCharacter::BeginPlay() Begin"));
 	
 	Super::BeginPlay();
-
-	CurrentSkillData = USKSkillManager::Get()->GetSkillDataByID("FireBall1");
-
-	if (CurrentSkillData.IsSet())
-	{
-		SK_LOG(LogSkillMaker, Log, TEXT("스킬 세팅 완료."));
-	}
 }
 
 void ASKPlayerCharacter::Move(const FInputActionValue& Value)
 {
 	// input is a Vector2D
-	FVector2D MovementVector = Value.Get<FVector2D>();
+	const FVector2D MovementVector = Value.Get<FVector2D>();
 
 	if (Controller)
 	{
@@ -59,12 +53,34 @@ void ASKPlayerCharacter::Move(const FInputActionValue& Value)
 void ASKPlayerCharacter::Look(const FInputActionValue& Value)
 {
 	// input is a Vector2D
-	FVector2D LookAxisVector = Value.Get<FVector2D>();
+	const FVector2D LookAxisVector = Value.Get<FVector2D>();
 
 	if (Controller)
 	{
 		AddControllerYawInput(LookAxisVector.X);
 		AddControllerPitchInput(LookAxisVector.Y);
+	}
+}
+
+void ASKPlayerCharacter::SetInteractableTarget(AActor* Target)
+{
+	if (ASKPlayerController* PlayerController = Cast<ASKPlayerController>(GetWorld()->GetFirstPlayerController()))
+	{
+		if(ASKSkillMakerTrainHUD* SkillMakerTrainHUD = Cast<ASKSkillMakerTrainHUD>(PlayerController->GetHUD()))
+		{
+			// SkillMakerTrainHUD->ShowInteractionWidget();	
+		}
+	}
+}
+
+void ASKPlayerCharacter::ClearInteractableTarget(AActor* Target)
+{
+	if (ASKPlayerController* PlayerController = Cast<ASKPlayerController>(GetWorld()->GetFirstPlayerController()))
+	{
+		if(ASKSkillMakerTrainHUD* SkillMakerTrainHUD = Cast<ASKSkillMakerTrainHUD>(PlayerController->GetHUD()))
+		{
+			// SkillMakerTrainHUD->HideInteractionText();	
+		}
 	}
 }
 

@@ -7,7 +7,8 @@
 #include "Skill/SKSkillData.h"
 #include "SKSkillDetailWidget.generated.h"
 
-class ASKSkillMakerHUD;
+class ASKSkillMakerTrainHUD;
+class ASKSkillMakerEditorHUD;
 class UComboBoxString;
 class UEditableTextBox;
 class USlider;
@@ -18,6 +19,13 @@ class USKStatusEffectCardWidget;
 class USKProjectileSelectionWidget;
 class USKAnimNotifySelectionWidget;
 
+UENUM(BlueprintType)
+enum class ESKHUDClass : uint8
+{
+	SkillMakerEditor,
+	SkillMakerTrain,
+};
+
 UCLASS()
 class SKILLMAKER_API USKSkillDetailWidget : public UUserWidget
 {
@@ -27,7 +35,8 @@ public:
 	virtual void NativeConstruct() override;
 
 	/** HUD 레퍼런스 설정 */
-	void SetHUDReference(ASKSkillMakerHUD* InHUD);
+	void SetSkillMakerEditorHUD(ASKSkillMakerEditorHUD* InHUD);
+	void SetSkillMakerTrainHUD(ASKSkillMakerTrainHUD* InHUD);
 
 	/** UI에서 수정된 데이터를 HUD에 저장 */
 	void SaveSkillData();
@@ -38,7 +47,10 @@ public:
 protected:
 	/** HUD 참조 */
 	UPROPERTY()
-	TObjectPtr<ASKSkillMakerHUD> HUDReference;
+	TObjectPtr<ASKSkillMakerEditorHUD> SkillMakerEditorHUDReference;
+
+	UPROPERTY()
+	TObjectPtr<ASKSkillMakerTrainHUD> SkillMakerTrainHUDReference;
 
 	/** 현재 수정 중인 스킬 데이터 */	
 	TOptional<FSKSkillData> EditingSkillData;
@@ -100,6 +112,7 @@ protected:
 	TObjectPtr<UButton> PreviewSkillButton;
 
 private:
+	
 	/** UI 요소 -> HUD 데이터로 초기화 */
 	void PopularSkillDetails();
 

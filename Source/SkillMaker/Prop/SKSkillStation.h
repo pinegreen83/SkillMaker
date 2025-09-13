@@ -13,5 +13,11 @@ UCLASS()
 class SKILLMAKER_API ASKSkillStation : public ASKInteractableActor
 {
 	GENERATED_BODY()
-	
+
+public:
+	virtual void OnInteract() override;
+
+protected:
+	UPROPERTY(EditAnywhere, Category = "SkillMaker")
+	TSubclassOf<class UUserWidget> SkillEditorWidgetClass;
 };

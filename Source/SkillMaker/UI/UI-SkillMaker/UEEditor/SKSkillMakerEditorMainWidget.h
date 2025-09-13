@@ -4,7 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "Blueprint/UserWidget.h"
-#include "SKSkillMakerMainWidget.generated.h"
+#include "SKSkillMakerEditorMainWidget.generated.h"
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnSkillDataFromTable);
 
@@ -15,7 +15,7 @@ class USKAnimationSelectionWidget;
 class USKSkillSelectionWidget;
 class USKSkillDetailWidget;
 class UEditableTextBox;
-class ASKSkillMakerHUD;
+class ASKSkillMakerEditorHUD;
 
 UENUM(BlueprintType)
 enum class ESKSkillMakerState : uint8
@@ -29,14 +29,14 @@ enum class ESKSkillMakerState : uint8
 };
 
 UCLASS()
-class SKILLMAKER_API USKSkillMakerMainWidget : public UUserWidget
+class SKILLMAKER_API USKSkillMakerEditorMainWidget : public UUserWidget
 {
 	GENERATED_BODY()
 
 public:
 	virtual bool Initialize() override;
 
-	void SetHUDReference(ASKSkillMakerHUD* InHUD);
+	void SetHUDReference(ASKSkillMakerEditorHUD* InHUD);
 	
 	void SetSkillMakerState(ESKSkillMakerState NewState, bool bFromBackNavigation);
 
@@ -80,7 +80,7 @@ protected:
 	TObjectPtr<UButton> BackButton;
 
 	UPROPERTY()
-	TObjectPtr<ASKSkillMakerHUD> HUDReference;
+	TObjectPtr<ASKSkillMakerEditorHUD> HUDReference;
 
 	FString SelectedWeaponType;
 

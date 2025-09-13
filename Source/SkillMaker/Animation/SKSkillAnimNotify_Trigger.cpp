@@ -48,8 +48,6 @@ void USKSkillAnimNotify_Trigger::Notify(USkeletalMeshComponent* MeshComp, UAnimS
 		SK_LOG(LogSkillMaker, Log, TEXT("애님 노티파이 실행 실패: %s, 이름이 다름 : %s != %s"), *SkillData.SkillName, *NotifyTriggerName.ToString(), *SkillData.NotifyName.ToString());
 	}
 	
-	// OnSkillNotifyTriggered.Broadcast(EffectName);
-	
 	// SpawnSkillEffect(Character, SkillData);
 	// ApplyAOEEffect(Character, SkillData);
 	// SpawnProjectile(Character, SkillData);

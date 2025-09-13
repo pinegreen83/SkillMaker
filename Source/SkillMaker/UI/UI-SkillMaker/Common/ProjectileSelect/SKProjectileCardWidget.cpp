@@ -1,7 +1,7 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 
-#include "UI/UI-SkillMaker/SKProjectileCardWidget.h"
+#include "UI/UI-SkillMaker/Common/ProjectileSelect/SKProjectileCardWidget.h"
 #include "Components/Button.h"
 #include "Components/TextBlock.h"
 #include "Logging/SKLogSkillMakerMacro.h"

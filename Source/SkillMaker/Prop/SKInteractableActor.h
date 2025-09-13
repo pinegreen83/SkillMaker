@@ -11,16 +11,28 @@ class SKILLMAKER_API ASKInteractableActor : public AActor
 {
 	GENERATED_BODY()
 	
-public:	
-	// Sets default values for this actor's properties
+public:
 	ASKInteractableActor();
 
-protected:
-	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
+	
+	UFUNCTION(BlueprintCallable, Category = "Interaction")
+	virtual void OnInteract();
+	
+protected:
+	UPROPERTY(EditAnywhere, Category = "Interaction")
+	TObjectPtr<class UStaticMeshComponent> StaticMeshComponent;
 
-public:	
-	// Called every frame
-	virtual void Tick(float DeltaTime) override;
+	UPROPERTY(EditAnywhere, Category = "Interaction")
+	TObjectPtr<class UBoxComponent> InteractionTrigger;
+	
+	UPROPERTY(EditAnywhere, Category = "Interaction")
+	float InteractionRange = 200.f;
 
+	UFUNCTION(BlueprintCallable, Category = "Interaction")
+	void OnPlayerEnter(UPrimitiveComponent* OverlappedComp, AActor* OtherActor,
+		UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
+
+	UFUNCTION(BlueprintCallable, Category = "Interaction")
+	void OnPlayerExit(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex);
 };

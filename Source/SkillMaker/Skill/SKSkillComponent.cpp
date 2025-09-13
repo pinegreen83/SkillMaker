@@ -5,6 +5,7 @@
 #include "SKSkillManager.h"
 #include "GameFramework/Character.h"
 #include "Animation/AnimInstance.h"
+#include "Character/SKPlayerCharacter.h"
 #include "Logging/SKLogSkillMakerMacro.h"
 
 // Sets default values for this component's properties
@@ -12,6 +13,18 @@ USKSkillComponent::USKSkillComponent()
 {
 	PrimaryComponentTick.bCanEverTick = false;
 	SetIsReplicatedByDefault(true);
+
+	SkillMap.Empty();
+}
+
+void USKSkillComponent::SetSkillDataInMap(const FSKSkillData& SkillData)
+{
+	SkillMap.Add(SkillData.SkillID, SkillData);
+}
+
+void USKSkillComponent::SetSkillMapInComponent(const TMap<FName, FSKSkillData>& SkillDataMap)
+{
+	SkillMap = SkillDataMap;
 }
 
 // Component에서 스킬 실행
@@ -22,22 +35,26 @@ void USKSkillComponent::ClientRequestUseSkill(const FName& SkillID)
 	// 서버에서 스킬 실행
 	if(GetOwner()->HasAuthority())
 	{
-		TOptional<FSKSkillData> SkillData = USKSkillManager::Get()->GetSkillDataByID(SkillID);
-		if(SkillData.IsSet())
+		SK_LOG(LogSkillMaker, Log, TEXT("서버에서 스킬 실행"));
+		if(const FSKSkillData* SkillData = SkillMap.Find(SkillID))
 		{
-			ExecuteSkill(SkillData.GetValue());
+			ExecuteSkill(*SkillData);
 		}
 	}
 	// 클라이언트에서 요청
 	else
 	{
+		SK_LOG(LogSkillMaker, Log, TEXT("클라이언트에서 서버에 요청"));
 		ServerUseSkill(SkillID);
 	}
 }
 
 bool USKSkillComponent::ServerUseSkill_Validate(const FName& SkillID)
 {
-	return SkillID.IsValid();
+	if(SkillMap.Contains(SkillID) || SkillCooldowns.Contains(SkillID))
+		return SkillID.IsValid();
+
+	return false;
 }
 
 void USKSkillComponent::ServerUseSkill_Implementation(const FName& SkillID)
@@ -50,10 +67,9 @@ void USKSkillComponent::ServerUseSkill_Implementation(const FName& SkillID)
 		return;
 	}
 
-	TOptional<FSKSkillData> SkillData = USKSkillManager::Get()->GetSkillDataByID(SkillID);
-	if(SkillData.IsSet())
+	if(const FSKSkillData* SkillData = SkillMap.Find(SkillID))
 	{
-		ExecuteSkill(SkillData.GetValue());
+		ExecuteSkill(*SkillData);
 	}
 	else
 	{
@@ -72,11 +88,16 @@ void USKSkillComponent::MulticastExecuteSkill_Implementation(const FSKSkillData&
 		return;
 	}
 
-	UAnimInstance* AnimInstance = OwnerCharacter->GetMesh()->GetAnimInstance();
-	if(AnimInstance)
+	if(UAnimInstance* AnimInstance = OwnerCharacter->GetMesh()->GetAnimInstance())
 	{
-		AnimInstance->Montage_Play(SkillData.SkillMontage);
-		SK_LOG(LogSkillMaker, Log, TEXT("애니메이션 실행 : %s"), *SkillData.SkillName);
+		if (ASKPlayerCharacter* PlayerCharacter = Cast<ASKPlayerCharacter>(OwnerCharacter))
+		{
+			const TOptional<FSKSkillData> TempSkillData;
+			PlayerCharacter->SetCurrentSkillData(TempSkillData);
+		
+			AnimInstance->Montage_Play(SkillData.SkillMontage);
+			SK_LOG(LogSkillMaker, Log, TEXT("애니메이션 실행 : %s"), *SkillData.SkillName);
+		}
 	}
 }
 
@@ -89,6 +110,8 @@ void USKSkillComponent::ExecuteSkill(const FSKSkillData& SkillData)
 
 void USKSkillComponent::ApplyCooldown(const FName& SkillID, float CooldownTime)
 {
+	SK_LOG(LogSkillMaker, Log, TEXT("Begin"));
+	
 	if(CooldownTime > 0.0f)
 	{
 		float CooldownEndTime = GetWorld()->GetTimeSeconds() + CooldownTime;
@@ -109,8 +132,11 @@ void USKSkillComponent::ApplyCooldown(const FName& SkillID, float CooldownTime)
 
 void USKSkillComponent::ClearCooldown(FName SkillID)
 {
+	SK_LOG(LogSkillMaker, Log, TEXT("Begin"));
+	
 	SkillCooldowns.Remove(SkillID);
 	CooldownTimers.Remove(SkillID);
+	
 	SK_LOG(LogSkillMaker, Log, TEXT("쿨다운 해제 됨 : %s"), *SkillID.ToString());
 }
 

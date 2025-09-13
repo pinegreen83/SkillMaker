@@ -5,18 +5,18 @@
 #include "CoreMinimal.h"
 #include "GameFramework/HUD.h"
 #include "Skill/SKSkillData.h"
-#include "SKSkillMakerHUD.generated.h"
+#include "SKSkillMakerEditorHUD.generated.h"
 
-class USKSkillMakerMainWidget;
+class USKSkillMakerEditorMainWidget;
 class ASKPreviewCharacter;
 
 UCLASS()
-class SKILLMAKER_API ASKSkillMakerHUD : public AHUD
+class SKILLMAKER_API ASKSkillMakerEditorHUD : public AHUD
 {
 	GENERATED_BODY()
 
 public:
-	ASKSkillMakerHUD();
+	ASKSkillMakerEditorHUD();
 	
 	virtual void BeginPlay() override;
 
@@ -49,10 +49,10 @@ public:
 
 protected:
 	UPROPERTY(EditDefaultsOnly, Category = "UI")
-	TSubclassOf<USKSkillMakerMainWidget> MainWidgetClass;
+	TSubclassOf<USKSkillMakerEditorMainWidget> MainWidgetClass;
 
 	UPROPERTY()
-	TObjectPtr<USKSkillMakerMainWidget> MainWidget;
+	TObjectPtr<USKSkillMakerEditorMainWidget> MainWidget;
 
 	UPROPERTY(BlueprintReadWrite, Category = "Skill")
 	FSKSkillData CurrentEditingSkill;

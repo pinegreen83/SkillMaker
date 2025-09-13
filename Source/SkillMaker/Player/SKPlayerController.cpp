@@ -7,6 +7,7 @@
 #include "InputMappingContext.h"
 #include "Character/SKPlayerCharacter.h"
 #include "Logging/SKLogSkillMakerMacro.h"
+#include "Prop/SKInteractableActor.h"
 
 void ASKPlayerController::BeginPlay()
 {
@@ -70,6 +71,12 @@ void ASKPlayerController::SetupInputComponent()
 		{
 			EnhancedInputComponent->BindAction(KeyMapping.Value, ETriggerEvent::Triggered, this, &ASKPlayerController::UseSkillByKey, KeyMapping.Key);
 		}
+
+		// Interact
+		if(InteractAction)
+		{
+			EnhancedInputComponent->BindAction(InteractAction, ETriggerEvent::Triggered, this, &ASKPlayerController::TryInteract);
+		}
 	}
 }
 
@@ -97,7 +104,7 @@ void ASKPlayerController::UseSkillByKey(FKey PressedKey)
 	}
 }
 
-void ASKPlayerController::SetSkillInSlot(int32 SlotIndex, FName SkillID)
+void ASKPlayerController::SetSkillInSlot(const int32& SlotIndex, const FName& SkillID)
 {
 	SK_LOG(LogSkillMaker, Log, TEXT("Begin"));
 	
@@ -108,7 +115,7 @@ void ASKPlayerController::SetSkillInSlot(int32 SlotIndex, FName SkillID)
 	}
 }
 
-FName ASKPlayerController::GetSkillInSlot(int32 SlotIndex) const
+FName ASKPlayerController::GetSkillInSlot(const int32& SlotIndex) const
 {
 	SK_LOG(LogSkillMaker, Log, TEXT("Begin"));
 	
@@ -119,7 +126,7 @@ FName ASKPlayerController::GetSkillInSlot(int32 SlotIndex) const
 	return NAME_None;
 }
 
-void ASKPlayerController::SetKeyForSkillSlot(FKey NewKey, int32 SlotIndex)
+void ASKPlayerController::SetKeyForSkillSlot(const FKey& NewKey, const int32& SlotIndex)
 {
 	SK_LOG(LogSkillMaker, Log, TEXT("Begin"));
 	
@@ -143,11 +150,7 @@ void ASKPlayerController::SetKeyForSkillSlot(FKey NewKey, int32 SlotIndex)
 void ASKPlayerController::SkillInputSetup()
 {
 	// 기본 스킬 슬롯 초기화
-	SkillSlots.SetNum(4);
-	SkillSlots[0] = TEXT("Test1");  // 1번 스킬
-	SkillSlots[1] = TEXT("Test2");  // 2번 스킬
-	SkillSlots[2] = TEXT("Test3");  // 3번 스킬
-	SkillSlots[3] = TEXT("Test4");  // 4번 스킬
+	SkillSlots.SetNum(4); // 4번 스킬
 
 	// 키 세팅
 	KeyToSkillSlotMap.Add(EKeys::Q, SkillActionQ);
@@ -191,5 +194,21 @@ void ASKPlayerController::StopJumping()
 	if(ASKPlayerCharacter* PlayerCharacter = Cast<ASKPlayerCharacter>(GetPawn()))
 	{
 		PlayerCharacter->StopJumping();
+	}
+}
+
+void ASKPlayerController::TryInteract()
+{
+	FVector StartLocation = GetPawn()->GetActorLocation();
+	FVector EndLocation = StartLocation + GetPawn()->GetActorForwardVector() * 200.f;
+
+	FHitResult Hit;
+	FCollisionQueryParams CollisionParams;
+	if(GetWorld()->LineTraceSingleByChannel(Hit, StartLocation, EndLocation, ECollisionChannel::ECC_Visibility, CollisionParams))
+	{
+		if(ASKInteractableActor* InteractableActor = Cast<ASKInteractableActor>(Hit.GetActor()))
+		{
+			InteractableActor->OnInteract();
+		}
 	}
 }

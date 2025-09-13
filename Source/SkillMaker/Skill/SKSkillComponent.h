@@ -15,15 +15,19 @@ class SKILLMAKER_API USKSkillComponent : public UActorComponent
 public:	
 	USKSkillComponent();
 
+	void SetSkillDataInMap(const FSKSkillData& SkillData);
+	
+	void SetSkillMapInComponent(const TMap<FName, FSKSkillData>& SkillDataMap);
+	
 	/** 클라이언트가 서버에 스킬 사용 요청을 보내는 함수 */
+	UFUNCTION(BlueprintCallable, Category = "Skill")
+	void ClientRequestUseSkill(const FName& SkillID);
+	
 	UFUNCTION(BlueprintCallable, Server, Reliable, WithValidation, Category = "Skill")
 	void ServerUseSkill(const FName& SkillID);
 
 	UFUNCTION(NetMulticast, Reliable, Category = "Skill")
 	void MulticastExecuteSkill(const FSKSkillData& SkillData);
-
-	UFUNCTION(BlueprintCallable, Category = "Skill")
-	void ClientRequestUseSkill(const FName& SkillID);
 	
 	UFUNCTION(BlueprintPure, Category = "Skill")
 	bool IsSkillAvailable(const FName& SkillID) const;
@@ -55,4 +59,7 @@ protected:
 
 	UPROPERTY()
 	TMap<FName, FTimerHandle> CooldownTimers;
+
+	UPROPERTY()
+	TMap<FName, FSKSkillData> SkillMap;
 };

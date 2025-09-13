@@ -1,30 +1,30 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 
-#include "SKSkillMakerHUD.h"
-#include "SKSkillMakerMainWidget.h"
+#include "SKSkillMakerEditorHUD.h"
+#include "SKSkillMakerEditorMainWidget.h"
 #include "Skill/SKSkillManager.h"
 #include "Engine/Texture2D.h"
 #include "Character/SKPreviewCharacter.h"
 #include "GameFramework/PlayerController.h"
 #include "Logging/SKLogSkillMakerMacro.h"
 
-ASKSkillMakerHUD::ASKSkillMakerHUD()
+ASKSkillMakerEditorHUD::ASKSkillMakerEditorHUD()
 {
-	static ConstructorHelpers::FClassFinder<USKSkillMakerMainWidget> MainWidgetClassFinder(TEXT("/Game/SkillMaker/UI/WBP_SKSkillMakerMain.WBP_SKSkillMakerMain_C"));
+	static ConstructorHelpers::FClassFinder<USKSkillMakerEditorMainWidget> MainWidgetClassFinder(TEXT("/Game/SkillMaker/UI/WBP_SKSkillMakerMain.WBP_SKSkillMakerMain_C"));
 	if(MainWidgetClassFinder.Class)
 	{
 		MainWidgetClass = MainWidgetClassFinder.Class;
 	}
 }
 
-void ASKSkillMakerHUD::BeginPlay()
+void ASKSkillMakerEditorHUD::BeginPlay()
 {
 	Super::BeginPlay();
 
 	if(MainWidgetClass)
 	{
-		MainWidget = CreateWidget<USKSkillMakerMainWidget>(GetWorld(), MainWidgetClass);
+		MainWidget = CreateWidget<USKSkillMakerEditorMainWidget>(GetWorld(), MainWidgetClass);
 		if(MainWidget)
 		{
 			MainWidget->SetHUDReference(this);
@@ -44,7 +44,7 @@ void ASKSkillMakerHUD::BeginPlay()
 	}
 }
 
-void ASKSkillMakerHUD::InitializeNewSkill()
+void ASKSkillMakerEditorHUD::InitializeNewSkill()
 {
 	SK_LOG(LogSkillMaker, Log, TEXT("Begin"));
 	
@@ -53,7 +53,7 @@ void ASKSkillMakerHUD::InitializeNewSkill()
 	SK_LOG(LogSkillMaker, Log, TEXT("새로운 스킬 초기화됨."));
 }
 
-void ASKSkillMakerHUD::LoadSkillForEditing(const FName& SkillID)
+void ASKSkillMakerEditorHUD::LoadSkillForEditing(const FName& SkillID)
 {
 	SK_LOG(LogSkillMaker, Log, TEXT("Begin"));
 	
@@ -68,29 +68,29 @@ void ASKSkillMakerHUD::LoadSkillForEditing(const FName& SkillID)
 	}
 }
 
-const FSKSkillData& ASKSkillMakerHUD::GetCurrentSkillData() const
+const FSKSkillData& ASKSkillMakerEditorHUD::GetCurrentSkillData() const
 {
 	return CurrentEditingSkill;
 }
 
-void ASKSkillMakerHUD::SetCurrentSkillData(FSKSkillData SkillData)
+void ASKSkillMakerEditorHUD::SetCurrentSkillData(FSKSkillData SkillData)
 {
 	CurrentEditingSkill = SkillData;
 }
 
-void ASKSkillMakerHUD::SetSkillName(const FString& SkillName)
+void ASKSkillMakerEditorHUD::SetSkillName(const FString& SkillName)
 {
 	CurrentEditingSkill.SkillName = SkillName;
 	SK_LOG(LogSkillMaker, Log, TEXT("스킬 이름 설정 : %s"), *SkillName);
 }
 
-void ASKSkillMakerHUD::SetSkillWeaponType(const FString& WeaponType)
+void ASKSkillMakerEditorHUD::SetSkillWeaponType(const FString& WeaponType)
 {
 	CurrentEditingSkill.WeaponType = WeaponType;
 	SK_LOG(LogSkillMaker, Log, TEXT("무기 타입 설정 : %s"), *WeaponType);
 }
 
-void ASKSkillMakerHUD::SetSkillMontage(UAnimMontage* Montage)
+void ASKSkillMakerEditorHUD::SetSkillMontage(UAnimMontage* Montage)
 {
 	if(Montage)
 	{
@@ -100,7 +100,7 @@ void ASKSkillMakerHUD::SetSkillMontage(UAnimMontage* Montage)
 	}
 }
 
-void ASKSkillMakerHUD::LogCurrentSkillData()
+void ASKSkillMakerEditorHUD::LogCurrentSkillData()
 {
 	SK_LOG(LogSkillMaker, Log, TEXT("==== 현재 스킬 데이터 ===="));
 	SK_LOG(LogSkillMaker, Log, TEXT("스킬 이름 : %s"), *CurrentEditingSkill.SkillName);
@@ -116,7 +116,7 @@ void ASKSkillMakerHUD::LogCurrentSkillData()
 	SK_LOG(LogSkillMaker, Log, TEXT("=================="));
 }
 
-void ASKSkillMakerHUD::PreviewSkillEffect(const FSKSkillData& SkillData)
+void ASKSkillMakerEditorHUD::PreviewSkillEffect(const FSKSkillData& SkillData)
 {
 	SK_LOG(LogSkillMaker, Log, TEXT("Begin"));
 	
@@ -126,6 +126,6 @@ void ASKSkillMakerHUD::PreviewSkillEffect(const FSKSkillData& SkillData)
 		return;
 	}
 
-	PreviewCharacter->SetSkillData(SkillData);
+	PreviewCharacter->SetSkillDataInMap(SkillData);
 	PreviewCharacter->UseSkill(SkillData.SkillID); 
 }

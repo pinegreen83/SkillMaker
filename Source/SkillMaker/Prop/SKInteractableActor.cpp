@@ -3,6 +3,10 @@
 
 #include "Prop/SKInteractableActor.h"
 
+#include "Character/SKPlayerCharacter.h"
+#include "Components/BoxComponent.h"
+#include "Slate/SGameLayerManager.h"
+
 // Sets default values
 ASKInteractableActor::ASKInteractableActor()
 {
@@ -11,17 +15,33 @@ ASKInteractableActor::ASKInteractableActor()
 
 }
 
-// Called when the game starts or when spawned
 void ASKInteractableActor::BeginPlay()
 {
 	Super::BeginPlay();
-	
+
+	InteractionTrigger->OnComponentBeginOverlap.AddDynamic(this, &ASKInteractableActor::OnPlayerEnter);
+	InteractionTrigger->OnComponentEndOverlap.AddDynamic(this, &ASKInteractableActor::OnPlayerExit);
 }
 
-// Called every frame
-void ASKInteractableActor::Tick(float DeltaTime)
+void ASKInteractableActor::OnInteract()
 {
-	Super::Tick(DeltaTime);
+}
 
+void ASKInteractableActor::OnPlayerEnter(UPrimitiveComponent* OverlappedComp, AActor* OtherActor,
+	UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
+{
+	if (ASKPlayerCharacter* PlayerCharacter = Cast<ASKPlayerCharacter>(OtherActor))
+	{
+		PlayerCharacter->SetInteractableTarget(this);
+	}
+}
+
+void ASKInteractableActor::OnPlayerExit(UPrimitiveComponent* OverlappedComp, AActor* OtherActor,
+	UPrimitiveComponent* OtherComp, int32 OtherBodyIndex)
+{
+	if (ASKPlayerCharacter* PlayerCharacter = Cast<ASKPlayerCharacter>(OtherActor))
+	{
+		PlayerCharacter->ClearInteractableTarget(this);
+	}
 }
 

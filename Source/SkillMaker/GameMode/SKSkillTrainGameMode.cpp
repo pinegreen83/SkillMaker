@@ -2,8 +2,7 @@
 
 
 #include "SKSkillTrainGameMode.h"
-#include "Logging/SKLogSkillMakerMacro.h"
-#include "Skill/SKSkillManager.h"
+#include "UI/UI-SkillMaker/TrainingRoom/SKSkillMakerTrainHUD.h"
 
 ASKSkillTrainGameMode::ASKSkillTrainGameMode()
 {
@@ -18,23 +17,6 @@ ASKSkillTrainGameMode::ASKSkillTrainGameMode()
 	{
 		PlayerControllerClass = PlayerControllerClassRef.Class;
 	}
-}
 
-void ASKSkillTrainGameMode::BeginPlay()
-{
-	Super::BeginPlay();
-
-	if(USKSkillManager::Get())
-	{
-		USKSkillManager::Get()->SkillDataTable = LoadObject<UDataTable>(nullptr, TEXT("/Game/SkillMaker/Data/DT_SkillData.DT_SkillData"));
-
-		if(USKSkillManager::Get()->SkillDataTable)
-		{
-			SK_LOG(LogSkillMaker, Log, TEXT("SkillDataTable 초기화 완료."));
-		}
-		else
-		{
-			SK_LOG(LogSkillMaker, Error, TEXT("SkillDataTable 초기화 실패!"));
-		}
-	}
+	HUDClass = ASKSkillMakerTrainHUD::StaticClass();
 }

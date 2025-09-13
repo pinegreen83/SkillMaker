@@ -16,10 +16,11 @@ class SKILLMAKER_API ASKPlayerController : public APlayerController
 {
 	GENERATED_BODY()
 
-protected:
+public:
 	virtual void BeginPlay() override;
 	virtual void SetupInputComponent() override;
 
+protected:
 	/** MappingContext */
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
 	TObjectPtr<UInputMappingContext> DefaultMappingContext;
@@ -35,6 +36,10 @@ protected:
 	/** Jumping Input Action */
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
 	TObjectPtr<UInputAction> JumpAction;
+
+	/** Interact Props*/
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
+	TObjectPtr<UInputAction> InteractAction;
 
 	/** 스킬 사용 액션 */
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
@@ -63,15 +68,15 @@ protected:
 public:
 	/** 특정 슬롯의 스킬을 변경하는 함수 */
 	UFUNCTION(BlueprintCallable, Category = "Skill")
-	void SetSkillInSlot(int32 SlotIndex, FName SkillID);
+	void SetSkillInSlot(const int32& SlotIndex, const FName& SkillID);
 
 	/** 특정 슬롯의 스킬을 가져오는 함수 */
 	UFUNCTION(BlueprintCallable, Category = "Skill")
-	FName GetSkillInSlot(int32 SlotIndex) const;
+	FName GetSkillInSlot(const int32& SlotIndex) const;
 
 	/** 키를 특정 스킬 슬롯에 매핑 */
 	UFUNCTION(BlueprintCallable, Category = "Skill")
-	void SetKeyForSkillSlot(FKey NewKey, int32 SlotIndex);
+	void SetKeyForSkillSlot(const FKey& NewKey, const int32& SlotIndex);
 
 protected:
 	/** 스킬 입력 세팅 */
@@ -85,6 +90,8 @@ protected:
 
 	void Jump();
 	void StopJumping();
+
+	void TryInteract();
 	
 	/** 특정 키로 스킬 사용 */
 	void UseSkillByKey(FKey PressedKey);

@@ -2,14 +2,14 @@
 
 
 #include "SKSkillMakerGameMode.h"
-#include "UI/UI-SkillMaker/SKSkillMakerHUD.h"
+#include "UI/UI-SkillMaker/UEEditor/SKSkillMakerEditorHUD.h"
 #include "Data/SKDataManager.h"
 #include "Logging/SKLogSkillMakerMacro.h"
 #include "Skill/SKSkillManager.h"
 
 ASKSkillMakerGameMode::ASKSkillMakerGameMode()
 {
-	HUDClass = ASKSkillMakerHUD::StaticClass();
+	HUDClass = ASKSkillMakerEditorHUD::StaticClass();
 	static ConstructorHelpers::FClassFinder<APlayerController> PlayerControllerClassRef(TEXT("/Script/Engine.Blueprint'/Game/SkillMaker/Blueprint/Controller/BP_SKSkillMakerController.BP_SKSkillMakerController_C'"));
 	if(PlayerControllerClassRef.Class)
 	{

@@ -16,6 +16,4 @@ class SKILLMAKER_API ASKSkillTrainGameMode : public AGameModeBase
 
 public:
 	ASKSkillTrainGameMode();
-
-	virtual void BeginPlay() override;
 };

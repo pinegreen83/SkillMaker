@@ -6,7 +6,8 @@
 #include "Skill/SKSkillData.h"
 #include "Skill/SKSkillManager.h"
 #include "SKSkillCardWidget.h"
-#include "SKSkillMakerMainWidget.h"
+#include "UI/UI-SkillMaker/UEEditor/SKSkillMakerEditorMainWidget.h"
+#include "UI/UI-SkillMaker/TrainingRoom/SKSkillMakerTrainHUD.h"
 #include "Logging/SKLogSkillMakerMacro.h"
 
 void USKSkillSelectionWidget::NativeConstruct()
@@ -16,7 +17,7 @@ void USKSkillSelectionWidget::NativeConstruct()
 	LoadSkillList();
 }
 
-void USKSkillSelectionWidget::SetMainWidget(USKSkillMakerMainWidget* Main)
+void USKSkillSelectionWidget::SetMainWidget(USKSkillMakerEditorMainWidget* Main)
 {
 	SK_LOG(LogSkillMaker, Log, TEXT("Begin"));
 	

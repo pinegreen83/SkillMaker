@@ -36,6 +36,10 @@ public:
 	/** 카메라 회전 */
 	void Look(const FInputActionValue& Value);
 
+	void SetInteractableTarget(AActor* Target);
+
+	void ClearInteractableTarget(AActor* Target);
+	
 	/** 스킬 사용 */
 	virtual void UseSkill(const FName& SkillID) override;
 };
