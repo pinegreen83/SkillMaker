@@ -17,19 +17,31 @@ void USKSkillSelectionWidget::NativeConstruct()
 	LoadSkillList();
 }
 
-void USKSkillSelectionWidget::SetMainWidget(USKSkillMakerEditorMainWidget* Main)
+void USKSkillSelectionWidget::SetEditorMainWidget(USKSkillMakerEditorMainWidget* Main)
 {
 	SK_LOG(LogSkillMaker, Log, TEXT("Begin"));
 	
-	MainWidget = Main;
+	EditorMainWidget = Main;
 	
-	if (MainWidget)
+	if (EditorMainWidget)
 	{
-		MainWidget->OnSkillDataFromTable.AddDynamic(this, &USKSkillSelectionWidget::LoadSkillList);
+		EditorMainWidget->OnSkillDataFromTable.AddDynamic(this, &USKSkillSelectionWidget::LoadSkillList);
 	}
 	else
 	{
 		SK_LOG(LogSkillMaker, Log, TEXT("No MainWidget"));
+	}
+}
+
+void USKSkillSelectionWidget::SetTrainMainWidget(USKSkillMakerTrainMainWidget* Main)
+{
+	SK_LOG(LogSkillMaker, Log, TEXT("Begin"));
+
+	TrainMainWidget = Main;
+
+	if (TrainMainWidget)
+	{
+		
 	}
 }
 

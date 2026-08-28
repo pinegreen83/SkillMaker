@@ -17,15 +17,14 @@ bool USKSkillMakerEditorMainWidget::Initialize()
 {
 	SK_LOG(LogSkillMaker, Log, TEXT("Begin"));
 	
-	bool Success = Super::Initialize();
-	if(!Success)
+	if(!Super::Initialize())
 		return false;
 
 	PreviousStates.Add(ESKSkillMakerState::ChooseAction);
 	
 	if(SkillSelectionWidget)
 	{
-		SkillSelectionWidget->SetMainWidget(this);
+		SkillSelectionWidget->SetEditorMainWidget(this);
 		SkillSelectionWidget->OnSkillSelected.AddDynamic(this, &USKSkillMakerEditorMainWidget::OnSkillSelected);
 	}
 	

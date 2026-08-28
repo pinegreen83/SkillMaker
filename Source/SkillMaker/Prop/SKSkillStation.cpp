@@ -2,18 +2,22 @@
 
 
 #include "Prop/SKSkillStation.h"
-#include "Blueprint/UserWidget.h"
+#include "UI/UI-SkillMaker/TrainingRoom/SKSkillMakerTrainMainWidget.h"
+
 
 void ASKSkillStation::OnInteract()
 {
 	Super::OnInteract();
 
-	// if (SkillEditorWidgetClass)
-	// {
-	// 	UUserWidget* SkillEditor = CreateWidget<UUserWidget>(this, SkillEditorWidgetClass);
-	// 	if (SkillEditor)
-	// 	{
-	// 		SkillEditor->AddToViewport(0);
-	// 	}
-	// }
+	if (SkillMakerTrainMainWidgetClass)
+	{
+		if (USKSkillMakerTrainMainWidget* SkillTrainMain = CreateWidget<USKSkillMakerTrainMainWidget>(this, SkillMakerTrainMainWidgetClass))
+		{
+			if (CurrentPlayerCharacter)
+			{
+				SkillTrainMain->StartSkillMaker(CurrentPlayerCharacter);
+				SkillTrainMain->AddToViewport(0);
+			}
+		}
+	}
 }

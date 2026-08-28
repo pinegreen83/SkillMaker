@@ -2,6 +2,8 @@
 
 
 #include "SKSkillMakerTrainHUD.h"
+
+#include "SKSkillMakerTrainMainWidget.h"
 #include "Skill/SKSkillManager.h"
 #include "Engine/Texture2D.h"
 #include "GameFramework/PlayerController.h"
@@ -20,16 +22,14 @@ void ASKSkillMakerTrainHUD::BeginPlay()
 {
 	Super::BeginPlay();
 
-	// if(MainWidgetClass)
-	// {
-	// 	MainWidget = CreateWidget<USKSkillMakerEditorMainWidget>(GetWorld(), MainWidgetClass);
-	// 	if(MainWidget)
-	// 	{
-	// 		MainWidget->SetHUDReference(this);
-	// 	}
-	// }
-	
-	// InitializeNewSkill();
+	if(MainWidgetClass)
+	{
+		MainWidget = CreateWidget<USKSkillMakerTrainMainWidget>(GetWorld(), MainWidgetClass);
+		if(MainWidget)
+		{
+			MainWidget->SetHUDReference(this);
+		}
+	}
 }
 
 void ASKSkillMakerTrainHUD::InitializeNewSkill()
@@ -43,6 +43,7 @@ void ASKSkillMakerTrainHUD::InitializeNewSkill()
 
 void ASKSkillMakerTrainHUD::LoadSkillForEditing(const FName& SkillID)
 {
+	
 }
 
 const FSKSkillData& ASKSkillMakerTrainHUD::GetCurrentSkillData() const
@@ -59,12 +60,6 @@ void ASKSkillMakerTrainHUD::SetSkillName(const FString& SkillName)
 {
 	CurrentEditingSkill.SkillName = SkillName;
 	SK_LOG(LogSkillMaker, Log, TEXT("스킬 이름 설정 : %s"), *SkillName);
-}
-
-void ASKSkillMakerTrainHUD::SetSkillWeaponType(const FString& WeaponType)
-{
-	CurrentEditingSkill.WeaponType = WeaponType;
-	SK_LOG(LogSkillMaker, Log, TEXT("무기 타입 설정 : %s"), *WeaponType);
 }
 
 void ASKSkillMakerTrainHUD::SetSkillMontage(UAnimMontage* Montage)

@@ -21,8 +21,8 @@ UENUM(BlueprintType)
 enum class ESKSkillMakerTrainState : uint8
 {
 	ChooseAction,
+	ChooseSkillSet,
 	ChooseSkill,
-	ChooseWeapon,
 	ChooseAnimation,
 	SkillDetail,
 	SaveSkill
@@ -36,46 +36,53 @@ class SKILLMAKER_API USKSkillMakerTrainMainWidget : public UUserWidget
 public:	
 	virtual bool Initialize() override;
 
+	void StartSkillMaker(const FString& WeaponType);
+
 	void SetHUDReference(ASKSkillMakerTrainHUD* InHUD);
 	
 	void SetSkillMakerState(ESKSkillMakerTrainState NewState, bool bFromBackNavigation);
-
-	void GoBackToPreviousState();
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Skill")
 	FOnSkillDataFromSaveGame OnSkillDataFromSaveGame;
 
 protected:
+	// UI 위젯들을 소유하며 변경.
 	UPROPERTY(meta = (BindWidget))
 	TObjectPtr<UWidgetSwitcher> SkillMakerSwitcher;
 
+	// 스킬셋을 변경할 것인지 스킬셋을 새로 만들것인지, 어떤 스킬을 바꿀것인지 만들것인지 선택.
 	UPROPERTY(meta = (BindWidget))
 	TObjectPtr<USKSkillSelectionWidget> SkillSelectionWidget;
-	
-	UPROPERTY(meta = (BindWidget))
-	TObjectPtr<USKWeaponSelectionWidget> WeaponSelectionWidget;
 
+	// 스킬에 사용될 애니메이션을 선택.
 	UPROPERTY(meta = (BindWidget))
 	TObjectPtr<USKAnimationSelectionWidget> AnimationSelectionWidget;
 
+	// 스킬의 디테일을 수정.
 	UPROPERTY(meta = (BindWidget))
 	TObjectPtr<USKSkillDetailWidget> SkillDetailWidget;
-	
+
+	// 스킬 변경 시 누르는 버튼.
 	UPROPERTY(meta = (BindWidget))
 	TObjectPtr<UButton> ModifySkillButton;
 
+	// 스킬 생성 시 누르는 버튼.
 	UPROPERTY(meta = (BindWidget))
 	TObjectPtr<UButton> CreateSkillButton;
-	
+
+	// 스킬의 수정이 완료되었을 때 누르는 버튼.
 	UPROPERTY(meta = (BindWidget))
 	TObjectPtr<UButton> FinishEditingSkillButton;
 	
+	// 
 	UPROPERTY(meta = (BindWidget))
 	TObjectPtr<UButton> SaveSkillButton;
 
+	// 스킬 이름을 작성하는 텍스트 박스.
 	UPROPERTY(meta = (BindWidget))
 	TObjectPtr<UEditableTextBox> SkillNameInput;
 
+	// 뒤로가기 버튼.
 	UPROPERTY(meta = (BindWidget))
 	TObjectPtr<UButton> BackButton;
 
@@ -85,17 +92,19 @@ protected:
 	FString SelectedWeaponType;
 
 private:
+	void GoBackToPreviousState();
+	
 	UFUNCTION()
-	void OnModifySkillClicked();
+	void OnModifySkillSetClicked();
 
+	UFUNCTION()
+	void OnCreateSkillSetClicked();
+	
 	UFUNCTION()
 	void OnCreateSkillClicked();
 
 	UFUNCTION()
 	void OnSkillSelected(const FName& SkillID);
-	
-	UFUNCTION()
-	void OnWeaponSelected(const FString& WeaponName);
 
 	UFUNCTION()
 	void OnAnimationSelected(UAnimMontage* AnimationMontage);

@@ -5,7 +5,6 @@
 #include "UI/UI-SkillMaker/Common/SkillSelect/SKSkillSelectionWidget.h"
 #include "UI/UI-SkillMaker/Common/AnimationSelect/SKAnimationSelectionWidget.h"
 #include "UI/UI-SkillMaker/Common/SkillSelect/SKSkillDetailWidget.h"
-#include "UI/UI-SkillMaker/Common/WeaponSelect/SKWeaponSelectionWidget.h"
 #include "Components/Button.h"
 #include "Components/WidgetSwitcher.h"
 #include "Components/EditableTextBox.h"
@@ -15,23 +14,17 @@ bool USKSkillMakerTrainMainWidget::Initialize()
 {
 	SK_LOG(LogSkillMaker, Log, TEXT("Begin"));
 	
-	bool Success = Super::Initialize();
-	if(!Success)
+	if(!Super::Initialize())
 		return false;
 
 	PreviousStates.Add(ESKSkillMakerTrainState::ChooseAction);
 	
 	if(SkillSelectionWidget)
 	{
-		// SkillSelectionWidget->SetMainWidget(this);
+		SkillSelectionWidget->SetTrainMainWidget(this);
 		SkillSelectionWidget->OnSkillSelected.AddDynamic(this, &USKSkillMakerTrainMainWidget::OnSkillSelected);
 	}
 	
-	if(WeaponSelectionWidget)
-	{
-		WeaponSelectionWidget->OnWeaponSelected.AddDynamic(this, &USKSkillMakerTrainMainWidget::OnWeaponSelected);
-	}
-
 	if(AnimationSelectionWidget)
 	{
 		AnimationSelectionWidget->OnAnimationSelected.AddDynamic(this, &USKSkillMakerTrainMainWidget::OnAnimationSelected);
@@ -39,12 +32,12 @@ bool USKSkillMakerTrainMainWidget::Initialize()
 
 	if(SkillDetailWidget)
 	{
-		// SkillDetailWidget->SetHUDReference(HUDReference);
+		SkillDetailWidget->SetSkillMakerTrainHUD(HUDReference);
 	}
 	
 	if(ModifySkillButton)
 	{
-		ModifySkillButton->OnClicked.AddDynamic(this, &USKSkillMakerTrainMainWidget::OnModifySkillClicked);
+		ModifySkillButton->OnClicked.AddDynamic(this, &USKSkillMakerTrainMainWidget::OnModifySkillSetClicked);
 	}
 
 	if(CreateSkillButton)
@@ -68,6 +61,11 @@ bool USKSkillMakerTrainMainWidget::Initialize()
 	}
 
 	return true;
+}
+
+void USKSkillMakerTrainMainWidget::StartSkillMaker(const FString& WeaponType)
+{
+	SelectedWeaponType = WeaponType;
 }
 
 void USKSkillMakerTrainMainWidget::SetHUDReference(ASKSkillMakerTrainHUD* InHUD)
@@ -129,7 +127,11 @@ void USKSkillMakerTrainMainWidget::GoBackToPreviousState()
 	SetSkillMakerState(PreviousState, true);
 }
 
-void USKSkillMakerTrainMainWidget::OnModifySkillClicked()
+void USKSkillMakerTrainMainWidget::OnModifySkillSetClicked()
+{
+}
+
+void USKSkillMakerTrainMainWidget::OnCreateSkillSetClicked()
 {
 }
 
@@ -138,10 +140,6 @@ void USKSkillMakerTrainMainWidget::OnCreateSkillClicked()
 }
 
 void USKSkillMakerTrainMainWidget::OnSkillSelected(const FName& SkillID)
-{
-}
-
-void USKSkillMakerTrainMainWidget::OnWeaponSelected(const FString& WeaponName)
 {
 }
 
@@ -159,4 +157,5 @@ void USKSkillMakerTrainMainWidget::OnSaveSkillClicked()
 
 void USKSkillMakerTrainMainWidget::OnBackClicked()
 {
+	GoBackToPreviousState();
 }

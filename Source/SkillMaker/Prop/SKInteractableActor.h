@@ -6,6 +6,10 @@
 #include "GameFramework/Actor.h"
 #include "SKInteractableActor.generated.h"
 
+class UStaticMeshComponent;
+class UBoxComponent;
+class ASKPlayerCharacter;
+
 UCLASS()
 class SKILLMAKER_API ASKInteractableActor : public AActor
 {
@@ -21,10 +25,13 @@ public:
 	
 protected:
 	UPROPERTY(EditAnywhere, Category = "Interaction")
-	TObjectPtr<class UStaticMeshComponent> StaticMeshComponent;
+	TObjectPtr<UStaticMeshComponent> StaticMeshComponent;
 
 	UPROPERTY(EditAnywhere, Category = "Interaction")
-	TObjectPtr<class UBoxComponent> InteractionTrigger;
+	TObjectPtr<UBoxComponent> InteractionTrigger;
+
+	UPROPERTY(EditAnywhere, Category = "Interaction")
+	TObjectPtr<ASKPlayerCharacter> CurrentPlayerCharacter;
 	
 	UPROPERTY(EditAnywhere, Category = "Interaction")
 	float InteractionRange = 200.f;

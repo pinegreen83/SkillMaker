@@ -32,6 +32,7 @@ void ASKInteractableActor::OnPlayerEnter(UPrimitiveComponent* OverlappedComp, AA
 {
 	if (ASKPlayerCharacter* PlayerCharacter = Cast<ASKPlayerCharacter>(OtherActor))
 	{
+		CurrentPlayerCharacter = PlayerCharacter;
 		PlayerCharacter->SetInteractableTarget(this);
 	}
 }
@@ -41,6 +42,7 @@ void ASKInteractableActor::OnPlayerExit(UPrimitiveComponent* OverlappedComp, AAc
 {
 	if (ASKPlayerCharacter* PlayerCharacter = Cast<ASKPlayerCharacter>(OtherActor))
 	{
+		CurrentPlayerCharacter = nullptr;
 		PlayerCharacter->ClearInteractableTarget(this);
 	}
 }

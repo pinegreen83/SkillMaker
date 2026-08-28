@@ -12,7 +12,7 @@ void USKAnimationSelectionWidget::LoadAnimationsForWeapon(const FString& WeaponN
 {
 	SK_LOG(LogSkillMaker, Log, TEXT("%s에 대한 애니메이션 로드"), *WeaponName);
 	
-	if(USKDataManagerSubsystem* DataManagerSubsystem = Cast<USKDataManagerSubsystem>(GetWorld()->GetGameInstance()))
+	if(USKDataManagerSubsystem* DataManagerSubsystem = GetWorld()->GetGameInstance()->GetSubsystem<USKDataManagerSubsystem>())
 	{
 		TArray<FSKAnimationRow> AnimList = DataManagerSubsystem->GetAnimationsForWeapon(WeaponName);
 		

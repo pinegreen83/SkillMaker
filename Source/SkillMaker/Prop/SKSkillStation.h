@@ -6,9 +6,8 @@
 #include "Prop/SKInteractableActor.h"
 #include "SKSkillStation.generated.h"
 
-/**
- * 
- */
+class USKSkillMakerTrainMainWidget;
+
 UCLASS()
 class SKILLMAKER_API ASKSkillStation : public ASKInteractableActor
 {
@@ -19,5 +18,5 @@ public:
 
 protected:
 	UPROPERTY(EditAnywhere, Category = "SkillMaker")
-	TSubclassOf<class UUserWidget> SkillEditorWidgetClass;
+	TSubclassOf<USKSkillMakerTrainMainWidget> SkillMakerTrainMainWidgetClass;
 };

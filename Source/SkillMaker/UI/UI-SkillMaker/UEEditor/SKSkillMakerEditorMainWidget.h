@@ -40,8 +40,6 @@ public:
 	
 	void SetSkillMakerState(ESKSkillMakerState NewState, bool bFromBackNavigation);
 
-	void GoBackToPreviousState();
-
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Skill")
 	FOnSkillDataFromTable OnSkillDataFromTable;
 	
@@ -85,6 +83,8 @@ protected:
 	FString SelectedWeaponType;
 
 private:
+	void GoBackToPreviousState();
+	
 	UFUNCTION()
 	void OnModifySkillClicked();
 
