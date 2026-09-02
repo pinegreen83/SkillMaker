@@ -56,9 +56,9 @@ TArray<FSKAnimationRow> USKDataManagerSubsystem::GetAnimationsForWeapon(const FS
 
 TArray<FSKProjectileRow> USKDataManagerSubsystem::GetProjectileList()
 {
-	SK_LOG(LogSkillMaker, Log, TEXT("Begin"))
+	SK_LOG(LogSkillMaker, Log, TEXT("Begin"));
 
-TArray<FSKProjectileRow> ProjectileList;
+	TArray<FSKProjectileRow> ProjectileList;
 
 	if(!ProjectileDataTable)
 	{

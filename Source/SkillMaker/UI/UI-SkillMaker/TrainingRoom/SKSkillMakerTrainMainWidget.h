@@ -16,6 +16,7 @@ class USKSkillSelectionWidget;
 class USKSkillDetailWidget;
 class UEditableTextBox;
 class ASKSkillMakerTrainHUD;
+class ASKPlayerCharacter;
 
 UENUM(BlueprintType)
 enum class ESKSkillMakerTrainState : uint8
@@ -36,7 +37,7 @@ class SKILLMAKER_API USKSkillMakerTrainMainWidget : public UUserWidget
 public:	
 	virtual bool Initialize() override;
 
-	void StartSkillMaker(const FString& WeaponType);
+	void StartSkillMaker(ASKPlayerCharacter* InPlayerCharacter);
 
 	void SetHUDReference(ASKSkillMakerTrainHUD* InHUD);
 	
@@ -88,6 +89,9 @@ protected:
 
 	UPROPERTY()
 	TObjectPtr<ASKSkillMakerTrainHUD> HUDReference;
+
+	UPROPERTY()
+	TObjectPtr<ASKPlayerCharacter> PlayerCharacter;
 
 	FString SelectedWeaponType;
 

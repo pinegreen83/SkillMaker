@@ -18,7 +18,7 @@ ASKProjectileActor::ASKProjectileActor()
 	RootComponent = CollisionComponent;
 	CollisionComponent->InitSphereRadius(50.0f);
 	CollisionComponent->SetCollisionProfileName(TEXT("OverlapAllDynamic"));
-	CollisionComponent->OnComponentHit.AddDynamic(this, &ASKProjectileActor::OnHit);
+	CollisionComponent->OnComponentBeginOverlap.AddDynamic(this, &ASKProjectileActor::OnOverlap);
 
 	ParticleComponent = CreateDefaultSubobject<UParticleSystemComponent>(TEXT("ParticleComponent"));
 	ParticleComponent->SetupAttachment(RootComponent);
@@ -59,8 +59,8 @@ void ASKProjectileActor::StartProject(ACharacter* InSkillOwner)
 	}
 }
 
-void ASKProjectileActor::OnHit(UPrimitiveComponent* HitComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp,
-                                FVector NormalImpulse, const FHitResult& Hit)
+void ASKProjectileActor::OnOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp,
+								   int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
 	if (OtherActor && OtherActor != this && OtherActor != SkillOwner)
 	{
@@ -84,4 +84,3 @@ void ASKProjectileActor::ApplyStatusEffect(ACharacter* TargetCharacter)
 	// 		   *TargetCharacter->GetName(), (int32)Effect.EffectType, Effect.Duration);
 	// }
 }
-

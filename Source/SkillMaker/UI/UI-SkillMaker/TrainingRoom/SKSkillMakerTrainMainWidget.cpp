@@ -63,9 +63,9 @@ bool USKSkillMakerTrainMainWidget::Initialize()
 	return true;
 }
 
-void USKSkillMakerTrainMainWidget::StartSkillMaker(const FString& WeaponType)
+void USKSkillMakerTrainMainWidget::StartSkillMaker(ASKPlayerCharacter* InPlayerCharacter)
 {
-	SelectedWeaponType = WeaponType;
+	PlayerCharacter = InPlayerCharacter;
 }
 
 void USKSkillMakerTrainMainWidget::SetHUDReference(ASKSkillMakerTrainHUD* InHUD)

@@ -18,7 +18,7 @@ void USKWeaponSelectionWidget::LoadWeaponList()
 {
 	SK_LOG(LogSkillMaker, Log, TEXT("무기 목록을 불러옵니다."));
 
-	if(USKDataManagerSubsystem* DataManagerSubsystem = Cast<USKDataManagerSubsystem>(GetWorld()->GetGameInstance()))
+	if(USKDataManagerSubsystem* DataManagerSubsystem = GetWorld()->GetGameInstance()->GetSubsystem<USKDataManagerSubsystem>())
 	{
 		TArray<FSKWeaponRow> WeaponList = DataManagerSubsystem->GetWeaponList();
 		
@@ -58,4 +58,3 @@ void USKWeaponSelectionWidget::WeaponSelected(const FString& WeaponName)
 
 	OnWeaponSelected.Broadcast(WeaponName);
 }
-

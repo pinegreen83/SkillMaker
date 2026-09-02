@@ -80,5 +80,5 @@ void USKAnimNotifySelectionWidget::OnNotifyButtonSelected(FName NotifyName)
 
 	SelectedNotifyText->SetText(FText::FromString(FString::Printf(TEXT("%s"), *NotifyName.ToString())));
 	OnAnimNotifySelected.Broadcast(SelectedNotify);  // NotifyTime 추가
-	SK_LOG(LogSkillMaker, Log, TEXT("애님 노티파이 선택됨: %s (%.2f초)"), *NotifyName.ToString());
+	SK_LOG(LogSkillMaker, Log, TEXT("애님 노티파이 선택됨: %s"), *NotifyName.ToString());
 }

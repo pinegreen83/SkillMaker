@@ -11,7 +11,7 @@ void ASKSkillStation::OnInteract()
 
 	if (SkillMakerTrainMainWidgetClass)
 	{
-		if (USKSkillMakerTrainMainWidget* SkillTrainMain = CreateWidget<USKSkillMakerTrainMainWidget>(this, SkillMakerTrainMainWidgetClass))
+		if (USKSkillMakerTrainMainWidget* SkillTrainMain = CreateWidget<USKSkillMakerTrainMainWidget>(GetWorld(), SkillMakerTrainMainWidgetClass))
 		{
 			if (CurrentPlayerCharacter)
 			{

@@ -41,7 +41,7 @@ void USKProjectileSelectionWidget::SetProjectileCard()
 	
 	ProjectileListBox->ClearChildren();
 	
-	if(USKDataManagerSubsystem* DataManagerSubsystem = Cast<USKDataManagerSubsystem>(GetWorld()->GetGameInstance()))
+	if(USKDataManagerSubsystem* DataManagerSubsystem = GetWorld()->GetGameInstance()->GetSubsystem<USKDataManagerSubsystem>())
 	{
 		TArray<FSKProjectileRow> ProjectileList = DataManagerSubsystem->GetProjectileList();
 		for (auto& Projectile : ProjectileList)
@@ -63,7 +63,7 @@ void USKProjectileSelectionWidget::SelectedProjectile(TSubclassOf<ASKProjectileA
 	
 	SelectedProjectileData = SelectedProjectile;
 
-	SK_LOG(LogSkillMaker, Log, TEXT("Now Selected Projectie : %s"), *SelectedProjectileData->GetName())
+	SK_LOG(LogSkillMaker, Log, TEXT("Now Selected Projectie : %s"), *SelectedProjectileData->GetName());
 }
 
 void USKProjectileSelectionWidget::OnConfirmSelection()
