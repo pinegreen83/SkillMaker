@@ -2,7 +2,6 @@
 
 
 #include "Game/SKGameInstance.h"
-#include "Data/SKDataManager.h"
 
 void USKGameInstance::Init()
 {

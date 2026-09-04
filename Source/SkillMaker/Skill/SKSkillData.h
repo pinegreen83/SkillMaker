@@ -35,23 +35,23 @@ struct FStatusEffectData
 
 public:
 	/** 적용할 상태이상 유형 */
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "StatusEffect")
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, SaveGame, Category = "StatusEffect")
 	EStatusEffect EffectType;
 
 	/** 상태이상 지속 시간 (초) */
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "StatusEffect")
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, SaveGame, Category = "StatusEffect")
 	float Duration;
 
 	/** 초당 지속 피해량 (화상, 중독 등의 경우) */
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "StatusEffect")
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, SaveGame, Category = "StatusEffect")
 	float DamagePerSecond;
 
 	/** 스택 가능 여부 (같은 상태이상 중첩 가능 여부) */
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "StatusEffect")
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, SaveGame, Category = "StatusEffect")
 	bool bCanStack;
 
 	/** 상태이상의 최대 스택 수 (0이면 무제한) */
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "StatusEffect")
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, SaveGame, Category = "StatusEffect")
 	int32 MaxStack;
 
 	FStatusEffectData() 
@@ -77,64 +77,64 @@ struct FSKSkillData : public FTableRowBase
 	GENERATED_BODY()
 
 public:
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Skill")
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, SaveGame, Category = "Skill")
 	FName SkillID;
 	
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Skill")
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, SaveGame, Category = "Skill")
 	FString SkillName;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Skill")
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, SaveGame, Category = "Skill")
 	ESkillType SkillType;
 	
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Skill")
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, SaveGame, Category = "Skill")
 	FString WeaponType;
 	
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Skill")
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, SaveGame, Category = "Skill")
 	TObjectPtr<UAnimMontage> SkillMontage;
 	
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Skill")
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, SaveGame, Category = "Skill")
 	float SkillDuration;
 	
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Skill")
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, SaveGame, Category = "Skill")
 	bool bCanMoveWhileChanneling;
 	
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Skill")
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, SaveGame, Category = "Skill")
 	float CooldownTime;
 	
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Skill")
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, SaveGame, Category = "Skill")
 	float Cost;
 	
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Skill")
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, SaveGame, Category = "Skill")
 	float DamageValue;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Skill")
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, SaveGame, Category = "Skill")
 	TArray<FName> EffectNotifyNames;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Skill")
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, SaveGame, Category = "Skill")
 	TArray<FStatusEffectData> StatusEffects;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Skill")
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, SaveGame, Category = "Skill")
 	bool bAffectEnemies;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Skill")
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, SaveGame, Category = "Skill")
 	bool bAffectAllies;
 	
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Skill")
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, SaveGame, Category = "Skill")
 	TSubclassOf<ASKProjectileActor> ProjectileActor;
 	
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Effect")
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, SaveGame, Category = "Effect")
 	FName NotifyName;
 	
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Skill")
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, SaveGame, Category = "Skill")
 	float MinRange;
 	
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Skill")
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, SaveGame, Category = "Skill")
 	float MaxRange;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Skill")
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, SaveGame, Category = "Skill")
 	bool bUseMoveBlendSpace;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Skill")
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, SaveGame, Category = "Skill")
 	TObjectPtr<UBlendSpace> MoveSkillBlendSpace;
 
 	FSKSkillData()

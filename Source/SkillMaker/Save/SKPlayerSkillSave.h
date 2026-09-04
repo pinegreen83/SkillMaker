@@ -8,7 +8,7 @@
 #include "SKPlayerSkillSave.generated.h"
 
 /**
- * 
+ *
  */
 
 USTRUCT(BlueprintType)
@@ -16,7 +16,7 @@ struct FSKSkillSet
 {
 	GENERATED_BODY()
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, SaveGame)
 	TMap<FName, FSKSkillData> Skills;
 };
 
@@ -31,17 +31,26 @@ public:
 
 	UFUNCTION(BlueprintCallable, Category = "PlayerSkill")
 	TMap<FName, FSKSkillSet> GetAllSkillSets();
-	
+
 	UFUNCTION(BlueprintCallable, Category = "PlayerSkill")
-	void SetSkillData(const FName& InSkillID, const FSKSkillData& InSkillData);
+	TArray<FSKSkillData> GetSavedSkillList() const;
+
+	UFUNCTION(BlueprintCallable, Category = "PlayerSkill")
+	bool GetSkillDataByID(const FName& InSkillID, FSKSkillData& OutSkillData) const;
+
+	UFUNCTION(BlueprintCallable, Category = "PlayerSkill")
+	bool HasSkillData(const FName& InSkillID) const;
+
+	UFUNCTION(BlueprintCallable, Category = "PlayerSkill")
+	bool SetSkillData(const FName& InSkillID, const FSKSkillData& InSkillData);
 
 	UFUNCTION(BlueprintCallable, Category = "PlayerSkill")
 	void SetSkillSet(const FName& InSkillSetName);
-	
+
 protected:
-	UPROPERTY(EditAnywhere, Category = "SaveGame")
+	UPROPERTY(EditAnywhere, Category = "SaveGame", SaveGame)
 	FSKSkillSet CurrentSkillSet;
-	
-	UPROPERTY(VisibleAnywhere, Category = "PlayerSkill")
+
+	UPROPERTY(VisibleAnywhere, Category = "PlayerSkill", SaveGame)
 	TMap<FName, FSKSkillSet> PlayerSkills;
 };

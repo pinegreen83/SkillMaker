@@ -10,24 +10,24 @@
 #include "Components/WidgetSwitcher.h"
 #include "Components/EditableTextBox.h"
 #include "SKSkillMakerEditorHUD.h"
+#include "Game/SKSaveGameSubsystem.h"
 #include "Logging/SKLogSkillMakerMacro.h"
-#include "Skill/SKSkillManager.h"
 
 bool USKSkillMakerEditorMainWidget::Initialize()
 {
 	SK_LOG(LogSkillMaker, Log, TEXT("Begin"));
-	
+
 	if(!Super::Initialize())
 		return false;
 
 	PreviousStates.Add(ESKSkillMakerState::ChooseAction);
-	
+
 	if(SkillSelectionWidget)
 	{
 		SkillSelectionWidget->SetEditorMainWidget(this);
 		SkillSelectionWidget->OnSkillSelected.AddDynamic(this, &USKSkillMakerEditorMainWidget::OnSkillSelected);
 	}
-	
+
 	if(WeaponSelectionWidget)
 	{
 		WeaponSelectionWidget->OnWeaponSelected.AddDynamic(this, &USKSkillMakerEditorMainWidget::OnWeaponSelected);
@@ -42,7 +42,7 @@ bool USKSkillMakerEditorMainWidget::Initialize()
 	{
 		SkillDetailWidget->SetSkillMakerEditorHUD(HUDReference);
 	}
-	
+
 	if(ModifySkillButton)
 	{
 		ModifySkillButton->OnClicked.AddDynamic(this, &USKSkillMakerEditorMainWidget::OnModifySkillClicked);
@@ -57,7 +57,7 @@ bool USKSkillMakerEditorMainWidget::Initialize()
 	{
 		FinishEditingSkillButton->OnClicked.AddDynamic(this, &USKSkillMakerEditorMainWidget::OnFinishSkillEditing);
 	}
-	
+
 	if(SaveSkillButton)
 	{
 		SaveSkillButton->OnClicked.AddDynamic(this, &USKSkillMakerEditorMainWidget::OnSaveSkillClicked);
@@ -74,7 +74,7 @@ bool USKSkillMakerEditorMainWidget::Initialize()
 void USKSkillMakerEditorMainWidget::SetHUDReference(ASKSkillMakerEditorHUD* InHUD)
 {
 	SK_LOG(LogSkillMaker, Log, TEXT("Begin"));
-	
+
 	HUDReference = InHUD;
 
 	if(SkillDetailWidget)
@@ -86,7 +86,7 @@ void USKSkillMakerEditorMainWidget::SetHUDReference(ASKSkillMakerEditorHUD* InHU
 void USKSkillMakerEditorMainWidget::SetSkillMakerState(ESKSkillMakerState NewState, bool bFromBackNavigation)
 {
 	SK_LOG(LogSkillMaker, Log, TEXT("Begin"));
-	
+
 	if(!SkillMakerSwitcher)
 	{
 		SK_LOG(LogSkillMaker, Error, TEXT("WidgetSwitcher가 nullptr"));
@@ -117,7 +117,7 @@ void USKSkillMakerEditorMainWidget::SetSkillMakerState(ESKSkillMakerState NewSta
 void USKSkillMakerEditorMainWidget::GoBackToPreviousState()
 {
 	SK_LOG(LogSkillMaker, Log, TEXT("Begin"));
-	
+
 	if(PreviousStates.Num() <= 1)
 	{
 		SK_LOG(LogSkillMaker, Error, TEXT("이전 상태가 없으므로 뒤로 갈 수 없음."));
@@ -146,13 +146,13 @@ void USKSkillMakerEditorMainWidget::OnCreateSkillClicked()
 void USKSkillMakerEditorMainWidget::OnSkillSelected(const FName& SkillID)
 {
 	SK_LOG(LogSkillMaker, Log, TEXT("Begin"));
-	
+
 	if(!HUDReference)
 	{
 		SK_LOG(LogSkillMaker, Error, TEXT("HUD 레퍼런스 없음."));
 		return;
 	}
-	
+
 	HUDReference->LoadSkillForEditing(SkillID);
 	SK_LOG(LogSkillMaker, Log, TEXT("스킬 선택됨 : %s"), *SkillID.ToString());
 
@@ -167,18 +167,18 @@ void USKSkillMakerEditorMainWidget::OnSkillSelected(const FName& SkillID)
 void USKSkillMakerEditorMainWidget::OnWeaponSelected(const FString& WeaponType)
 {
 	SK_LOG(LogSkillMaker, Log, TEXT("Begin"));
-	
+
 	if(!HUDReference)
 	{
 		SK_LOG(LogSkillMaker, Error, TEXT("HUD 레퍼런스 없음."));
 		return;
 	}
-	
+
 	SelectedWeaponType = WeaponType;
 	SK_LOG(LogSkillMaker, Log, TEXT("선택된 무기 : %s"), *SelectedWeaponType);
-	
+
 	HUDReference->SetSkillWeaponType(WeaponType);
-	
+
 	if(AnimationSelectionWidget)
 	{
 		AnimationSelectionWidget->LoadAnimationsForWeapon(WeaponType);
@@ -190,7 +190,7 @@ void USKSkillMakerEditorMainWidget::OnWeaponSelected(const FString& WeaponType)
 void USKSkillMakerEditorMainWidget::OnAnimationSelected(UAnimMontage* AnimationMontage)
 {
 	SK_LOG(LogSkillMaker, Log, TEXT("Begin"));
-	
+
 	if(!HUDReference)
 	{
 		SK_LOG(LogSkillMaker, Error, TEXT("HUD 레퍼런스 없음."));
@@ -206,7 +206,7 @@ void USKSkillMakerEditorMainWidget::OnAnimationSelected(UAnimMontage* AnimationM
 		{
 			SkillDetailWidget->InitializeFromSkillData();
 		}
-		
+
 		SetSkillMakerState(ESKSkillMakerState::SkillDetail, false);
 	}
 	else
@@ -218,14 +218,14 @@ void USKSkillMakerEditorMainWidget::OnAnimationSelected(UAnimMontage* AnimationM
 void USKSkillMakerEditorMainWidget::OnFinishSkillEditing()
 {
 	SK_LOG(LogSkillMaker, Log, TEXT("Begin"));
-	
+
 	SetSkillMakerState(ESKSkillMakerState::SaveSkill, false);
 }
 
 void USKSkillMakerEditorMainWidget::OnSaveSkillClicked()
 {
 	SK_LOG(LogSkillMaker, Log, TEXT("Begin"));
-	
+
 	if (!HUDReference)
 	{
 		SK_LOG(LogSkillMaker, Error, TEXT("HUD 레퍼런스 없음."));
@@ -249,9 +249,30 @@ void USKSkillMakerEditorMainWidget::OnSaveSkillClicked()
 		SkillData.SkillID = FName(*FGuid::NewGuid().ToString());
 		SK_LOG(LogSkillMaker, Log, TEXT("새로운 SkillID 생성: %s"), *SkillData.SkillID.ToString());
 	}
-	USKSkillManager::Get()->SaveSkillData(SkillData);
-	
+	if (UGameInstance* GameInstance = GetGameInstance())
+	{
+		if (USKSaveGameSubsystem* SaveGameSubsystem = GameInstance->GetSubsystem<USKSaveGameSubsystem>())
+		{
+			if (!SaveGameSubsystem->SaveSkillData(SkillData.SkillID, SkillData))
+			{
+				SK_LOG(LogSkillMaker, Error, TEXT("스킬 SaveGame 저장 실패: %s"), *SkillData.SkillID.ToString());
+				return;
+			}
+		}
+		else
+		{
+			SK_LOG(LogSkillMaker, Error, TEXT("USKSaveGameSubsystem을 찾을 수 없음."));
+			return;
+		}
+	}
+	else
+	{
+		SK_LOG(LogSkillMaker, Error, TEXT("GameInstance를 찾을 수 없음."));
+		return;
+	}
+
 	SK_LOG(LogSkillMaker, Log, TEXT("스킬 저장 완료: %s"), *SkillName);
+	OnSkillDataFromTable.Broadcast();
 
 	SetSkillMakerState(ESKSkillMakerState::ChooseAction, false);
 }

@@ -5,7 +5,12 @@
 
 FSKSkillSet USKPlayerSkillSave::GetSkillSet(const FName& SkillSetName)
 {
-	return PlayerSkills[SkillSetName];
+	if (const FSKSkillSet* SkillSet = PlayerSkills.Find(SkillSetName))
+	{
+		return *SkillSet;
+	}
+
+	return FSKSkillSet();
 }
 
 TMap<FName, FSKSkillSet> USKPlayerSkillSave::GetAllSkillSets()
@@ -13,9 +18,40 @@ TMap<FName, FSKSkillSet> USKPlayerSkillSave::GetAllSkillSets()
 	return PlayerSkills;
 }
 
-void USKPlayerSkillSave::SetSkillData(const FName& InSkillID, const FSKSkillData& InSkillData)
+TArray<FSKSkillData> USKPlayerSkillSave::GetSavedSkillList() const
 {
-	CurrentSkillSet.Skills.Add(InSkillID, InSkillData);
+	TArray<FSKSkillData> SkillList;
+	CurrentSkillSet.Skills.GenerateValueArray(SkillList);
+	return SkillList;
+}
+
+bool USKPlayerSkillSave::GetSkillDataByID(const FName& InSkillID, FSKSkillData& OutSkillData) const
+{
+	if (const FSKSkillData* SkillData = CurrentSkillSet.Skills.Find(InSkillID))
+	{
+		OutSkillData = *SkillData;
+		return true;
+	}
+
+	return false;
+}
+
+bool USKPlayerSkillSave::HasSkillData(const FName& InSkillID) const
+{
+	return CurrentSkillSet.Skills.Contains(InSkillID);
+}
+
+bool USKPlayerSkillSave::SetSkillData(const FName& InSkillID, const FSKSkillData& InSkillData)
+{
+	if (InSkillID.IsNone())
+	{
+		return false;
+	}
+
+	FSKSkillData SaveData = InSkillData;
+	SaveData.SkillID = InSkillID;
+	CurrentSkillSet.Skills.Add(InSkillID, SaveData);
+	return true;
 }
 
 void USKPlayerSkillSave::SetSkillSet(const FName& InSkillSetName)

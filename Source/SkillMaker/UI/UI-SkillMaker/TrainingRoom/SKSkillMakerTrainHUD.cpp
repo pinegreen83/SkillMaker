@@ -4,8 +4,8 @@
 #include "SKSkillMakerTrainHUD.h"
 
 #include "SKSkillMakerTrainMainWidget.h"
-#include "Skill/SKSkillManager.h"
 #include "Engine/Texture2D.h"
+#include "Game/SKSaveGameSubsystem.h"
 #include "GameFramework/PlayerController.h"
 #include "Logging/SKLogSkillMakerMacro.h"
 
@@ -43,7 +43,31 @@ void ASKSkillMakerTrainHUD::InitializeNewSkill()
 
 void ASKSkillMakerTrainHUD::LoadSkillForEditing(const FName& SkillID)
 {
-	
+	SK_LOG(LogSkillMaker, Log, TEXT("Begin"));
+
+	if (UGameInstance* GameInstance = GetGameInstance())
+	{
+		if (USKSaveGameSubsystem* SaveGameSubsystem = GameInstance->GetSubsystem<USKSaveGameSubsystem>())
+		{
+			FSKSkillData SkillData;
+			if (SaveGameSubsystem->GetSkillDataByID(SkillID, SkillData))
+			{
+				CurrentEditingSkill = SkillData;
+				SK_LOG(LogSkillMaker, Log, TEXT("스킬 로드 완료 : %s"), *CurrentEditingSkill.SkillName);
+				return;
+			}
+		}
+		else
+		{
+			SK_LOG(LogSkillMaker, Error, TEXT("USKSaveGameSubsystem을 찾을 수 없음."));
+		}
+	}
+	else
+	{
+		SK_LOG(LogSkillMaker, Error, TEXT("GameInstance를 찾을 수 없음."));
+	}
+
+	SK_LOG(LogSkillMaker, Log, TEXT("스킬을 찾을 수 없음. : %s"), *SkillID.ToString());
 }
 
 const FSKSkillData& ASKSkillMakerTrainHUD::GetCurrentSkillData() const

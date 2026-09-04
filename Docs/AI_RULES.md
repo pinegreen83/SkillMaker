@@ -1,7 +1,7 @@
 # AI Rules
 
 ## Project Context
-- Unreal Engine 5.4 C++ project: `SkillMaker`.
+- Unreal Engine 5.8 C++ project: `SkillMaker`.
 - Main module: `Source/SkillMaker`.
 - Runtime module only. Do not introduce new plugins or modules unless explicitly requested.
 - Primary gameplay loop: skill creation/editing, skill save/load, skill training, projectile/combat execution.
@@ -28,14 +28,25 @@
 - Do not hardcode asset paths unless matching an existing project pattern, such as GameMode default class assignment.
 - Prefer Blueprint-assigned references or subsystem-managed references for assets used by UI/data flows.
 
-## Save/Skill Rules
-- Treat `USKPlayerSkillSave`, `USKSaveGameSubsystem`, `USKSkillManager`, and skill editor/training widgets as separate responsibilities.
-- SaveGame persistence should go through Unreal save APIs (`UGameplayStatics::SaveGameToSlot`, `LoadGameFromSlot`, `DoesSaveGameExist`).
-- DataTable persistence/editing should stay separate from runtime player save data unless the task explicitly asks to merge them.
+## Data/Save/Skill Rules
+- Resource data should be read from DataTables through `USKDataManagerSubsystem`.
+- Do not use `USKDataManager::Get()` or direct GameInstance casts for DataTable access.
+- Runtime-created skill persistence should go through `USKSaveGameSubsystem` and `USKPlayerSkillSave`.
+- `SkillID` is the stable key for created skill save, modify, and lookup.
+- SaveGame persistence should go through Unreal save APIs (`UGameplayStatics::SaveGameToSlot`, `LoadGameFromSlot`, `DoesSaveGameExist`, `CreateSaveGameObject`).
+- `DT_SkillData` can remain as seed/sample data, but current editor UI save/load should not write runtime-created skills to DataTable.
+- `USKSkillManager` is legacy DataTable-oriented code. Do not add new UI save/load dependencies on it.
 - Be careful with `FName` keys for skill IDs and skill set names. Changing key semantics can orphan existing saved data or DataTable rows.
+
+## Skill Preview Rules
+- Skill preview should run through the same `USKSkillComponent` path as normal skill execution.
+- Preview-only skills may receive a temporary `PreviewSkill` ID when no saved `SkillID` exists yet.
+- Before playing a montage, `ASKBaseCharacter::CurrentSkillData` must be set to the executing `FSKSkillData`.
+- AnimNotify selection should expose only `USKSkillAnimNotify_Trigger` entries with valid `NotifyTriggerName` values.
+- Projectile card click currently applies the projectile selection immediately; do not reintroduce duplicate confirm-time broadcasts.
 
 ## Validation
 - At minimum, run an editor build after C++ changes.
 - For UI changes, verify the corresponding widget blueprint bindings in the editor.
-- For skill/combat/save changes, test in `Content/SkillMaker/Map/SkillTrainingMap.umap`.
+- For skill/combat/save changes, test in `Content/SkillMaker/Map/SkillTrainingMap.umap` and the editor flow in `Content/SkillMaker/Map/SkillMakingMap.umap` when relevant.
 - For DataTable-related changes, verify `DT_SkillData`, `DT_WeaponData`, `DT_AnimationData`, and `DT_ProjectileData` references in the editor.

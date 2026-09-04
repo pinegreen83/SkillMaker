@@ -18,7 +18,7 @@
 
 - `Source/SkillMaker/Character/`: 캐릭터 계층. 공통 기능은 `ASKBaseCharacter`에 둔다.
 - `Source/SkillMaker/Player/`: PlayerController 계층. 입력 바인딩과 플레이어 요청 진입점을 둔다.
-- `Source/SkillMaker/Skill/`: 스킬 데이터, 스킬 실행 컴포넌트, 발사체, 스킬 매니저.
+- `Source/SkillMaker/Skill/`: 스킬 데이터, 스킬 실행 컴포넌트, 발사체, legacy 스킬 매니저.
 - `Source/SkillMaker/Combat/`: 체력, 데미지, 상태이상, 사망 처리.
 - `Source/SkillMaker/Game/`: `UGameInstance`, `UGameInstanceSubsystem` 기반 전역 시스템.
 - `Source/SkillMaker/Save/`: `USaveGame` 객체와 저장 데이터 구조.
@@ -26,7 +26,7 @@
 - `Source/SkillMaker/UI/UI-SkillMaker/`: UMG C++ 베이스 위젯.
 - `Source/SkillMaker/Animation/`: AnimInstance와 AnimNotify.
 - `Source/SkillMaker/Prop/`: 월드 상호작용 Actor.
-- `Source/SkillMaker/Data/`: DataTable row struct와 legacy data manager.
+- `Source/SkillMaker/Data/`: DataTable row struct와 legacy data manager placeholder.
 - `Source/SkillMaker/Logging/`: `LogSkillMaker`, `SK_LOG`.
 
 새 파일은 가장 가까운 책임의 폴더에 둔다. 여러 폴더를 동시에 수정해야 할 때는 책임 방향을 유지한다.
@@ -34,7 +34,7 @@
 권장 의존 방향:
 
 ```text
-UI -> Game/Subsystem or SkillManager -> Data/Save
+UI -> Game/Subsystem -> Data/Save
 PlayerController -> Character -> Components
 SkillComponent -> Animation/Projectile/Combat
 Prop -> UI or Character interaction entry
@@ -150,7 +150,8 @@ Unreal 공식 기준처럼 독자가 public API를 먼저 볼 수 있도록 구�
 - WidgetSwitcher 상태 enum의 순서는 Blueprint WidgetSwitcher child 순서와 맞아야 한다.
 - UI에서 수정 중인 데이터와 최종 저장 데이터의 소유자를 분리한다.
   - 편집 중 임시값: detail widget 또는 HUD
-  - 최종 저장: manager/subsystem
+  - 최종 저장: `USKSaveGameSubsystem`
+  - 리소스 목록 조회: `USKDataManagerSubsystem`
 
 ## 데이터 설계 기준
 
@@ -161,7 +162,7 @@ SkillMaker 1차 목표의 데이터 구조는 리소스 등록 데이터와 런�
   - DataTable은 에디터에서 준비한 리소스를 안정적으로 등록하고, UI에서 선택 목록을 만들기 위한 읽기 중심 데이터로 사용한다.
   - 새 리소스를 추가할 때는 가능하면 C++ 코드를 수정하지 않고 DataTable row 추가와 asset 참조 설정만으로 SkillMaker UI에 노출되어야 한다.
 - 스킬 데이터는 최종적으로 SaveGame 기반 런타임 저장 구조로 관리한다.
-  - 초기 구현에 DataTable 기반 스킬 목록이 남아 있더라도, 제작된 스킬의 저장/불러오기 주 저장소는 `USaveGame` 계열로 옮기는 것을 목표로 한다.
+  - 현재 제작 UI에서 만든 스킬의 저장/불러오기 주 저장소는 `USaveGame` 계열이다.
   - 사용자가 SkillMaker UI에서 만든 스킬은 런타임에 생성/수정/삭제될 수 있으므로, 엔진 에셋인 DataTable을 직접 수정하는 방식에 의존하지 않는다.
   - DataTable 기반 `DT_SkillData`는 샘플 스킬, 기본 제공 스킬, 마이그레이션용 seed data로만 사용할 수 있다.
 - SkillMaker UI는 리소스 DataTable에서 선택지를 읽고, 선택 결과와 수치 값을 조합해 SaveGame에 저장 가능한 `FSKSkillData` 또는 그에 준하는 저장 구조를 만든다.
@@ -184,7 +185,8 @@ SkillMaker 1차 목표의 데이터 구조는 리소스 등록 데이터와 런�
 - `UGameInstanceSubsystem`은 `GetGameInstance()->GetSubsystem<USK...>()`로 가져온다.
 - `Cast<USKSubsystem>(GetGameInstance())` 패턴은 사용하지 않는다.
 - DataTable 목록 제공, SaveGame 접근, 전역 상태 관리는 subsystem API로 노출한다.
-- UI는 DataTable 에셋을 직접 소유하기보다 subsystem/manager의 조회 API를 사용한다.
+- UI는 DataTable 에셋을 직접 소유하기보다 subsystem의 조회 API를 사용한다.
+- 새 UI 저장/조회 코드는 legacy `USKSkillManager` 또는 `USKDataManager`에 의존하지 않는다.
 
 ## 스킬 시스템 규칙
 
@@ -196,6 +198,8 @@ SkillMaker 1차 목표의 데이터 구조는 리소스 등록 데이터와 런�
   - server execution: `ServerUseSkill`
   - multicast effect: `MulticastExecuteSkill`
 - AnimNotify가 스킬 효과를 실행해야 하는 경우, 몽타주 재생 전에 캐릭터의 `CurrentSkillData`가 유효해야 한다.
+- 에디터 프리뷰 캐릭터도 `ASKBaseCharacter` 계층이므로, 스킬 실행 코드는 플레이어 캐릭터 전용 캐스팅에 의존하지 않는다.
+- 미저장 프리뷰 스킬은 실행 전 임시 `SkillID`를 부여할 수 있지만, 저장 시에는 사용자가 지정한 안정적인 `SkillID`를 사용한다.
 - 쿨다운은 서버 권한 기준으로 적용한다.
 - 스킬 슬롯 키는 컨트롤러가 관리하고, 스킬 데이터 맵은 캐릭터/스킬 컴포넌트가 관리한다.
 
@@ -213,7 +217,10 @@ SkillMaker 1차 목표의 데이터 구조는 리소스 등록 데이터와 런�
 - 사용자가 SkillMaker에서 제작한 스킬 데이터는 SaveGame 저장 대상으로 본다.
 - 저장 전에 SaveGame 객체가 없으면 생성 경로가 있어야 한다.
 - slot name과 user index는 호출마다 하드코딩하지 말고 한 곳에서 관리한다.
+- 현재 기본 저장 슬롯은 subsystem에서 관리하며, 새 저장 데이터가 없으면 `USKPlayerSkillSave`를 생성해 슬롯에 기록한다.
+- `FSKSkillSet::Skills`는 `SkillID -> FSKSkillData` 맵으로 관리한다.
 - `CurrentSkillSet`, `PlayerSkills`, `SkillID`의 key 의미를 변경할 때는 기존 저장 데이터 호환성을 검토한다.
+- SaveGame에 직렬화되어야 하는 필드는 `UPROPERTY(SaveGame)` 대상으로 유지한다.
 - SaveGame에는 런타임에 필요한 스킬 수치와 선택된 리소스 참조 또는 안정적인 리소스 ID를 저장한다.
 - SaveGame 데이터 구조를 바꿀 때는 버전 필드 또는 마이그레이션 경로를 함께 고려한다.
 
@@ -284,6 +291,8 @@ UI 변경 후 확인:
 - 관련 Widget Blueprint의 `BindWidget` 이름
 - 버튼 delegate 중복 바인딩 여부
 - WidgetSwitcher child 순서와 상태 enum 순서
+- `SkillMakingMap`에서 `WBP_SKSkillMakerEditorMain` 자동 표시 여부
+- 스킬 프리뷰 로그에 `SkillID`, montage, projectile, notify, damage/range 값이 출력되는지 여부
 
 DataTable 변경 후 확인:
 
@@ -304,7 +313,9 @@ DataTable 변경 후 확인:
 ## 현재 프로젝트에서 특히 지켜야 할 규칙
 
 - `USKDataManagerSubsystem`은 subsystem으로 접근한다.
-- `USKSkillManager`와 `USKDataManagerSubsystem`의 책임을 더 섞지 않는다.
+- `USKSkillManager`는 legacy DataTable 기반 코드로 보고, 신규 UI 저장/조회 경로에 다시 연결하지 않는다.
+- `USKDataManagerSubsystem`은 리소스 DataTable 목록 조회 책임만 갖는다.
+- `USKSaveGameSubsystem`은 제작된 스킬의 저장/조회 책임을 갖는다.
 - `SkillID`와 `SkillName`을 비교 대상으로 혼용하지 않는다.
 - `SK_LOG(...)` 호출 뒤에는 항상 세미콜론을 붙인다.
 - `InteractionTrigger`, Widget class, DataTable 같은 Blueprint-assigned reference는 사용 전 null 체크한다.

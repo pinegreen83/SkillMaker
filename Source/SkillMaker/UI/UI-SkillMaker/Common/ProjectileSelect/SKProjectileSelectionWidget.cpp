@@ -37,10 +37,14 @@ void USKProjectileSelectionWidget::SetProjectileCard()
 {
 	SK_LOG(LogSkillMaker, Log, TEXT("Begin"));
 	
-	if (!ProjectileListBox || !WBP_ProjectileCard) return;
-	
+	if (!ProjectileListBox || !WBP_ProjectileCard)
+	{
+		SK_LOG(LogSkillMaker, Error, TEXT("ProjectileListBox 또는 WBP_ProjectileCard가 nullptr임."));
+		return;
+	}
+
 	ProjectileListBox->ClearChildren();
-	
+
 	if(USKDataManagerSubsystem* DataManagerSubsystem = GetWorld()->GetGameInstance()->GetSubsystem<USKDataManagerSubsystem>())
 	{
 		TArray<FSKProjectileRow> ProjectileList = DataManagerSubsystem->GetProjectileList();
@@ -55,6 +59,10 @@ void USKProjectileSelectionWidget::SetProjectileCard()
 			ProjectileListBox->AddChild(ProjectileCard);
 		}
 	}
+	else
+	{
+		SK_LOG(LogSkillMaker, Error, TEXT("USKDataManagerSubsystem을 찾을 수 없음."));
+	}
 }
 
 void USKProjectileSelectionWidget::SelectedProjectile(TSubclassOf<ASKProjectileActor> SelectedProjectile)
@@ -63,12 +71,15 @@ void USKProjectileSelectionWidget::SelectedProjectile(TSubclassOf<ASKProjectileA
 	
 	SelectedProjectileData = SelectedProjectile;
 
-	SK_LOG(LogSkillMaker, Log, TEXT("Now Selected Projectie : %s"), *SelectedProjectileData->GetName());
+	SK_LOG(LogSkillMaker, Log, TEXT("Now Selected Projectile : %s"),
+		SelectedProjectileData ? *SelectedProjectileData->GetName() : TEXT("None"));
+
+	OnProjectileSelected.Broadcast(SelectedProjectileData);
 }
 
 void USKProjectileSelectionWidget::OnConfirmSelection()
 {
 	SK_LOG(LogSkillMaker, Log, TEXT("Begin"));
-	
-	OnProjectileSelected.Broadcast(SelectedProjectileData);
+	SK_LOG(LogSkillMaker, Log, TEXT("Current Selected Projectile : %s"),
+		SelectedProjectileData ? *SelectedProjectileData->GetName() : TEXT("None"));
 }

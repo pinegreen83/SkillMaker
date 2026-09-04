@@ -18,6 +18,14 @@ void USKWeaponSelectionWidget::LoadWeaponList()
 {
 	SK_LOG(LogSkillMaker, Log, TEXT("무기 목록을 불러옵니다."));
 
+	if (!WeaponGridPanel)
+	{
+		SK_LOG(LogSkillMaker, Error, TEXT("WeaponGridPanel이 nullptr임."));
+		return;
+	}
+
+	WeaponGridPanel->ClearChildren();
+
 	if(USKDataManagerSubsystem* DataManagerSubsystem = GetWorld()->GetGameInstance()->GetSubsystem<USKDataManagerSubsystem>())
 	{
 		TArray<FSKWeaponRow> WeaponList = DataManagerSubsystem->GetWeaponList();
@@ -30,6 +38,10 @@ void USKWeaponSelectionWidget::LoadWeaponList()
 			CreateWeaponCard(WeaponData, index);
 			index++;
 		}
+	}
+	else
+	{
+		SK_LOG(LogSkillMaker, Error, TEXT("USKDataManagerSubsystem을 찾을 수 없음."));
 	}
 }
 

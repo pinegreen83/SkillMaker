@@ -11,6 +11,14 @@
 void USKAnimationSelectionWidget::LoadAnimationsForWeapon(const FString& WeaponName)
 {
 	SK_LOG(LogSkillMaker, Log, TEXT("%s에 대한 애니메이션 로드"), *WeaponName);
+
+	if (!AnimationGridPanel)
+	{
+		SK_LOG(LogSkillMaker, Error, TEXT("AnimationGridPanel이 nullptr임."));
+		return;
+	}
+
+	AnimationGridPanel->ClearChildren();
 	
 	if(USKDataManagerSubsystem* DataManagerSubsystem = GetWorld()->GetGameInstance()->GetSubsystem<USKDataManagerSubsystem>())
 	{
@@ -24,6 +32,10 @@ void USKAnimationSelectionWidget::LoadAnimationsForWeapon(const FString& WeaponN
 			CreateAnimationCard(AnimData, index);
 			index++;
 		}
+	}
+	else
+	{
+		SK_LOG(LogSkillMaker, Error, TEXT("USKDataManagerSubsystem을 찾을 수 없음."));
 	}
 }
 

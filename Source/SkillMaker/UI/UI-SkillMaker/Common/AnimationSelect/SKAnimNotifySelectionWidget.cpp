@@ -36,13 +36,14 @@ void USKAnimNotifySelectionWidget::PopulateNotifyList(UAnimMontage* Montage)
 	int32 NotifyIndex = 1;
 	for (const FAnimNotifyEvent& NotifyEvent : Montage->Notifies)
 	{
-		FName NotifyName;
-
-		if(USKSkillAnimNotify_Trigger* TriggerNotify = Cast<USKSkillAnimNotify_Trigger>(NotifyEvent.Notify))
+		USKSkillAnimNotify_Trigger* TriggerNotify = Cast<USKSkillAnimNotify_Trigger>(NotifyEvent.Notify);
+		if (!TriggerNotify || TriggerNotify->NotifyTriggerName.IsNone())
 		{
-			NotifyName = TriggerNotify->NotifyTriggerName;	
+			continue;
 		}
-		float NotifyTime = NotifyEvent.GetTime();
+
+		const FName NotifyName = TriggerNotify->NotifyTriggerName;
+		const float NotifyTime = NotifyEvent.GetTime();
 
 		FString IndexedNotifyName = FString::Printf(TEXT("%d번 - %s (%.2f초)"), NotifyIndex, *NotifyName.ToString(), NotifyTime);
 		NotifyIndex++;
@@ -52,7 +53,7 @@ void USKAnimNotifySelectionWidget::PopulateNotifyList(UAnimMontage* Montage)
 		USKAnimNotifyCardWidget* NotifyButton = CreateWidget<USKAnimNotifyCardWidget>(this, WBP_AnimNotifyCard);
 		if (!NotifyButton) continue;
 
-		NotifyButton->SetNotifyInfo(NotifyEvent.NotifyName, NotifyName, NotifyTime); // 노티파이 이름과 시간 저장
+		NotifyButton->SetNotifyInfo(NotifyName, NotifyName, NotifyTime);
 		NotifyButton->OnNotifySelected.AddDynamic(this, &USKAnimNotifySelectionWidget::OnNotifyButtonSelected);
 
 		NotifyListBox->AddChild(NotifyButton);

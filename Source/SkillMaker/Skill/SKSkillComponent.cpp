@@ -2,10 +2,9 @@
 
 
 #include "Skill/SKSkillComponent.h"
-#include "SKSkillManager.h"
 #include "GameFramework/Character.h"
 #include "Animation/AnimInstance.h"
-#include "Character/SKPlayerCharacter.h"
+#include "Character/SKBaseCharacter.h"
 #include "Logging/SKLogSkillMakerMacro.h"
 
 // Sets default values for this component's properties
@@ -88,16 +87,26 @@ void USKSkillComponent::MulticastExecuteSkill_Implementation(const FSKSkillData&
 		return;
 	}
 
+	ASKBaseCharacter* BaseCharacter = Cast<ASKBaseCharacter>(OwnerCharacter);
+	if (!BaseCharacter)
+	{
+		SK_LOG(LogSkillMaker, Error, TEXT("스킬 실행 불가 : OwnerCharacter가 ASKBaseCharacter가 아님."));
+		return;
+	}
+
+	BaseCharacter->SetCurrentSkillData(SkillData);
+
 	if(UAnimInstance* AnimInstance = OwnerCharacter->GetMesh()->GetAnimInstance())
 	{
-		if (ASKPlayerCharacter* PlayerCharacter = Cast<ASKPlayerCharacter>(OwnerCharacter))
-		{
-			const TOptional<FSKSkillData> TempSkillData;
-			PlayerCharacter->SetCurrentSkillData(TempSkillData);
-		
-			AnimInstance->Montage_Play(SkillData.SkillMontage);
-			SK_LOG(LogSkillMaker, Log, TEXT("애니메이션 실행 : %s"), *SkillData.SkillName);
-		}
+		AnimInstance->Montage_Play(SkillData.SkillMontage);
+		SK_LOG(LogSkillMaker, Log, TEXT("애니메이션 실행 : %s / SkillID: %s / NotifyName: %s"),
+			*SkillData.SkillName,
+			*SkillData.SkillID.ToString(),
+			*SkillData.NotifyName.ToString());
+	}
+	else
+	{
+		SK_LOG(LogSkillMaker, Error, TEXT("스킬 실행 불가 : AnimInstance 없음."));
 	}
 }
 

@@ -18,7 +18,7 @@ struct FSKWeaponRow
 {
 	GENERATED_BODY()
 
-	UPROPERTY(EditAnywhere, BlueprintREadWrite)
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	FName RowName;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
@@ -36,7 +36,7 @@ struct FSKAnimationRow
 {
 	GENERATED_BODY()
 
-	UPROPERTY(EditAnywhere, BlueprintREadWrite)
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	FName RowName;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
@@ -54,7 +54,7 @@ struct FSKProjectileRow
 {
 	GENERATED_BODY()
 
-	UPROPERTY(EditAnywhere, BlueprintREadWrite)
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	FName RowName;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
@@ -73,6 +73,8 @@ class SKILLMAKER_API USKDataManagerSubsystem : public UGameInstanceSubsystem
 	GENERATED_BODY()
 	
 public:
+	virtual void Initialize(FSubsystemCollectionBase& Collection) override;
+
 	UFUNCTION(BlueprintCallable, Category = "Data")
 	TArray<FSKWeaponRow> GetWeaponList();
 
@@ -91,4 +93,7 @@ protected:
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Data")
 	TObjectPtr<UDataTable> ProjectileDataTable;
+
+private:
+	void LoadDefaultDataTables();
 };

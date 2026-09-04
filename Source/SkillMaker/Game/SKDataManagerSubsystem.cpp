@@ -4,6 +4,36 @@
 #include "SKDataManagerSubsystem.h"
 #include "Logging/SKLogSkillMakerMacro.h"
 
+void USKDataManagerSubsystem::Initialize(FSubsystemCollectionBase& Collection)
+{
+	Super::Initialize(Collection);
+
+	LoadDefaultDataTables();
+}
+
+void USKDataManagerSubsystem::LoadDefaultDataTables()
+{
+	if (!WeaponDataTable)
+	{
+		WeaponDataTable = LoadObject<UDataTable>(nullptr, TEXT("/Game/SkillMaker/Data/DT_WeaponData.DT_WeaponData"));
+	}
+
+	if (!AnimationDataTable)
+	{
+		AnimationDataTable = LoadObject<UDataTable>(nullptr, TEXT("/Game/SkillMaker/Data/DT_AnimationData.DT_AnimationData"));
+	}
+
+	if (!ProjectileDataTable)
+	{
+		ProjectileDataTable = LoadObject<UDataTable>(nullptr, TEXT("/Game/SkillMaker/Data/DT_ProjectileData.DT_ProjectileData"));
+	}
+
+	SK_LOG(LogSkillMaker, Log, TEXT("DataTable load result - Weapon: %s, Animation: %s, Projectile: %s"),
+		WeaponDataTable ? TEXT("Valid") : TEXT("Invalid"),
+		AnimationDataTable ? TEXT("Valid") : TEXT("Invalid"),
+		ProjectileDataTable ? TEXT("Valid") : TEXT("Invalid"));
+}
+
 TArray<FSKWeaponRow> USKDataManagerSubsystem::GetWeaponList()
 {
 	SK_LOG(LogSkillMaker, Log, TEXT("Begin"));
@@ -11,7 +41,10 @@ TArray<FSKWeaponRow> USKDataManagerSubsystem::GetWeaponList()
 	TArray<FSKWeaponRow> WeaponList;
 
 	if(!WeaponDataTable)
+	{
+		SK_LOG(LogSkillMaker, Error, TEXT("WeaponDataTable이 nullptr임."));
 		return WeaponList;
+	}
 
 	TArray<FName> RowNames = WeaponDataTable->GetRowNames();
 	for(const FName RowName : RowNames)

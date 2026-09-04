@@ -39,7 +39,7 @@ void USKSkillDetailWidget::NativeConstruct()
 	{
 		AnimNotifyTabButton->OnClicked.AddDynamic(this, &USKSkillDetailWidget::OnAnimNotifyTabClicked);
 	}
-	
+
 	if(SkillTypeComboBox)
 	{
 		SkillTypeComboBox->OnSelectionChanged.AddDynamic(this, &USKSkillDetailWidget::OnSkillTypeChanged);
@@ -59,7 +59,7 @@ void USKSkillDetailWidget::NativeConstruct()
 	{
 		MaxRangeSlider->OnValueChanged.AddDynamic(this, &USKSkillDetailWidget::OnMaxRangeChanged);
 	}
-	
+
 	if (PreviewSkillButton)
 	{
 		PreviewSkillButton->OnClicked.AddDynamic(this, &USKSkillDetailWidget::OnPreviewSkillClicked);
@@ -74,7 +74,7 @@ void USKSkillDetailWidget::NativeConstruct()
 	{
 		AnimNotifySelectionWidget->OnAnimNotifySelected.AddDynamic(this, &USKSkillDetailWidget::OnNotifySelected);
 	}
-	
+
 	PopulateStatusEffectList();
 }
 
@@ -179,7 +179,7 @@ void USKSkillDetailWidget::PopulateStatusEffectList()
 		return;
 
 	StatusEffectListBox->ClearChildren();
-	
+
 	TMap<EStatusEffect, FStatusEffectData> ExistingEffects;
 	if(EditingSkillData.IsSet())
 	{
@@ -192,7 +192,7 @@ void USKSkillDetailWidget::PopulateStatusEffectList()
 	for(EStatusEffect EffectType : TEnumRange<EStatusEffect>())
 	{
 		if(EffectType == EStatusEffect::None) continue;
-		
+
 		USKStatusEffectCardWidget* StatusEffectCard = CreateWidget<USKStatusEffectCardWidget>(this, WBP_SKStatusEffectCard);
 		if(StatusEffectCard)
 		{
@@ -211,7 +211,7 @@ void USKSkillDetailWidget::PopulateStatusEffectList()
 void USKSkillDetailWidget::PopulateAnimNotifyList()
 {
 	if (!AnimNotifySelectionWidget || !EditingSkillData.IsSet()) return;
-	
+
 	AnimNotifySelectionWidget->PopulateNotifyList(EditingSkillData->SkillMontage);
 }
 
@@ -281,7 +281,7 @@ void USKSkillDetailWidget::OnSkillTypeChanged(FString SelectedItem, ESelectInfo:
 {
 	if(!EditingSkillData.IsSet())
 		return;
-	
+
 	if (SelectedItem == "Attack")
 	{
 		EditingSkillData->SkillType = ESkillType::Attack;
@@ -354,7 +354,7 @@ void USKSkillDetailWidget::OnMaxRangeChanged(float Value)
 void USKSkillDetailWidget::OnProjectileSelected(const TSubclassOf<ASKProjectileActor> SelectedProjectileClass)
 {
 	SK_LOG(LogSkillMaker, Log, TEXT("Begin"));
-	
+
 	if (!EditingSkillData.IsSet()) return;
 
 	EditingSkillData->ProjectileActor = SelectedProjectileClass;
@@ -365,20 +365,27 @@ void USKSkillDetailWidget::OnProjectileSelected(const TSubclassOf<ASKProjectileA
 void USKSkillDetailWidget::OnNotifySelected(FName NotifyName)
 {
 	SK_LOG(LogSkillMaker, Log, TEXT("Begin"));
-	
+
 	if (!EditingSkillData.IsSet()) return;
 
 	EditingSkillData->NotifyName = NotifyName;
-	
+
 	SK_LOG(LogSkillMaker, Log, TEXT("애님 노티파이 선택됨: %s"), *NotifyName.ToString());
 }
 
 void USKSkillDetailWidget::OnPreviewSkillClicked()
 {
 	SK_LOG(LogSkillMaker, Log, TEXT("Begin"));
-	
-	if (!SkillMakerEditorHUDReference || !EditingSkillData.IsSet()) return;
-	
+
+	if (!SkillMakerEditorHUDReference || !EditingSkillData.IsSet())
+	{
+		SK_LOG(LogSkillMaker, Warning, TEXT("스킬 미리보기 불가: HUD 또는 EditingSkillData 없음."));
+		return;
+	}
+
+	SaveSkillDetails();
+	SkillMakerEditorHUDReference->SetCurrentSkillData(EditingSkillData.GetValue());
+
 	SkillMakerEditorHUDReference->PreviewSkillEffect(EditingSkillData.GetValue());
 	SK_LOG(LogSkillMaker, Log, TEXT("스킬 미리보기 실행"));
 }
@@ -386,6 +393,6 @@ void USKSkillDetailWidget::OnPreviewSkillClicked()
 void USKSkillDetailWidget::OnSaveSkillClicked()
 {
 	SK_LOG(LogSkillMaker, Log, TEXT("Begin"));
-	
+
 	SaveSkillData();
 }

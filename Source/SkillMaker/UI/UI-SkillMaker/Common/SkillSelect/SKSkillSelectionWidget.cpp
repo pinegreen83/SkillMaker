@@ -3,8 +3,8 @@
 
 #include "SKSkillSelectionWidget.h"
 #include "Components/UniformGridPanel.h"
+#include "Game/SKSaveGameSubsystem.h"
 #include "Skill/SKSkillData.h"
-#include "Skill/SKSkillManager.h"
 #include "SKSkillCardWidget.h"
 #include "UI/UI-SkillMaker/UEEditor/SKSkillMakerEditorMainWidget.h"
 #include "UI/UI-SkillMaker/TrainingRoom/SKSkillMakerTrainHUD.h"
@@ -49,7 +49,31 @@ void USKSkillSelectionWidget::LoadSkillList()
 {
 	SK_LOG(LogSkillMaker, Log, TEXT("스킬 목록을 불러옵니다."));
 
-	SkillList = USKSkillManager::Get()->GetSkillList();
+	if (!SkillGridPanel)
+	{
+		SK_LOG(LogSkillMaker, Error, TEXT("SkillGridPanel이 nullptr임."));
+		return;
+	}
+
+	SkillGridPanel->ClearChildren();
+
+	if (UGameInstance* GameInstance = GetGameInstance())
+	{
+		if (USKSaveGameSubsystem* SaveGameSubsystem = GameInstance->GetSubsystem<USKSaveGameSubsystem>())
+		{
+			SkillList = SaveGameSubsystem->GetSavedSkillList();
+		}
+		else
+		{
+			SK_LOG(LogSkillMaker, Error, TEXT("USKSaveGameSubsystem을 찾을 수 없음."));
+			SkillList.Empty();
+		}
+	}
+	else
+	{
+		SK_LOG(LogSkillMaker, Error, TEXT("GameInstance를 찾을 수 없음."));
+		SkillList.Empty();
+	}
 
 	int32 index = 0;
 	for(const auto& Skill : SkillList)
