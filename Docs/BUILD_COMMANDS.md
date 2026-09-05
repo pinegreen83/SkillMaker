@@ -1,46 +1,46 @@
-# Build Commands
+# 빌드 명령
 
-Project root:
+프로젝트 루트:
 `/Users/leejj/Desktop/workspace/UEWorkspace/SkillMaker`
 
-Engine:
+엔진 경로:
 `/Users/Shared/Epic Games/UE_5.8`
 
-## Generate Project Files
+## 프로젝트 파일 생성
 ```sh
 "/Users/Shared/Epic Games/UE_5.8/Engine/Build/BatchFiles/Mac/GenerateProjectFiles.sh" \
   -project="/Users/leejj/Desktop/workspace/UEWorkspace/SkillMaker/SkillMaker.uproject" \
   -game -engine
 ```
 
-## Build Editor Target
+## 에디터 타깃 빌드
 ```sh
 "/Users/Shared/Epic Games/UE_5.8/Engine/Build/BatchFiles/Mac/Build.sh" \
   SkillMakerEditor Mac Development \
   -Project="/Users/leejj/Desktop/workspace/UEWorkspace/SkillMaker/SkillMaker.uproject"
 ```
 
-## Build Game Target
+## 게임 타깃 빌드
 ```sh
 "/Users/Shared/Epic Games/UE_5.8/Engine/Build/BatchFiles/Mac/Build.sh" \
   SkillMaker Mac Development \
   -Project="/Users/leejj/Desktop/workspace/UEWorkspace/SkillMaker/SkillMaker.uproject"
 ```
 
-## Open Editor
+## 에디터 실행
 ```sh
 "/Users/Shared/Epic Games/UE_5.8/Engine/Binaries/Mac/UnrealEditor.app/Contents/MacOS/UnrealEditor" \
   "/Users/leejj/Desktop/workspace/UEWorkspace/SkillMaker/SkillMaker.uproject"
 ```
 
-## Run Editor Commandlet/Headless Smoke Check
+## 에디터 명령줄 실행·헤드리스 기동 확인
 ```sh
 "/Users/Shared/Epic Games/UE_5.8/Engine/Binaries/Mac/UnrealEditor-Cmd" \
   "/Users/leejj/Desktop/workspace/UEWorkspace/SkillMaker/SkillMaker.uproject" \
   -unattended -nop4 -NullRHI
 ```
 
-## Package Mac Build
+## Mac 빌드 패키징
 ```sh
 "/Users/Shared/Epic Games/UE_5.8/Engine/Build/BatchFiles/RunUAT.sh" BuildCookRun \
   -project="/Users/leejj/Desktop/workspace/UEWorkspace/SkillMaker/SkillMaker.uproject" \
@@ -49,11 +49,11 @@ Engine:
   -archivedirectory="/Users/leejj/Desktop/workspace/UEWorkspace/SkillMaker/Build/Archive"
 ```
 
-## Clean Generated Outputs
-Delete only when intentionally refreshing generated state:
+## 생성된 산출물 정리
+생성 상태를 명시적으로 초기화할 때만 다음 폴더를 삭제한다:
 - `Binaries/`
 - `Intermediate/`
 - `Saved/`
 - `DerivedDataCache/`
 
-Do not delete source, config, content, or user IDE settings as part of routine build validation.
+일반적인 빌드 검증 과정에서 소스·설정·콘텐츠·사용자 IDE 설정을 삭제하지 않는다.
