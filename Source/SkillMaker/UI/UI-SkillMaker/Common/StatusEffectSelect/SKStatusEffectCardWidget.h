@@ -12,6 +12,8 @@ class UEditableTextBox;
 class USlider;
 class UTextBlock;
 
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnStatusEffectChanged, const FStatusEffectData&, EffectData, bool, bIsChecked);
+
 UCLASS()
 class SKILLMAKER_API USKStatusEffectCardWidget : public UUserWidget
 {
@@ -26,6 +28,9 @@ public:
 	
 	/** 현재 입력된 상태 이상 데이터를 반환 */
 	FStatusEffectData GetCurrentStatusEffectData() const;
+
+	UPROPERTY(BlueprintAssignable, Category = "Status Effect")
+	FOnStatusEffectChanged OnStatusEffectChanged;
 
 protected:
 	/** 상태 이상 이름 표시 */
@@ -45,6 +50,7 @@ protected:
 	TObjectPtr<USlider> DOTSlider;
 
 	/** 최대 스택 개수 */
+	UPROPERTY(meta = (BindWidgetOptional))
 	TObjectPtr<UEditableTextBox> StackCountTextBox;
 
 	/** 현재 상태이상 타입 */
@@ -52,6 +58,7 @@ protected:
 	float CurrentDuration;
 	float CurrentDOT;
 	int32 CurrentStackCount;
+	bool bCurrentCanStack;
 
 	/** 상태 변경 이벤트 */
 	UFUNCTION()

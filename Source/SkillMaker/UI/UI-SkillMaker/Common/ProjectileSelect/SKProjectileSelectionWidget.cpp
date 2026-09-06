@@ -5,7 +5,7 @@
 #include "SKProjectileCardWidget.h"
 #include "Components/ScrollBox.h"
 #include "Components/Image.h"
-#include "Components/Button.h"
+#include "Components/TextBlock.h"
 #include "Components/WidgetSwitcher.h"
 #include "Game/SKDataManagerSubsystem.h"
 #include "Logging/SKLogSkillMakerMacro.h"
@@ -14,10 +14,6 @@ void USKProjectileSelectionWidget::NativeConstruct()
 {
 	Super::NativeConstruct();
 	
-	if (ConfirmButton)
-	{
-		ConfirmButton->OnClicked.AddDynamic(this, &USKProjectileSelectionWidget::OnConfirmSelection);
-	}
 }
 
 bool USKProjectileSelectionWidget::Initialize()
@@ -28,12 +24,12 @@ bool USKProjectileSelectionWidget::Initialize()
 	if (!Success)
 		return false;
 	
-	SetProjectileCard();
+	SetProjectileCard(TSoftClassPtr<ASKProjectileActor>());
 
 	return true;
 }
 
-void USKProjectileSelectionWidget::SetProjectileCard()
+void USKProjectileSelectionWidget::SetProjectileCard(const TSoftClassPtr<ASKProjectileActor>& CurrentProjectile)
 {
 	SK_LOG(LogSkillMaker, Log, TEXT("Begin"));
 	
@@ -44,6 +40,11 @@ void USKProjectileSelectionWidget::SetProjectileCard()
 	}
 
 	ProjectileListBox->ClearChildren();
+	SelectedProjectileData = CurrentProjectile;
+	if (SelectedEffectText)
+	{
+		SelectedEffectText->SetText(FText::FromString(CurrentProjectile.IsNull() ? TEXT("선택 없음") : CurrentProjectile.GetAssetName()));
+	}
 
 	if(USKDataManagerSubsystem* DataManagerSubsystem = GetWorld()->GetGameInstance()->GetSubsystem<USKDataManagerSubsystem>())
 	{
@@ -53,7 +54,8 @@ void USKProjectileSelectionWidget::SetProjectileCard()
 			USKProjectileCardWidget* ProjectileCard = CreateWidget<USKProjectileCardWidget>(this, WBP_ProjectileCard);
 			if (!ProjectileCard) continue;
 	
-			ProjectileCard->SetProjectileInfo(Projectile.Data.ProjectileActor);
+			ProjectileCard->SetProjectileInfo(Projectile.Data.ProjectileName, Projectile.Data.ProjectileActor,
+				Projectile.Data.ProjectileActor == CurrentProjectile);
 			ProjectileCard->OnProjectileCardSelected.AddDynamic(this, &USKProjectileSelectionWidget::SelectedProjectile);
 	
 			ProjectileListBox->AddChild(ProjectileCard);
@@ -65,21 +67,18 @@ void USKProjectileSelectionWidget::SetProjectileCard()
 	}
 }
 
-void USKProjectileSelectionWidget::SelectedProjectile(TSubclassOf<ASKProjectileActor> SelectedProjectile)
+void USKProjectileSelectionWidget::SelectedProjectile(TSoftClassPtr<ASKProjectileActor> SelectedProjectile)
 {
 	SK_LOG(LogSkillMaker, Log, TEXT("Begin"));
 	
 	SelectedProjectileData = SelectedProjectile;
+	if (SelectedEffectText)
+	{
+		SelectedEffectText->SetText(FText::FromString(SelectedProjectileData.GetAssetName()));
+	}
 
 	SK_LOG(LogSkillMaker, Log, TEXT("Now Selected Projectile : %s"),
-		SelectedProjectileData ? *SelectedProjectileData->GetName() : TEXT("None"));
+		SelectedProjectileData.IsNull() ? TEXT("None") : *SelectedProjectileData.ToSoftObjectPath().ToString());
 
 	OnProjectileSelected.Broadcast(SelectedProjectileData);
-}
-
-void USKProjectileSelectionWidget::OnConfirmSelection()
-{
-	SK_LOG(LogSkillMaker, Log, TEXT("Begin"));
-	SK_LOG(LogSkillMaker, Log, TEXT("Current Selected Projectile : %s"),
-		SelectedProjectileData ? *SelectedProjectileData->GetName() : TEXT("None"));
 }

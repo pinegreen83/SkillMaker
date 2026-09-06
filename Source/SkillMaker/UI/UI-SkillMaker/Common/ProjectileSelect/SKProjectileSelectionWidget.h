@@ -7,7 +7,6 @@
 #include "Skill/SKProjectileActor.h"
 #include "SKProjectileSelectionWidget.generated.h"
 
-class UButton;
 class UScrollBox;
 class UTextBlock;
 class UImage;
@@ -17,7 +16,7 @@ class UWidgetSwitcher;
 class USKProjectileCardWidget;
 class USKSoundCardWidget;
 
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnProjectileSelected, TSubclassOf<ASKProjectileActor>, SelectedProjectile);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnProjectileSelected, TSoftClassPtr<ASKProjectileActor>, SelectedProjectile);
 
 UCLASS()
 class SKILLMAKER_API USKProjectileSelectionWidget : public UUserWidget
@@ -28,7 +27,7 @@ public:
 	virtual void NativeConstruct() override;
 	virtual bool Initialize() override;
 
-	void SetProjectileCard();
+	void SetProjectileCard(const TSoftClassPtr<ASKProjectileActor>& CurrentProjectile);
 	
 	UPROPERTY(BlueprintAssignable, Category = "Projectile Selection")
 	FOnProjectileSelected OnProjectileSelected;
@@ -46,22 +45,15 @@ protected:
 	UPROPERTY(meta = (BindWidget))
 	TObjectPtr<UTextBlock> SelectedEffectText;
 
-	/** 적용 버튼 */
-	UPROPERTY(meta = (BindWidget))
-	TObjectPtr<UButton> ConfirmButton;
-
 	/** 개별 항목 UI 카드 위젯 클래스 */
 	UPROPERTY(EditAnywhere, Category = "UI")
 	TSubclassOf<USKProjectileCardWidget> WBP_ProjectileCard;
 
 private:
 	/** 현재 선택된 이펙트 & 사운드 */
-	TSubclassOf<ASKProjectileActor> SelectedProjectileData;
+	UPROPERTY()
+	TSoftClassPtr<ASKProjectileActor> SelectedProjectileData;
 
 	UFUNCTION()
-	void SelectedProjectile(TSubclassOf<ASKProjectileActor> SelectedProjectile);
-	
-	/** 선택한 데이터를 SkillDetail로 전달 */
-	UFUNCTION()
-	void OnConfirmSelection();
+	void SelectedProjectile(TSoftClassPtr<ASKProjectileActor> SelectedProjectile);
 };

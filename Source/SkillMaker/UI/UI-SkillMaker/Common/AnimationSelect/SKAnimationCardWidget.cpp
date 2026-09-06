@@ -20,28 +20,39 @@ bool USKAnimationCardWidget::Initialize()
 	return true;
 }
 
-void USKAnimationCardWidget::SetAnimationInfo(UAnimMontage* Montage, UTexture2D* Thumbnail)
+bool USKAnimationCardWidget::SetAnimationInfo(const FString& AnimationName, const TSoftObjectPtr<UAnimMontage>& Montage, const TSoftObjectPtr<UTexture2D>& Thumbnail, bool bIsSelected)
 {
-	if(!Montage)
-		return;
+	if(Montage.IsNull())
+	{
+		SelectedMontage.Reset();
+		return false;
+	}
 
 	if(AnimationNameText)
 	{
-		AnimationNameText->SetText(FText::FromString(Montage->GetName()));
+		const FString DisplayName = AnimationName.IsEmpty() ? Montage.GetAssetName() : AnimationName;
+		AnimationNameText->SetText(FText::FromString(DisplayName));
 	}
 
 	if(AnimationThumbnail)
 	{
-		AnimationThumbnail->SetBrushFromTexture(Thumbnail);
+		AnimationThumbnail->SetBrushFromSoftTexture(Thumbnail);
 	}
 
 	SelectedMontage = Montage;
+	if (AnimationButton)
+	{
+		AnimationButton->SetBackgroundColor(bIsSelected ? FLinearColor(0.15f, 0.55f, 1.0f, 1.0f) : FLinearColor::White);
+	}
+	return true;
 }
 
 void USKAnimationCardWidget::HandleAnimationSelected()
 {
-	if(!SelectedMontage)
-		OnAnimationCardSelected.Broadcast(nullptr);
+	if(SelectedMontage.IsNull())
+	{
+		return;
+	}
 	
 	OnAnimationCardSelected.Broadcast(SelectedMontage);
 }

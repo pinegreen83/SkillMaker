@@ -18,10 +18,20 @@ bool USKAnimNotifySelectionWidget::Initialize()
 	return true;
 }
 
-void USKAnimNotifySelectionWidget::PopulateNotifyList(UAnimMontage* Montage)
+void USKAnimNotifySelectionWidget::PopulateNotifyList(UAnimMontage* Montage, FName CurrentNotifyName)
 {
 	SK_LOG(LogSkillMaker, Log, TEXT("Begin"));
-	
+	if (NotifyListBox)
+	{
+		NotifyListBox->ClearChildren();
+	}
+	AvailableNotifies.Empty();
+	SelectedNotify = CurrentNotifyName;
+	if (SelectedNotifyText)
+	{
+		SelectedNotifyText->SetText(FText::FromName(CurrentNotifyName));
+	}
+
 	if (!NotifyListBox || !Montage || !WBP_AnimNotifyCard)
 	{
 		SK_LOG(LogSkillMaker, Error, TEXT("몽타주 없음."));
@@ -29,9 +39,6 @@ void USKAnimNotifySelectionWidget::PopulateNotifyList(UAnimMontage* Montage)
 	}
 
 	SK_LOG(LogSkillMaker, Log, TEXT("몽타주 이름 : %s"), *Montage->GetName());
-
-	NotifyListBox->ClearChildren();
-	AvailableNotifies.Empty();
 
 	int32 NotifyIndex = 1;
 	for (const FAnimNotifyEvent& NotifyEvent : Montage->Notifies)
@@ -53,7 +60,7 @@ void USKAnimNotifySelectionWidget::PopulateNotifyList(UAnimMontage* Montage)
 		USKAnimNotifyCardWidget* NotifyButton = CreateWidget<USKAnimNotifyCardWidget>(this, WBP_AnimNotifyCard);
 		if (!NotifyButton) continue;
 
-		NotifyButton->SetNotifyInfo(NotifyName, NotifyName, NotifyTime);
+		NotifyButton->SetNotifyInfo(NotifyName, NotifyName, NotifyTime, NotifyName == CurrentNotifyName);
 		NotifyButton->OnNotifySelected.AddDynamic(this, &USKAnimNotifySelectionWidget::OnNotifyButtonSelected);
 
 		NotifyListBox->AddChild(NotifyButton);

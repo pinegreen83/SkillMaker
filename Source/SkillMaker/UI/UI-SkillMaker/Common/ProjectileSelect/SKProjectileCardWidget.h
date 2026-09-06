@@ -10,7 +10,7 @@
 class UButton;
 class UTextBlock;
 
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnProjectileCardSelected, TSubclassOf<ASKProjectileActor>, SelectedEffect);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnProjectileCardSelected, TSoftClassPtr<ASKProjectileActor>, SelectedEffect);
 
 UCLASS()
 class SKILLMAKER_API USKProjectileCardWidget : public UUserWidget
@@ -21,7 +21,7 @@ public:
 	virtual bool Initialize() override;
 
 	/** 발사체 정보를 설정 */
-	void SetProjectileInfo(const TSubclassOf<ASKProjectileActor> InProjectileClass);
+	void SetProjectileInfo(const FString& ProjectileName, const TSoftClassPtr<ASKProjectileActor>& InProjectileClass, bool bIsSelected);
 
 	/** 발사체 선택 델리게이트 */
 	UPROPERTY(BlueprintAssignable, Category = "Projectile Selection")
@@ -35,7 +35,8 @@ protected:
 	TObjectPtr<UTextBlock> ProjectileNameText;
 
 private:
-	TSubclassOf<ASKProjectileActor> ProjectileClass;
+	UPROPERTY()
+	TSoftClassPtr<ASKProjectileActor> ProjectileClass;
 
 	/** 버튼 클릭 시 발사체 선택 이벤트 발생 */
 	UFUNCTION()

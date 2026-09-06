@@ -6,7 +6,7 @@
 #include "Blueprint/UserWidget.h"
 #include "SKAnimationCardWidget.generated.h"
 
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnAnimationCardSelected, UAnimMontage*, SelectedMontage);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnAnimationCardSelected, const TSoftObjectPtr<UAnimMontage>&, SelectedMontage);
 
 class UButton;
 class UImage;
@@ -22,7 +22,7 @@ public:
 	virtual bool Initialize() override;
 
 	UFUNCTION(BlueprintCallable, Category = "Animation Selection")
-	void SetAnimationInfo(UAnimMontage* Montage, UTexture2D* Thumbnail);
+	bool SetAnimationInfo(const FString& AnimationName, const TSoftObjectPtr<UAnimMontage>& Montage, const TSoftObjectPtr<UTexture2D>& Thumbnail, bool bIsSelected);
 
 	UPROPERTY(BlueprintAssignable, Category = "Animation Selection")
 	FOnAnimationCardSelected OnAnimationCardSelected;
@@ -38,7 +38,7 @@ protected:
 	TObjectPtr<UTextBlock> AnimationNameText;
 
 	UPROPERTY()
-	TObjectPtr<UAnimMontage> SelectedMontage;
+	TSoftObjectPtr<UAnimMontage> SelectedMontage;
 
 	UFUNCTION()
 	void HandleAnimationSelected();

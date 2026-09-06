@@ -86,26 +86,23 @@ void ASKSkillMakerTrainHUD::SetSkillName(const FString& SkillName)
 	SK_LOG(LogSkillMaker, Log, TEXT("스킬 이름 설정 : %s"), *SkillName);
 }
 
-void ASKSkillMakerTrainHUD::SetSkillMontage(UAnimMontage* Montage)
+void ASKSkillMakerTrainHUD::SetSkillMontage(const TSoftObjectPtr<UAnimMontage>& Montage)
 {
-	if(Montage)
-	{
-		CurrentEditingSkill.SkillMontage = Montage;
-		CurrentEditingSkill.SkillDuration = Montage->GetPlayLength();
-		SK_LOG(LogSkillMaker, Log, TEXT("애니메이션 설정 : %s (길이 : %f)"), *Montage->GetName(), CurrentEditingSkill.SkillDuration);
-	}
+	CurrentEditingSkill.SkillMontage = Montage;
+	CurrentEditingSkill.SkillDuration = 0.0f;
+	SK_LOG(LogSkillMaker, Log, TEXT("애니메이션 설정 : %s"), *Montage.ToSoftObjectPath().ToString());
 }
 
 void ASKSkillMakerTrainHUD::LogCurrentSkillData()
 {
 	SK_LOG(LogSkillMaker, Log, TEXT("==== 현재 스킬 데이터 ===="));
 	SK_LOG(LogSkillMaker, Log, TEXT("스킬 이름 : %s"), *CurrentEditingSkill.SkillName);
-	SK_LOG(LogSkillMaker, Log, TEXT("무기 타입 : %s"), *CurrentEditingSkill.WeaponType);
-	if(CurrentEditingSkill.SkillMontage)
+	SK_LOG(LogSkillMaker, Log, TEXT("무기 태그 : %s"), *CurrentEditingSkill.WeaponTag.ToString());
+	if(!CurrentEditingSkill.SkillMontage.IsNull())
 	{
-		SK_LOG(LogSkillMaker, Log, TEXT("애니메이션 : %s, 길이 : %f"), *CurrentEditingSkill.SkillMontage->GetName(), CurrentEditingSkill.SkillDuration);
+		SK_LOG(LogSkillMaker, Log, TEXT("애니메이션 : %s, 길이 : %f"), *CurrentEditingSkill.SkillMontage.ToSoftObjectPath().ToString(), CurrentEditingSkill.SkillDuration);
 	}
-	if(CurrentEditingSkill.ProjectileActor)
+	if(!CurrentEditingSkill.ProjectileActor.IsNull())
 	{
 		SK_LOG(LogSkillMaker, Log, TEXT("발사체 설정 완료."));
 	}

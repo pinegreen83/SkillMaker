@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "Blueprint/UserWidget.h"
+#include "GameplayTagContainer.h"
 #include "SKSkillMakerEditorMainWidget.generated.h"
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnSkillDataFromTable);
@@ -80,8 +81,6 @@ protected:
 	UPROPERTY()
 	TObjectPtr<ASKSkillMakerEditorHUD> HUDReference;
 
-	FString SelectedWeaponType;
-
 private:
 	void GoBackToPreviousState();
 	
@@ -95,10 +94,10 @@ private:
 	void OnSkillSelected(const FName& SkillID);
 	
 	UFUNCTION()
-	void OnWeaponSelected(const FString& WeaponName);
+	void OnWeaponSelected(FGameplayTag WeaponTag);
 
 	UFUNCTION()
-	void OnAnimationSelected(UAnimMontage* AnimationMontage);
+	void OnAnimationSelected(const TSoftObjectPtr<UAnimMontage>& AnimationMontage);
 
 	UFUNCTION()
 	void OnFinishSkillEditing();

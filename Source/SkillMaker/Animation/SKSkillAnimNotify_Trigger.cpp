@@ -37,10 +37,17 @@ void USKSkillAnimNotify_Trigger::Notify(USkeletalMeshComponent* MeshComp, UAnimS
 	if (NotifyTriggerName == SkillData.NotifyName)
 	{
 		SK_LOG(LogSkillMaker, Log, TEXT("애님 노티파이 실행됨: %s"), *SkillData.SkillName);
-		if (SkillData.ProjectileActor)
+		if (!SkillData.ProjectileActor.IsNull())
 		{
-			SK_LOG(LogSkillMaker, Log, TEXT("발사체 : %s 스폰"), *SkillData.ProjectileActor->GetName());
-			SpawnProjectile(Character, SkillData.ProjectileActor);
+			TSubclassOf<ASKProjectileActor> ProjectileClass = SkillData.ProjectileActor.LoadSynchronous();
+			if (!ProjectileClass)
+			{
+				SK_LOG(LogSkillMaker, Error, TEXT("발사체 클래스 로드 실패: %s"), *SkillData.ProjectileActor.ToSoftObjectPath().ToString());
+				return;
+			}
+
+			SK_LOG(LogSkillMaker, Log, TEXT("발사체 : %s 스폰"), *ProjectileClass->GetName());
+			SpawnProjectile(Character, ProjectileClass);
 		}
 	}
 	else

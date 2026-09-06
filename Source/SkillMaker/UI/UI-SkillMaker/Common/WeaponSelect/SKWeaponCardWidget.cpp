@@ -23,7 +23,7 @@ bool USKWeaponCardWidget::Initialize()
 	return true;
 }
 
-void USKWeaponCardWidget::SetWeaponInfo(const FString& InWeaponName, const FString& InWeaponType, UTexture2D* InThumbnail)
+void USKWeaponCardWidget::SetWeaponInfo(const FString& InWeaponName, FGameplayTag InWeaponTag, const TSoftObjectPtr<UTexture2D>& InThumbnail, bool bIsSelected)
 {
 	if(WeaponNameText)
 	{
@@ -32,13 +32,23 @@ void USKWeaponCardWidget::SetWeaponInfo(const FString& InWeaponName, const FStri
 
 	if(WeaponThumbnail)
 	{
-		WeaponThumbnail->SetBrushFromTexture(InThumbnail);
+		WeaponThumbnail->SetBrushFromSoftTexture(InThumbnail);
 	}
 
-	WeaponType = InWeaponType;
+	WeaponTag = InWeaponTag;
+	if (WeaponButton)
+	{
+		WeaponButton->SetBackgroundColor(bIsSelected ? FLinearColor(0.15f, 0.55f, 1.0f, 1.0f) : FLinearColor::White);
+	}
 }
 
 void USKWeaponCardWidget::HandleWeaponSelected()
 {
-	OnWeaponCardSelected.Broadcast(WeaponType);
+	if (!WeaponTag.IsValid())
+	{
+		SK_LOG(LogSkillMaker, Warning, TEXT("무기 카드에 유효한 태그가 설정되지 않음."));
+		return;
+	}
+
+	OnWeaponCardSelected.Broadcast(WeaponTag);
 }

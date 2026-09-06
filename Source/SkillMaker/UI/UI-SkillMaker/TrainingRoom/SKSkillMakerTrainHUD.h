@@ -38,7 +38,7 @@ public:
 	void SetSkillName(const FString& SkillName);
 	
 	UFUNCTION(BlueprintCallable, Category = "Skill")
-	void SetSkillMontage(UAnimMontage* Montage);
+	void SetSkillMontage(const TSoftObjectPtr<UAnimMontage>& Montage);
 	
 	UFUNCTION(BlueprintCallable, Category = "Skill")
 	void LogCurrentSkillData();

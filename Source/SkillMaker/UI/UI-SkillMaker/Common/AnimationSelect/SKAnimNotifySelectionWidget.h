@@ -22,7 +22,7 @@ public:
 	virtual bool Initialize() override;
 
 	/** 애님 몽타주에서 애님 노티파이 목록을 가져와 UI를 채운다 */
-	void PopulateNotifyList(UAnimMontage* Montage);
+	void PopulateNotifyList(UAnimMontage* Montage, FName CurrentNotifyName);
 
 	/** 애님 노티파이 선택 시 브로드캐스트할 델리게이트 */
 	UPROPERTY(BlueprintAssignable, Category = "AnimNotify Selection")

@@ -43,6 +43,7 @@ void USKStatusEffectCardWidget::InitializeEffectEntry(EStatusEffect EffectType)
 	CurrentDuration = 0.0f;
 	CurrentDOT = 0.0f;
 	CurrentStackCount = 1;
+	bCurrentCanStack = false;
 
 	if(EffectNameText)
 	{
@@ -87,6 +88,7 @@ void USKStatusEffectCardWidget::SetStatusEffectData(const FStatusEffectData& Eff
 	CurrentDuration = EffectData.Duration;
 	CurrentDOT = EffectData.DamagePerSecond;
 	CurrentStackCount = EffectData.MaxStack;
+	bCurrentCanStack = EffectData.bCanStack;
 
 	if(EffectCheckBox)
 	{
@@ -115,6 +117,7 @@ FStatusEffectData USKStatusEffectCardWidget::GetCurrentStatusEffectData() const
 	EffectData.EffectType = CurrentEffectType;
 	EffectData.Duration = CurrentDuration;
 	EffectData.DamagePerSecond = CurrentDOT;
+	EffectData.bCanStack = bCurrentCanStack;
 	EffectData.MaxStack = CurrentStackCount;
 
 	return EffectData;
@@ -127,20 +130,27 @@ void USKStatusEffectCardWidget::OnEffectToggled(bool bIsChecked)
 		CurrentDuration = 0.0f;
 		CurrentDOT = 0.0f;
 		CurrentStackCount = 1;
+		bCurrentCanStack = false;
 	}
+
+	OnStatusEffectChanged.Broadcast(GetCurrentStatusEffectData(), bIsChecked);
 }
 
 void USKStatusEffectCardWidget::OnDurationChanged(const FText& Text, ETextCommit::Type CommitMethod)
 {
 	CurrentDuration = FCString::Atof(*Text.ToString());
+	OnStatusEffectChanged.Broadcast(GetCurrentStatusEffectData(), EffectCheckBox && EffectCheckBox->IsChecked());
 }
 
 void USKStatusEffectCardWidget::OnDOTValueChanged(float Value)
 {
 	CurrentDOT = Value;
+	OnStatusEffectChanged.Broadcast(GetCurrentStatusEffectData(), EffectCheckBox && EffectCheckBox->IsChecked());
 }
 
 void USKStatusEffectCardWidget::OnStackCountChanged(const FText& Text, ETextCommit::Type CommitMethod)
 {
 	CurrentStackCount = FCString::Atoi(*Text.ToString());
+	bCurrentCanStack = CurrentStackCount > 1;
+	OnStatusEffectChanged.Broadcast(GetCurrentStatusEffectData(), EffectCheckBox && EffectCheckBox->IsChecked());
 }

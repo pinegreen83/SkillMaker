@@ -11,6 +11,6 @@ public class SkillMaker : ModuleRules
 
 		PublicIncludePaths.AddRange(new string[] { "SkillMaker" });
 		
-		PublicDependencyModuleNames.AddRange(new string[] { "Core", "CoreUObject", "Engine", "InputCore", "UMG", "Slate", "SlateCore", "EnhancedInput" });
+		PublicDependencyModuleNames.AddRange(new string[] { "Core", "CoreUObject", "Engine", "InputCore", "UMG", "Slate", "SlateCore", "EnhancedInput", "GameplayTags" });
 	}
 }

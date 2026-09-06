@@ -1,9 +1,13 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "GameFramework/Actor.h"
-#include "SKProjectileActor.h"
+#include "Engine/DataTable.h"
+#include "GameplayTagContainer.h"
 #include "SKSkillData.generated.h"
+
+class ASKProjectileActor;
+class UAnimMontage;
+class UBlendSpace;
 
 UENUM(BlueprintType)
 enum class ESkillType : uint8
@@ -86,11 +90,11 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, SaveGame, Category = "Skill")
 	ESkillType SkillType;
 	
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, SaveGame, Category = "Skill")
-	FString WeaponType;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, SaveGame, Category = "Skill", meta = (Categories = "Weapon"))
+	FGameplayTag WeaponTag;
 	
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, SaveGame, Category = "Skill")
-	TObjectPtr<UAnimMontage> SkillMontage;
+	TSoftObjectPtr<UAnimMontage> SkillMontage;
 	
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, SaveGame, Category = "Skill")
 	float SkillDuration;
@@ -120,7 +124,7 @@ public:
 	bool bAffectAllies;
 	
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, SaveGame, Category = "Skill")
-	TSubclassOf<ASKProjectileActor> ProjectileActor;
+	TSoftClassPtr<ASKProjectileActor> ProjectileActor;
 	
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, SaveGame, Category = "Effect")
 	FName NotifyName;
@@ -135,7 +139,7 @@ public:
 	bool bUseMoveBlendSpace;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, SaveGame, Category = "Skill")
-	TObjectPtr<UBlendSpace> MoveSkillBlendSpace;
+	TSoftObjectPtr<UBlendSpace> MoveSkillBlendSpace;
 
 	FSKSkillData()
 		: SkillType(ESkillType::Attack)

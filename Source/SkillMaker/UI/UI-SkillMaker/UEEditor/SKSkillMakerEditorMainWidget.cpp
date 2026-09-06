@@ -10,7 +10,6 @@
 #include "Components/WidgetSwitcher.h"
 #include "Components/EditableTextBox.h"
 #include "SKSkillMakerEditorHUD.h"
-#include "Game/SKSaveGameSubsystem.h"
 #include "Logging/SKLogSkillMakerMacro.h"
 
 bool USKSkillMakerEditorMainWidget::Initialize()
@@ -74,8 +73,37 @@ bool USKSkillMakerEditorMainWidget::Initialize()
 void USKSkillMakerEditorMainWidget::SetHUDReference(ASKSkillMakerEditorHUD* InHUD)
 {
 	SK_LOG(LogSkillMaker, Log, TEXT("Begin"));
+	if (HUDReference)
+	{
+		if (WeaponSelectionWidget)
+		{
+			WeaponSelectionWidget->OnWeaponSelected.RemoveDynamic(HUDReference, &ASKSkillMakerEditorHUD::SetSkillWeaponTag);
+		}
+		if (AnimationSelectionWidget)
+		{
+			AnimationSelectionWidget->OnAnimationSelected.RemoveDynamic(HUDReference, &ASKSkillMakerEditorHUD::SetSkillMontage);
+		}
+	}
 
 	HUDReference = InHUD;
+	if (!HUDReference)
+	{
+		return;
+	}
+
+	if (WeaponSelectionWidget)
+	{
+		WeaponSelectionWidget->OnWeaponSelected.RemoveDynamic(this, &USKSkillMakerEditorMainWidget::OnWeaponSelected);
+		WeaponSelectionWidget->OnWeaponSelected.AddUniqueDynamic(HUDReference, &ASKSkillMakerEditorHUD::SetSkillWeaponTag);
+		WeaponSelectionWidget->OnWeaponSelected.AddUniqueDynamic(this, &USKSkillMakerEditorMainWidget::OnWeaponSelected);
+	}
+
+	if (AnimationSelectionWidget)
+	{
+		AnimationSelectionWidget->OnAnimationSelected.RemoveDynamic(this, &USKSkillMakerEditorMainWidget::OnAnimationSelected);
+		AnimationSelectionWidget->OnAnimationSelected.AddUniqueDynamic(HUDReference, &ASKSkillMakerEditorHUD::SetSkillMontage);
+		AnimationSelectionWidget->OnAnimationSelected.AddUniqueDynamic(this, &USKSkillMakerEditorMainWidget::OnAnimationSelected);
+	}
 
 	if(SkillDetailWidget)
 	{
@@ -112,6 +140,23 @@ void USKSkillMakerEditorMainWidget::SetSkillMakerState(ESKSkillMakerState NewSta
 
 	CurrentState = NewState;
 	SkillMakerSwitcher->SetActiveWidgetIndex(static_cast<int32>(NewState));
+
+	if (HUDReference)
+	{
+		const FSKSkillData& CurrentSkill = HUDReference->GetCurrentSkillData();
+		if (NewState == ESKSkillMakerState::ChooseWeapon && WeaponSelectionWidget)
+		{
+			WeaponSelectionWidget->LoadWeaponList(CurrentSkill.WeaponTag);
+		}
+		else if (NewState == ESKSkillMakerState::ChooseAnimation && AnimationSelectionWidget)
+		{
+			AnimationSelectionWidget->LoadAnimationsForWeapon(CurrentSkill.WeaponTag, CurrentSkill.SkillMontage);
+		}
+		else if (NewState == ESKSkillMakerState::SkillDetail && SkillDetailWidget)
+		{
+			SkillDetailWidget->InitializeFromSkillData();
+		}
+	}
 }
 
 void USKSkillMakerEditorMainWidget::GoBackToPreviousState()
@@ -140,6 +185,10 @@ void USKSkillMakerEditorMainWidget::OnModifySkillClicked()
 void USKSkillMakerEditorMainWidget::OnCreateSkillClicked()
 {
 	SK_LOG(LogSkillMaker, Log, TEXT("새로운 스킬 생성 시작"));
+	if (HUDReference)
+	{
+		HUDReference->InitializeNewSkill();
+	}
 	SetSkillMakerState(ESKSkillMakerState::ChooseWeapon, false);
 }
 
@@ -156,57 +205,31 @@ void USKSkillMakerEditorMainWidget::OnSkillSelected(const FName& SkillID)
 	HUDReference->LoadSkillForEditing(SkillID);
 	SK_LOG(LogSkillMaker, Log, TEXT("스킬 선택됨 : %s"), *SkillID.ToString());
 
-	if(SkillDetailWidget)
-	{
-		SkillDetailWidget->InitializeFromSkillData();
-	}
-
 	SetSkillMakerState(ESKSkillMakerState::SkillDetail, false);
 }
 
-void USKSkillMakerEditorMainWidget::OnWeaponSelected(const FString& WeaponType)
+void USKSkillMakerEditorMainWidget::OnWeaponSelected(FGameplayTag WeaponTag)
 {
 	SK_LOG(LogSkillMaker, Log, TEXT("Begin"));
 
-	if(!HUDReference)
+	if (!WeaponTag.IsValid())
 	{
-		SK_LOG(LogSkillMaker, Error, TEXT("HUD 레퍼런스 없음."));
+		SK_LOG(LogSkillMaker, Warning, TEXT("유효하지 않은 무기 태그가 선택됨."));
 		return;
 	}
 
-	SelectedWeaponType = WeaponType;
-	SK_LOG(LogSkillMaker, Log, TEXT("선택된 무기 : %s"), *SelectedWeaponType);
-
-	HUDReference->SetSkillWeaponType(WeaponType);
-
-	if(AnimationSelectionWidget)
-	{
-		AnimationSelectionWidget->LoadAnimationsForWeapon(WeaponType);
-	}
+	SK_LOG(LogSkillMaker, Log, TEXT("선택된 무기 : %s"), *WeaponTag.ToString());
 
 	SetSkillMakerState(ESKSkillMakerState::ChooseAnimation, false);
 }
 
-void USKSkillMakerEditorMainWidget::OnAnimationSelected(UAnimMontage* AnimationMontage)
+void USKSkillMakerEditorMainWidget::OnAnimationSelected(const TSoftObjectPtr<UAnimMontage>& AnimationMontage)
 {
 	SK_LOG(LogSkillMaker, Log, TEXT("Begin"));
 
-	if(!HUDReference)
+	if(!AnimationMontage.IsNull())
 	{
-		SK_LOG(LogSkillMaker, Error, TEXT("HUD 레퍼런스 없음."));
-		return;
-	}
-
-	if(AnimationMontage)
-	{
-		HUDReference->SetSkillMontage(AnimationMontage);
-		SK_LOG(LogSkillMaker, Log, TEXT("선택된 애니메이션 : %s"), *AnimationMontage->GetName());
-
-		if(SkillDetailWidget)
-		{
-			SkillDetailWidget->InitializeFromSkillData();
-		}
-
+		SK_LOG(LogSkillMaker, Log, TEXT("선택된 애니메이션 : %s"), *AnimationMontage.ToSoftObjectPath().ToString());
 		SetSkillMakerState(ESKSkillMakerState::SkillDetail, false);
 	}
 	else
@@ -239,39 +262,10 @@ void USKSkillMakerEditorMainWidget::OnSaveSkillClicked()
 		return;
 	}
 
-	HUDReference->SetSkillName(SkillName);
-	SK_LOG(LogSkillMaker, Log, TEXT("스킬 %s 저장 진행 중..."), *SkillName);
-
-	FSKSkillData SkillData = HUDReference->GetCurrentSkillData();
-
-	if (SkillData.SkillID.IsNone())
+	if (!HUDReference->SaveCurrentSkill(SkillName))
 	{
-		SkillData.SkillID = FName(*FGuid::NewGuid().ToString());
-		SK_LOG(LogSkillMaker, Log, TEXT("새로운 SkillID 생성: %s"), *SkillData.SkillID.ToString());
-	}
-	if (UGameInstance* GameInstance = GetGameInstance())
-	{
-		if (USKSaveGameSubsystem* SaveGameSubsystem = GameInstance->GetSubsystem<USKSaveGameSubsystem>())
-		{
-			if (!SaveGameSubsystem->SaveSkillData(SkillData.SkillID, SkillData))
-			{
-				SK_LOG(LogSkillMaker, Error, TEXT("스킬 SaveGame 저장 실패: %s"), *SkillData.SkillID.ToString());
-				return;
-			}
-		}
-		else
-		{
-			SK_LOG(LogSkillMaker, Error, TEXT("USKSaveGameSubsystem을 찾을 수 없음."));
-			return;
-		}
-	}
-	else
-	{
-		SK_LOG(LogSkillMaker, Error, TEXT("GameInstance를 찾을 수 없음."));
 		return;
 	}
-
-	SK_LOG(LogSkillMaker, Log, TEXT("스킬 저장 완료: %s"), *SkillName);
 	OnSkillDataFromTable.Broadcast();
 
 	SetSkillMakerState(ESKSkillMakerState::ChooseAction, false);

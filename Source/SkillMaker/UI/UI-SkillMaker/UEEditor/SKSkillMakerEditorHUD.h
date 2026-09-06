@@ -10,6 +10,8 @@
 class USKSkillMakerEditorMainWidget;
 class ASKPreviewCharacter;
 
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnEditingSkillChanged, const FSKSkillData&, SkillData);
+
 UCLASS()
 class SKILLMAKER_API ASKSkillMakerEditorHUD : public AHUD
 {
@@ -30,16 +32,22 @@ public:
 	const FSKSkillData& GetCurrentSkillData() const;
 
 	UFUNCTION(BlueprintCallable, Category = "Skill")
-	void SetCurrentSkillData(FSKSkillData SkillData);
+	void SetCurrentSkillData(const FSKSkillData& SkillData);
+
+	UPROPERTY(BlueprintAssignable, Category = "Skill")
+	FOnEditingSkillChanged OnEditingSkillChanged;
 	
 	UFUNCTION(BlueprintCallable, Category = "Skill")
-	void SetSkillName(const FString& WeaponName);
+	void SetSkillName(const FString& SkillName);
 
 	UFUNCTION(BlueprintCallable, Category = "Skill")
-	void SetSkillWeaponType(const FString& WeaponType);
+	void SetSkillWeaponTag(FGameplayTag WeaponTag);
 	
 	UFUNCTION(BlueprintCallable, Category = "Skill")
-	void SetSkillMontage(UAnimMontage* AnimationMontage);
+	void SetSkillMontage(const TSoftObjectPtr<UAnimMontage>& AnimationMontage);
+
+	UFUNCTION(BlueprintCallable, Category = "Skill")
+	bool SaveCurrentSkill(const FString& SkillName);
 	
 	UFUNCTION(BlueprintCallable, Category = "Skill")
 	void LogCurrentSkillData();

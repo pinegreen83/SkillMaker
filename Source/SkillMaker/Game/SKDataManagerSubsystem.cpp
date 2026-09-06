@@ -4,6 +4,27 @@
 #include "SKDataManagerSubsystem.h"
 #include "Logging/SKLogSkillMakerMacro.h"
 
+namespace
+{
+bool IsAnimationCompatibleWithWeapon(const FGameplayTag& WeaponTag, const FGameplayTagContainer& CompatibleWeaponTags)
+{
+	if (!WeaponTag.IsValid())
+	{
+		return false;
+	}
+
+	for (const FGameplayTag& CompatibleWeaponTag : CompatibleWeaponTags)
+	{
+		if (CompatibleWeaponTag.IsValid() && WeaponTag.MatchesTag(CompatibleWeaponTag))
+		{
+			return true;
+		}
+	}
+
+	return false;
+}
+}
+
 void USKDataManagerSubsystem::Initialize(FSubsystemCollectionBase& Collection)
 {
 	Super::Initialize(Collection);
@@ -59,11 +80,16 @@ TArray<FSKWeaponRow> USKDataManagerSubsystem::GetWeaponList()
 	return WeaponList;
 }
 
-TArray<FSKAnimationRow> USKDataManagerSubsystem::GetAnimationsForWeapon(const FString& WeaponType)
+TArray<FSKAnimationRow> USKDataManagerSubsystem::GetAnimationsForWeapon(FGameplayTag WeaponTag)
 {
-	SK_LOG(LogSkillMaker, Log, TEXT("Begin"));
+	SK_LOG(LogSkillMaker, Log, TEXT("무기 태그에 맞는 애니메이션 조회: %s"), *WeaponTag.ToString());
 	
 	TArray<FSKAnimationRow> AnimationList;
+	if (!WeaponTag.IsValid())
+	{
+		SK_LOG(LogSkillMaker, Warning, TEXT("유효하지 않은 무기 태그가 전달됨."));
+		return AnimationList;
+	}
 
 	if(!AnimationDataTable)
 	{
@@ -76,7 +102,7 @@ TArray<FSKAnimationRow> USKDataManagerSubsystem::GetAnimationsForWeapon(const FS
 	{
 		if(const FSKAnimationData* AnimationData = AnimationDataTable->FindRow<FSKAnimationData>(RowName, TEXT("")))
 		{
-			if(AnimationData->WeaponType == WeaponType)
+			if(IsAnimationCompatibleWithWeapon(WeaponTag, AnimationData->CompatibleWeaponTags))
 			{
 				FSKAnimationRow NowAnimationRow(RowName, *AnimationData);
 				AnimationList.Add(NowAnimationRow);

@@ -4,9 +4,10 @@
 
 #include "CoreMinimal.h"
 #include "Blueprint/UserWidget.h"
+#include "GameplayTagContainer.h"
 #include "SKWeaponCardWidget.generated.h"
 
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnWeaponCardSelected, const FString&, WeaponType);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnWeaponCardSelected, FGameplayTag, WeaponTag);
 
 class UButton;
 class UImage;
@@ -21,7 +22,7 @@ public:
 	virtual bool Initialize() override;
 
 	UFUNCTION(BlueprintCallable, Category = "Weapon Selection")
-	void SetWeaponInfo(const FString& InWeaponName, const FString& InWeaponType, UTexture2D* Thumbnail);
+	void SetWeaponInfo(const FString& InWeaponName, FGameplayTag InWeaponTag, const TSoftObjectPtr<UTexture2D>& Thumbnail, bool bIsSelected);
 
 	UPROPERTY(BlueprintAssignable, Category = "Weapon Selection")
 	FOnWeaponCardSelected OnWeaponCardSelected;
@@ -36,7 +37,8 @@ protected:
 	UPROPERTY(meta = (BindWidget))
 	TObjectPtr<UTextBlock> WeaponNameText;
 	
-	FString WeaponType;
+	UPROPERTY()
+	FGameplayTag WeaponTag;
 
 	UFUNCTION()
 	void HandleWeaponSelected();

@@ -51,7 +51,7 @@
 - 데이터 테이블 접근에 `USKDataManager::Get()`이나 GameInstance 직접 캐스팅을 사용하지 않는다.
 - 런타임에서 제작한 스킬은 `USKSaveGameSubsystem`과 `USKPlayerSkillSave`를 통해 저장한다.
 - `SkillID`는 생성된 스킬의 저장·수정·조회에 쓰는 고정 키다.
-- 현재 저장 UI는 `SkillID`가 `None`이면 GUID를 생성하고 기존 ID가 있으면 유지한다. `SkillName`은 사용자가 입력하는 표시명이다. 편집 상태 동기화 문제는 구현 현황 UI-02를 참고한다.
+- 현재 저장 UI는 `SkillID`가 `None`이면 GUID를 생성하고 기존 ID가 있으면 유지한다. `SkillName`은 사용자가 입력하는 표시명이다. 신규 생성과 기존 수정의 기본 저장 흐름은 실행 확인했으며 재시작 후 복원 등 남은 검증은 구현 현황 UI-02를 참고한다.
 - 저장은 Unreal 저장 API인 `UGameplayStatics::SaveGameToSlot`, `LoadGameFromSlot`, `DoesSaveGameExist`, `CreateSaveGameObject`를 사용한다.
 - `DT_SkillData`는 초기·샘플 데이터로 남길 수 있지만 현재 제작 UI에서 만든 스킬의 저장소로 사용하지 않는다.
 - `USKSkillManager`는 레거시 데이터 테이블 기반 코드다. 신규 UI 저장·조회 경로가 의존하게 만들지 않는다.

@@ -45,20 +45,11 @@ void USKSkillDetailWidget::NativeConstruct()
 		SkillTypeComboBox->OnSelectionChanged.AddDynamic(this, &USKSkillDetailWidget::OnSkillTypeChanged);
 	}
 
-	if(DamageTextBox)
-	{
-		DamageTextBox->OnTextCommitted.AddDynamic(this, &USKSkillDetailWidget::OnDamageChanged);
-	}
-
-	if(MinRangeSlider)
-	{
-		MinRangeSlider->OnValueChanged.AddDynamic(this, &USKSkillDetailWidget::OnMinRangeChanged);
-	}
-
-	if(MaxRangeSlider)
-	{
-		MaxRangeSlider->OnValueChanged.AddDynamic(this, &USKSkillDetailWidget::OnMaxRangeChanged);
-	}
+	/* Legacy: 프로토타입 세부사항 개편 전 데미지·범위 이벤트 바인딩
+	DamageTextBox->OnTextCommitted.AddDynamic(this, &USKSkillDetailWidget::OnDamageChanged);
+	MinRangeSlider->OnValueChanged.AddDynamic(this, &USKSkillDetailWidget::OnMinRangeChanged);
+	MaxRangeSlider->OnValueChanged.AddDynamic(this, &USKSkillDetailWidget::OnMaxRangeChanged);
+	*/
 
 	if (PreviewSkillButton)
 	{
@@ -80,10 +71,16 @@ void USKSkillDetailWidget::NativeConstruct()
 
 void USKSkillDetailWidget::SetSkillMakerEditorHUD(ASKSkillMakerEditorHUD* InHUD)
 {
+	if (SkillMakerEditorHUDReference)
+	{
+		OnSkillDetailChanged.RemoveDynamic(SkillMakerEditorHUDReference, &ASKSkillMakerEditorHUD::SetCurrentSkillData);
+	}
+
 	SkillMakerEditorHUDReference = InHUD;
 
 	if(SkillMakerEditorHUDReference)
 	{
+		OnSkillDetailChanged.AddUniqueDynamic(SkillMakerEditorHUDReference, &ASKSkillMakerEditorHUD::SetCurrentSkillData);
 		InitializeFromSkillData();
 	}
 }
@@ -124,22 +121,23 @@ void USKSkillDetailWidget::OnAnimNotifyTabClicked()
 void USKSkillDetailWidget::InitializeFromSkillData()
 {
 	if(!SkillMakerEditorHUDReference)
-			return;
-
-	EditingSkillData = SkillMakerEditorHUDReference->GetCurrentSkillData();
-
-	if(!EditingSkillData.IsSet())
 		return;
 
 	PopularSkillDetails();
+	PopulateStatusEffectList();
+
+	if (ProjectileSelectionWidget)
+	{
+		ProjectileSelectionWidget->SetProjectileCard(SkillMakerEditorHUDReference->GetCurrentSkillData().ProjectileActor);
+	}
 }
 
 void USKSkillDetailWidget::PopularSkillDetails()
 {
-	if(!EditingSkillData.IsSet())
+	if (!SkillMakerEditorHUDReference)
 		return;
 
-	FSKSkillData& SkillData = EditingSkillData.GetValue();
+	const FSKSkillData& SkillData = SkillMakerEditorHUDReference->GetCurrentSkillData();
 
 	if(SkillTypeComboBox)
 	{
@@ -157,20 +155,11 @@ void USKSkillDetailWidget::PopularSkillDetails()
 		}
 	}
 
-	if(DamageTextBox)
-	{
-		DamageTextBox->SetText(FText::AsNumber(SkillData.DamageValue));
-	}
-
-	if (MinRangeSlider)
-	{
-		MinRangeSlider->SetValue(SkillData.MinRange);
-	}
-
-	if (MaxRangeSlider)
-	{
-		MaxRangeSlider->SetValue(SkillData.MaxRange);
-	}
+	/* Legacy: 프로토타입 세부사항 개편 전 데미지·범위 UI 초기화
+	DamageTextBox->SetText(FText::AsNumber(SkillData.DamageValue));
+	MinRangeSlider->SetValue(SkillData.MinRange);
+	MaxRangeSlider->SetValue(SkillData.MaxRange);
+	*/
 }
 
 void USKSkillDetailWidget::PopulateStatusEffectList()
@@ -181,9 +170,9 @@ void USKSkillDetailWidget::PopulateStatusEffectList()
 	StatusEffectListBox->ClearChildren();
 
 	TMap<EStatusEffect, FStatusEffectData> ExistingEffects;
-	if(EditingSkillData.IsSet())
+	if (SkillMakerEditorHUDReference)
 	{
-		for(const FStatusEffectData& Effect : EditingSkillData->StatusEffects)
+		for(const FStatusEffectData& Effect : SkillMakerEditorHUDReference->GetCurrentSkillData().StatusEffects)
 		{
 			ExistingEffects.Add(Effect.EffectType, Effect);
 		}
@@ -203,6 +192,8 @@ void USKSkillDetailWidget::PopulateStatusEffectList()
 				StatusEffectCard->SetStatusEffectData(ExistingEffects[EffectType]);
 			}
 
+			StatusEffectCard->OnStatusEffectChanged.AddDynamic(this, &USKSkillDetailWidget::OnStatusEffectToggled);
+
 			StatusEffectListBox->AddChild(StatusEffectCard);
 		}
 	}
@@ -210,9 +201,16 @@ void USKSkillDetailWidget::PopulateStatusEffectList()
 
 void USKSkillDetailWidget::PopulateAnimNotifyList()
 {
-	if (!AnimNotifySelectionWidget || !EditingSkillData.IsSet()) return;
+	if (!AnimNotifySelectionWidget || !SkillMakerEditorHUDReference) return;
 
-	AnimNotifySelectionWidget->PopulateNotifyList(EditingSkillData->SkillMontage);
+	FSKSkillData SkillData = SkillMakerEditorHUDReference->GetCurrentSkillData();
+	UAnimMontage* Montage = SkillData.SkillMontage.LoadSynchronous();
+	if (Montage)
+	{
+		SkillData.SkillDuration = Montage->GetPlayLength();
+		OnSkillDetailChanged.Broadcast(SkillData);
+	}
+	AnimNotifySelectionWidget->PopulateNotifyList(Montage, SkillData.NotifyName);
 }
 
 void USKSkillDetailWidget::SetSkillMakerTrainHUD(ASKSkillMakerTrainHUD* InHUD)
@@ -225,77 +223,30 @@ void USKSkillDetailWidget::SetSkillMakerTrainHUD(ASKSkillMakerTrainHUD* InHUD)
 	}
 }
 
-void USKSkillDetailWidget::SaveSkillData()
-{
-	if(!EditingSkillData.IsSet() || !SkillMakerEditorHUDReference)
-		return;
-
-	SaveSkillDetails();
-
-	SkillMakerEditorHUDReference->SetCurrentSkillData(EditingSkillData.GetValue());
-
-	SK_LOG(LogSkillMaker, Log, TEXT("스킬 데이터 저장 완료."));
-}
-
-void USKSkillDetailWidget::SaveSkillDetails()
-{
-	if(!EditingSkillData.IsSet())
-		return;
-
-	FSKSkillData& SkillData = EditingSkillData.GetValue();
-
-	if(SkillTypeComboBox)
-	{
-		FString SelectedOption = SkillTypeComboBox->GetSelectedOption();
-		if (SelectedOption == "Attack")
-		{
-			SkillData.SkillType = ESkillType::Attack;
-		}
-		else if (SelectedOption == "Buff")
-		{
-			SkillData.SkillType = ESkillType::Buff;
-		}
-		else if (SelectedOption == "Debuff")
-		{
-			SkillData.SkillType = ESkillType::Debuff;
-		}
-	}
-
-	if(DamageTextBox)
-	{
-		SkillData.DamageValue = FCString::Atof(*DamageTextBox->GetText().ToString());
-	}
-
-	if(MinRangeSlider)
-	{
-		SkillData.MinRange = MinRangeSlider->GetValue();
-	}
-
-	if(MaxRangeSlider)
-	{
-		SkillData.MaxRange = MaxRangeSlider->GetValue();
-	}
-}
-
 void USKSkillDetailWidget::OnSkillTypeChanged(FString SelectedItem, ESelectInfo::Type SelectionType)
 {
-	if(!EditingSkillData.IsSet())
+	if (!SkillMakerEditorHUDReference)
 		return;
+
+	FSKSkillData SkillData = SkillMakerEditorHUDReference->GetCurrentSkillData();
 
 	if (SelectedItem == "Attack")
 	{
-		EditingSkillData->SkillType = ESkillType::Attack;
+		SkillData.SkillType = ESkillType::Attack;
 	}
 	else if (SelectedItem == "Buff")
 	{
-		EditingSkillData->SkillType = ESkillType::Buff;
+		SkillData.SkillType = ESkillType::Buff;
 	}
 	else if (SelectedItem == "Debuff")
 	{
-		EditingSkillData->SkillType = ESkillType::Debuff;
+		SkillData.SkillType = ESkillType::Debuff;
 	}
+
+	OnSkillDetailChanged.Broadcast(SkillData);
 }
 
+/* Legacy: 프로토타입 세부사항 개편 전 데미지·범위 변경 처리
 void USKSkillDetailWidget::OnDamageChanged(const FText& Text, ETextCommit::Type CommitMethod)
 {
 	if (!EditingSkillData.IsSet())
@@ -303,38 +254,42 @@ void USKSkillDetailWidget::OnDamageChanged(const FText& Text, ETextCommit::Type 
 
 	EditingSkillData->DamageValue = FCString::Atof(*Text.ToString());
 }
+*/
 
-void USKSkillDetailWidget::OnStatusEffectToggled(EStatusEffect EffectType, bool bIsChecked, float Duration,
-	float DamageOverTime)
+void USKSkillDetailWidget::OnStatusEffectToggled(const FStatusEffectData& EffectData, bool bIsChecked)
 {
-	if (!EditingSkillData.IsSet())
+	if (!SkillMakerEditorHUDReference)
 		return;
 
-	FSKSkillData& SkillData = EditingSkillData.GetValue();
+	FSKSkillData SkillData = SkillMakerEditorHUDReference->GetCurrentSkillData();
 
 	if (bIsChecked)
 	{
-		for (const FStatusEffectData& ExistingEffect : SkillData.StatusEffects)
+		if (FStatusEffectData* ExistingEffect = SkillData.StatusEffects.FindByPredicate([&EffectData](const FStatusEffectData& Candidate)
 		{
-			if (ExistingEffect.EffectType == EffectType)
-			{
-				return;
-			}
+			return Candidate.EffectType == EffectData.EffectType;
+		}))
+		{
+			*ExistingEffect = EffectData;
 		}
-
-		SkillData.StatusEffects.Add(FStatusEffectData(EffectType, Duration, DamageOverTime));
+		else
+		{
+			SkillData.StatusEffects.Add(EffectData);
+		}
 	}
 	else
 	{
-		SkillData.StatusEffects.RemoveAll([EffectType](const FStatusEffectData& Effect)
+		SkillData.StatusEffects.RemoveAll([&EffectData](const FStatusEffectData& Effect)
 		{
-			return Effect.EffectType == EffectType;
+			return Effect.EffectType == EffectData.EffectType;
 		});
 	}
 
+	OnSkillDetailChanged.Broadcast(SkillData);
 	SK_LOG(LogSkillMaker, Log, TEXT("상태 이상 업데이트됨. 총 개수: %d"), SkillData.StatusEffects.Num());
 }
 
+/* Legacy: 프로토타입 세부사항 개편 전 범위 변경 처리
 void USKSkillDetailWidget::OnMinRangeChanged(float Value)
 {
 	if (!EditingSkillData.IsSet())
@@ -350,25 +305,30 @@ void USKSkillDetailWidget::OnMaxRangeChanged(float Value)
 
 	EditingSkillData->MaxRange = Value;
 }
+*/
 
-void USKSkillDetailWidget::OnProjectileSelected(const TSubclassOf<ASKProjectileActor> SelectedProjectileClass)
+void USKSkillDetailWidget::OnProjectileSelected(TSoftClassPtr<ASKProjectileActor> SelectedProjectileClass)
 {
 	SK_LOG(LogSkillMaker, Log, TEXT("Begin"));
 
-	if (!EditingSkillData.IsSet()) return;
+	if (!SkillMakerEditorHUDReference) return;
 
-	EditingSkillData->ProjectileActor = SelectedProjectileClass;
+	FSKSkillData SkillData = SkillMakerEditorHUDReference->GetCurrentSkillData();
+	SkillData.ProjectileActor = SelectedProjectileClass;
+	OnSkillDetailChanged.Broadcast(SkillData);
 
-	SK_LOG(LogSkillMaker, Log, TEXT("ProjectileSelected : %s"), *EditingSkillData->ProjectileActor->GetName());
+	SK_LOG(LogSkillMaker, Log, TEXT("ProjectileSelected : %s"), *SelectedProjectileClass.ToSoftObjectPath().ToString());
 }
 
 void USKSkillDetailWidget::OnNotifySelected(FName NotifyName)
 {
 	SK_LOG(LogSkillMaker, Log, TEXT("Begin"));
 
-	if (!EditingSkillData.IsSet()) return;
+	if (!SkillMakerEditorHUDReference) return;
 
-	EditingSkillData->NotifyName = NotifyName;
+	FSKSkillData SkillData = SkillMakerEditorHUDReference->GetCurrentSkillData();
+	SkillData.NotifyName = NotifyName;
+	OnSkillDetailChanged.Broadcast(SkillData);
 
 	SK_LOG(LogSkillMaker, Log, TEXT("애님 노티파이 선택됨: %s"), *NotifyName.ToString());
 }
@@ -377,22 +337,12 @@ void USKSkillDetailWidget::OnPreviewSkillClicked()
 {
 	SK_LOG(LogSkillMaker, Log, TEXT("Begin"));
 
-	if (!SkillMakerEditorHUDReference || !EditingSkillData.IsSet())
+	if (!SkillMakerEditorHUDReference)
 	{
-		SK_LOG(LogSkillMaker, Warning, TEXT("스킬 미리보기 불가: HUD 또는 EditingSkillData 없음."));
+		SK_LOG(LogSkillMaker, Warning, TEXT("스킬 미리보기 불가: HUD 없음."));
 		return;
 	}
 
-	SaveSkillDetails();
-	SkillMakerEditorHUDReference->SetCurrentSkillData(EditingSkillData.GetValue());
-
-	SkillMakerEditorHUDReference->PreviewSkillEffect(EditingSkillData.GetValue());
+	SkillMakerEditorHUDReference->PreviewSkillEffect(SkillMakerEditorHUDReference->GetCurrentSkillData());
 	SK_LOG(LogSkillMaker, Log, TEXT("스킬 미리보기 실행"));
-}
-
-void USKSkillDetailWidget::OnSaveSkillClicked()
-{
-	SK_LOG(LogSkillMaker, Log, TEXT("Begin"));
-
-	SaveSkillData();
 }

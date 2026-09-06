@@ -19,6 +19,8 @@ class USKStatusEffectCardWidget;
 class USKProjectileSelectionWidget;
 class USKAnimNotifySelectionWidget;
 
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnSkillDetailChanged, const FSKSkillData&, SkillData);
+
 UENUM(BlueprintType)
 enum class ESKHUDClass : uint8
 {
@@ -38,11 +40,11 @@ public:
 	void SetSkillMakerEditorHUD(ASKSkillMakerEditorHUD* InHUD);
 	void SetSkillMakerTrainHUD(ASKSkillMakerTrainHUD* InHUD);
 
-	/** UI에서 수정된 데이터를 HUD에 저장 */
-	void SaveSkillData();
-	
 	/** UI를 현재 스킬 데이터로 초기화 */
 	void InitializeFromSkillData();
+
+	UPROPERTY(BlueprintAssignable, Category = "Skill")
+	FOnSkillDetailChanged OnSkillDetailChanged;
 
 protected:
 	/** HUD 참조 */
@@ -51,9 +53,6 @@ protected:
 
 	UPROPERTY()
 	TObjectPtr<ASKSkillMakerTrainHUD> SkillMakerTrainHUDReference;
-
-	/** 현재 수정 중인 스킬 데이터 */	
-	TOptional<FSKSkillData> EditingSkillData;
 
 	/** 탭 UI 전환을 위한 WidgetSwitcher */
 	UPROPERTY(meta = (BindWidget))
@@ -76,9 +75,10 @@ protected:
 	UPROPERTY(meta = (BindWidget))
 	TObjectPtr<UComboBoxString> SkillTypeComboBox;
 
-	/** 데미지 값 입력 */
+	/* Legacy: 프로토타입 세부사항 개편 전 데미지 입력 UI
 	UPROPERTY(meta = (BindWidget))
 	TObjectPtr<UEditableTextBox> DamageTextBox;
+	*/
 
 	/** 상태 이상 효과 리스트 */
 	UPROPERTY(meta = (BindWidget))
@@ -99,13 +99,13 @@ protected:
 	// UPROPERTY(meta = (BindWidget))
 	// TObjectPtr<UButton> AdjustProjectilePositionButton;
 
-	/** 최소 사거리 슬라이더 */
+	/* Legacy: 프로토타입 세부사항 개편 전 범위 설정 UI
 	UPROPERTY(meta = (BindWidget))
 	TObjectPtr<USlider> MinRangeSlider;
 
-	/** 최대 사거리 슬라이더 */
 	UPROPERTY(meta = (BindWidget))
 	TObjectPtr<USlider> MaxRangeSlider;
+	*/
 
 	/** 미리보기 버튼 */
 	UPROPERTY(meta = (BindWidget))
@@ -122,9 +122,6 @@ private:
 	/** 애님 노티파이 리스트 초기화 */
 	void PopulateAnimNotifyList();
 	
-	/** UI 값 변경 -> HUD 데이터에 저장 */
-	void SaveSkillDetails();
-
 	/** 탭 버튼 클릭 이벤트 */
 	UFUNCTION()
 	void OnGeneralTabClicked();
@@ -142,25 +139,26 @@ private:
 	UFUNCTION()
 	void OnSkillTypeChanged(FString SelectedItem, ESelectInfo::Type SelectionType);
 
-	/** 데미지 값 변경 시 */
+	/* Legacy: 프로토타입 세부사항 개편 전 데미지 입력 이벤트
 	UFUNCTION()
 	void OnDamageChanged(const FText& Text, ETextCommit::Type CommitMethod);
+	*/
 
 	/** 상태 이상 선택 / 해제 시 호출 */
 	UFUNCTION()
-	void OnStatusEffectToggled(EStatusEffect EffectType, bool bIsChecked, float Duration, float DamageOverTime);
+	void OnStatusEffectToggled(const FStatusEffectData& EffectData, bool bIsChecked);
 
-	/** 최소 사거리 변경 */
+	/* Legacy: 프로토타입 세부사항 개편 전 범위 설정 이벤트
 	UFUNCTION()
 	void OnMinRangeChanged(float Value);
 
-	/** 최대 사거리 변경 */
 	UFUNCTION()
 	void OnMaxRangeChanged(float Value);
+	*/
 
 	/** 발사체 선택 완료 이벤트 */
 	UFUNCTION()
-	void OnProjectileSelected(const TSubclassOf<ASKProjectileActor> SelectedProjectileClass);
+	void OnProjectileSelected(TSoftClassPtr<ASKProjectileActor> SelectedProjectileClass);
 
 	/** 애님 노티파이 선택 이벤트 */
 	UFUNCTION()
@@ -170,7 +168,4 @@ private:
 	UFUNCTION()
 	void OnPreviewSkillClicked();
 	
-	/** 저장 버튼 클릭 */
-	UFUNCTION()
-	void OnSaveSkillClicked();
 };

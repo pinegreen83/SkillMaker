@@ -20,19 +20,30 @@ bool USKProjectileCardWidget::Initialize()
 	return true;
 }
 
-void USKProjectileCardWidget::SetProjectileInfo(const TSubclassOf<ASKProjectileActor> InProjectileClass)
+void USKProjectileCardWidget::SetProjectileInfo(const FString& ProjectileName, const TSoftClassPtr<ASKProjectileActor>& InProjectileClass, bool bIsSelected)
 {
 	SK_LOG(LogSkillMaker, Log, TEXT("Begin"));
 	
 	ProjectileClass = InProjectileClass;
 
-	if (ProjectileNameText && ProjectileClass)
+	if (ProjectileNameText)
 	{
-		ProjectileNameText->SetText(FText::FromString(ProjectileClass->GetName()));
+		const FString DisplayName = ProjectileName.IsEmpty() ? ProjectileClass.GetAssetName() : ProjectileName;
+		ProjectileNameText->SetText(FText::FromString(DisplayName));
+	}
+
+	if (ProjectileSelectButton)
+	{
+		ProjectileSelectButton->SetBackgroundColor(bIsSelected ? FLinearColor(0.15f, 0.55f, 1.0f, 1.0f) : FLinearColor::White);
 	}
 }
 
 void USKProjectileCardWidget::OnProjectileButtonClicked()
 {
+	if (ProjectileClass.IsNull())
+	{
+		return;
+	}
+
 	OnProjectileCardSelected.Broadcast(ProjectileClass);
 }

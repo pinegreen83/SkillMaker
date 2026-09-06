@@ -2,8 +2,9 @@
 
 #include "CoreMinimal.h"
 #include "Engine/DataTable.h"
-#include "Skill/SKProjectileActor.h"
 #include "SKProjectileData.generated.h"
+
+class ASKProjectileActor;
 
 USTRUCT(BlueprintType)
 struct FSKProjectileData : public FTableRowBase
@@ -21,5 +22,5 @@ public:
 	TSoftObjectPtr<UTexture2D> Thumbnail;
 	
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	TSubclassOf<ASKProjectileActor> ProjectileActor;
+	TSoftClassPtr<ASKProjectileActor> ProjectileActor;
 };

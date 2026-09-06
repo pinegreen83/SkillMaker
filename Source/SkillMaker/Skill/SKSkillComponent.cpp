@@ -81,9 +81,16 @@ void USKSkillComponent::MulticastExecuteSkill_Implementation(const FSKSkillData&
 	SK_LOG(LogSkillMaker, Log, TEXT("Begin"));
 	
 	ACharacter* OwnerCharacter = Cast<ACharacter>(GetOwner());
-	if(!OwnerCharacter || !SkillData.SkillMontage)
+	if(!OwnerCharacter || SkillData.SkillMontage.IsNull())
 	{
 		SK_LOG(LogSkillMaker, Error, TEXT("스킬 실행 불가 : 캐릭터 또는 애니메이션 몽타주 없음."));
+		return;
+	}
+
+	UAnimMontage* SkillMontage = SkillData.SkillMontage.LoadSynchronous();
+	if (!SkillMontage)
+	{
+		SK_LOG(LogSkillMaker, Error, TEXT("스킬 몽타주 로드 실패 : %s"), *SkillData.SkillMontage.ToSoftObjectPath().ToString());
 		return;
 	}
 
@@ -98,7 +105,7 @@ void USKSkillComponent::MulticastExecuteSkill_Implementation(const FSKSkillData&
 
 	if(UAnimInstance* AnimInstance = OwnerCharacter->GetMesh()->GetAnimInstance())
 	{
-		AnimInstance->Montage_Play(SkillData.SkillMontage);
+		AnimInstance->Montage_Play(SkillMontage);
 		SK_LOG(LogSkillMaker, Log, TEXT("애니메이션 실행 : %s / SkillID: %s / NotifyName: %s"),
 			*SkillData.SkillName,
 			*SkillData.SkillID.ToString(),

@@ -11,10 +11,10 @@
 void USKWeaponSelectionWidget::NativeConstruct()
 {
 	Super::NativeConstruct();
-	LoadWeaponList();
+	LoadWeaponList(FGameplayTag());
 }
 
-void USKWeaponSelectionWidget::LoadWeaponList()
+void USKWeaponSelectionWidget::LoadWeaponList(FGameplayTag CurrentWeaponTag)
 {
 	SK_LOG(LogSkillMaker, Log, TEXT("무기 목록을 불러옵니다."));
 
@@ -35,7 +35,7 @@ void USKWeaponSelectionWidget::LoadWeaponList()
 		{
 			SK_LOG(LogSkillMaker, Log, TEXT("무기 로드 : %s"), *WeaponData.RowName.ToString());
 		
-			CreateWeaponCard(WeaponData, index);
+			CreateWeaponCard(WeaponData, index, CurrentWeaponTag);
 			index++;
 		}
 	}
@@ -45,7 +45,7 @@ void USKWeaponSelectionWidget::LoadWeaponList()
 	}
 }
 
-void USKWeaponSelectionWidget::CreateWeaponCard(const FSKWeaponRow& WeaponRow, const int32 WeaponIndex)
+void USKWeaponSelectionWidget::CreateWeaponCard(const FSKWeaponRow& WeaponRow, const int32 WeaponIndex, FGameplayTag CurrentWeaponTag)
 {
 	SK_LOG(LogSkillMaker, Log, TEXT("Begin"));
 	
@@ -55,18 +55,26 @@ void USKWeaponSelectionWidget::CreateWeaponCard(const FSKWeaponRow& WeaponRow, c
 	if(USKWeaponCardWidget* WeaponCard = CreateWidget<USKWeaponCardWidget>(GetWorld(), WBP_SKWeaponCard))
 	{
 		const FString WeaponName = WeaponRow.Data.WeaponName;
-		const FString WeaponType = WeaponRow.Data.WeaponType;
-		UTexture2D* Thumbnail = WeaponRow.Data.WeaponThumbnail.LoadSynchronous();
-		
-		WeaponCard->SetWeaponInfo(WeaponName, WeaponType, Thumbnail);
+		const FGameplayTag WeaponTag = WeaponRow.Data.WeaponTag;
+		if (!WeaponTag.IsValid())
+		{
+			SK_LOG(LogSkillMaker, Warning, TEXT("무기 데이터 행에 태그가 없음: %s"), *WeaponRow.RowName.ToString());
+			return;
+		}
+		WeaponCard->SetWeaponInfo(WeaponName, WeaponTag, WeaponRow.Data.WeaponThumbnail, WeaponTag == CurrentWeaponTag);
 		WeaponCard->OnWeaponCardSelected.AddDynamic(this, &USKWeaponSelectionWidget::WeaponSelected);
 		WeaponGridPanel->AddChildToUniformGrid(WeaponCard, WeaponIndex/2, WeaponIndex%2);
 	}
 }
 
-void USKWeaponSelectionWidget::WeaponSelected(const FString& WeaponName)
+void USKWeaponSelectionWidget::WeaponSelected(FGameplayTag WeaponTag)
 {
-	SK_LOG(LogSkillMaker, Log, TEXT("선택된 무기 : %s"), *WeaponName);
+	if (!WeaponTag.IsValid())
+	{
+		return;
+	}
 
-	OnWeaponSelected.Broadcast(WeaponName);
+	SK_LOG(LogSkillMaker, Log, TEXT("선택된 무기 태그: %s"), *WeaponTag.ToString());
+
+	OnWeaponSelected.Broadcast(WeaponTag);
 }

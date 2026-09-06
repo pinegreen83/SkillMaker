@@ -79,7 +79,7 @@ public:
 	TArray<FSKWeaponRow> GetWeaponList();
 
 	UFUNCTION(BlueprintCallable, Category = "Data")
-	TArray<FSKAnimationRow> GetAnimationsForWeapon(const FString& WeaponType);
+	TArray<FSKAnimationRow> GetAnimationsForWeapon(FGameplayTag WeaponTag);
 
 	UFUNCTION(BlueprintCallable, Category = "Data")
 	TArray<FSKProjectileRow> GetProjectileList();

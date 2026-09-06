@@ -4,9 +4,10 @@
 
 #include "CoreMinimal.h"
 #include "Blueprint/UserWidget.h"
+#include "GameplayTagContainer.h"
 #include "SKWeaponSelectionWidget.generated.h"
 
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnWeaponSelected, const FString&, WeaponName);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnWeaponSelected, FGameplayTag, WeaponTag);
 
 class UUniformGridPanel;
 class USKWeaponCardWidget;
@@ -21,7 +22,7 @@ public:
 	virtual void NativeConstruct() override;
 
 	UFUNCTION(BlueprintCallable, Category = "Weapon Selection")
-	void LoadWeaponList();
+	void LoadWeaponList(FGameplayTag CurrentWeaponTag);
 	
 	UPROPERTY(BlueprintAssignable, Category = "Weapon Selection")
 	FOnWeaponSelected OnWeaponSelected;
@@ -33,8 +34,8 @@ protected:
 	UPROPERTY(EditAnywhere, Category = "UI")
 	TSubclassOf<USKWeaponCardWidget> WBP_SKWeaponCard;
 
-	void CreateWeaponCard(const FSKWeaponRow& WeaponRow, const int32 WeaponIndex);
+	void CreateWeaponCard(const FSKWeaponRow& WeaponRow, const int32 WeaponIndex, FGameplayTag CurrentWeaponTag);
 
 	UFUNCTION()
-	void WeaponSelected(const FString& WeaponName);
+	void WeaponSelected(FGameplayTag WeaponTag);
 };

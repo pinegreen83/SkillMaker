@@ -143,7 +143,7 @@ void USKSkillMakerTrainMainWidget::OnSkillSelected(const FName& SkillID)
 {
 }
 
-void USKSkillMakerTrainMainWidget::OnAnimationSelected(UAnimMontage* AnimationMontage)
+void USKSkillMakerTrainMainWidget::OnAnimationSelected(const TSoftObjectPtr<UAnimMontage>& AnimationMontage)
 {
 }
 

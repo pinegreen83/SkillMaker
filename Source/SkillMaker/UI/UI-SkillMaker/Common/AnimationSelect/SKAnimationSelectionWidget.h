@@ -4,9 +4,10 @@
 
 #include "CoreMinimal.h"
 #include "Blueprint/UserWidget.h"
+#include "GameplayTagContainer.h"
 #include "SKAnimationSelectionWidget.generated.h"
 
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnAnimationSelected, UAnimMontage*, SelectedMontage);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnAnimationSelected, const TSoftObjectPtr<UAnimMontage>&, SelectedMontage);
 
 class UUniformGridPanel;
 class USKAnimationCardWidget;
@@ -20,7 +21,7 @@ class SKILLMAKER_API USKAnimationSelectionWidget : public UUserWidget
 
 public:
 	UFUNCTION(BlueprintCallable, Category = "Animation Selection")
-	void LoadAnimationsForWeapon(const FString& WeaponName);
+	void LoadAnimationsForWeapon(FGameplayTag WeaponTag, const TSoftObjectPtr<UAnimMontage>& CurrentMontage);
 	
 	UPROPERTY(BlueprintAssignable, Category = "Animation Selection")
 	FOnAnimationSelected OnAnimationSelected;
@@ -32,8 +33,8 @@ protected:
 	UPROPERTY(EditAnywhere, Category = "UI")
 	TSubclassOf<USKAnimationCardWidget> WBP_SKAnimationCard;
 
-	void CreateAnimationCard(const FSKAnimationRow& AnimationRow, const int32 AnimIndex);
+	void CreateAnimationCard(const FSKAnimationRow& AnimationRow, const int32 AnimIndex, const TSoftObjectPtr<UAnimMontage>& CurrentMontage);
 
 	UFUNCTION()
-	void AnimationSelected(UAnimMontage* SelectedMontage);
+	void AnimationSelected(const TSoftObjectPtr<UAnimMontage>& SelectedMontage);
 };
