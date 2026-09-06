@@ -32,10 +32,23 @@ void USKProjectileCardWidget::SetProjectileInfo(const FString& ProjectileName, c
 		ProjectileNameText->SetText(FText::FromString(DisplayName));
 	}
 
-	if (ProjectileSelectButton)
+	SetSelected(bIsSelected);
+}
+
+void USKProjectileCardWidget::SetSelected(bool bIsSelected)
+{
+	if (!ProjectileSelectButton)
 	{
-		ProjectileSelectButton->SetBackgroundColor(bIsSelected ? FLinearColor(0.15f, 0.55f, 1.0f, 1.0f) : FLinearColor::White);
+		return;
 	}
+
+	ProjectileSelectButton->SetBackgroundColor(
+		bIsSelected ? FLinearColor(0.15f, 0.55f, 1.0f, 1.0f) : FLinearColor::White);
+}
+
+const TSoftClassPtr<ASKProjectileActor>& USKProjectileCardWidget::GetProjectileClass() const
+{
+	return ProjectileClass;
 }
 
 void USKProjectileCardWidget::OnProjectileButtonClicked()

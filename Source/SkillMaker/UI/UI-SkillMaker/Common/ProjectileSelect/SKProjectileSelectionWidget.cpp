@@ -40,6 +40,7 @@ void USKProjectileSelectionWidget::SetProjectileCard(const TSoftClassPtr<ASKProj
 	}
 
 	ProjectileListBox->ClearChildren();
+	ProjectileCards.Reset();
 	SelectedProjectileData = CurrentProjectile;
 	if (SelectedEffectText)
 	{
@@ -57,7 +58,8 @@ void USKProjectileSelectionWidget::SetProjectileCard(const TSoftClassPtr<ASKProj
 			ProjectileCard->SetProjectileInfo(Projectile.Data.ProjectileName, Projectile.Data.ProjectileActor,
 				Projectile.Data.ProjectileActor == CurrentProjectile);
 			ProjectileCard->OnProjectileCardSelected.AddDynamic(this, &USKProjectileSelectionWidget::SelectedProjectile);
-	
+
+			ProjectileCards.Add(ProjectileCard);
 			ProjectileListBox->AddChild(ProjectileCard);
 		}
 	}
@@ -72,6 +74,14 @@ void USKProjectileSelectionWidget::SelectedProjectile(TSoftClassPtr<ASKProjectil
 	SK_LOG(LogSkillMaker, Log, TEXT("Begin"));
 	
 	SelectedProjectileData = SelectedProjectile;
+	for (USKProjectileCardWidget* ProjectileCard : ProjectileCards)
+	{
+		if (ProjectileCard)
+		{
+			ProjectileCard->SetSelected(ProjectileCard->GetProjectileClass() == SelectedProjectileData);
+		}
+	}
+
 	if (SelectedEffectText)
 	{
 		SelectedEffectText->SetText(FText::FromString(SelectedProjectileData.GetAssetName()));

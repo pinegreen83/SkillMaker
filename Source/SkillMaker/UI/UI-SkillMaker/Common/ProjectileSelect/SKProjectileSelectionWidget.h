@@ -49,6 +49,9 @@ protected:
 	UPROPERTY(EditAnywhere, Category = "UI")
 	TSubclassOf<USKProjectileCardWidget> WBP_ProjectileCard;
 
+	UPROPERTY(Transient)
+	TArray<TObjectPtr<USKProjectileCardWidget>> ProjectileCards;
+
 private:
 	/** 현재 선택된 이펙트 & 사운드 */
 	UPROPERTY()

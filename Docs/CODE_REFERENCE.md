@@ -470,7 +470,7 @@ ExecuteSkill
 - `InitializeNewSkill()`: 기본 구조체와 이름 `NewSkill`로 초기화
 - `LoadSkillForEditing(SkillID)`: SaveGame 서브시스템에서 로드
 - `GetCurrentSkillData`, `SetCurrentSkillData`: 전체 편집 데이터를 교체하고 `OnEditingSkillChanged` 발행
-- `SetSkillName(SkillName)`, `SetSkillWeaponTag(WeaponTag)`, `SetSkillMontage(SoftMontage)`
+- `SetSkillName(SkillName)`, `SetSkillWeaponTag(WeaponTag)`, `SetSkillMontage(SoftMontage)`. 무기를 바꾸면 호환성을 다시 선택해야 하는 몽타주·재생 시간·노티파이는 초기화하고 타입·상태이상·발사체는 유지한다.
 - `SaveCurrentSkill(SkillName)`: 필수 선택값과 저장 기반을 확인하고 ID를 확정한 뒤 HUD의 현재 스킬을 저장
 - `OnEditingSkillChanged`: HUD 데이터가 초기화·로드·교체되거나 개별 선택값이 바뀔 때 현재 전체 데이터를 전달
 - `PreviewSkillEffect(SkillData)`: 임시 ID를 보완하고 프리뷰 캐릭터의 공통 스킬 실행 경로 사용
@@ -496,7 +496,7 @@ ExecuteSkill
 - `SetSkillMakerState(NewState, bFromBackNavigation)`, `GoBackToPreviousState()`
 - `OnModifySkillClicked()`: 목록 새로고침 이벤트 후 기존 스킬 선택 화면
 - `OnCreateSkillClicked()`: HUD의 새 스킬 데이터를 초기화한 뒤 무기 화면 이동
-- `OnSkillSelected(SkillID)`: HUD 로드 후 상세 화면
+- `OnSkillSelected(SkillID)`: HUD에 저장 스킬을 로드한 뒤 무기 선택 화면으로 이동
 - `OnWeaponSelected(WeaponTag)`: 애니메이션 선택 화면으로 전환. HUD는 같은 선택 델리게이트를 직접 구독
 - `OnAnimationSelected(SoftMontage)`: 상세 화면으로 전환. HUD는 같은 선택 델리게이트를 직접 구독
 - `OnFinishSkillEditing()`: 저장 이름 화면으로 이동. 상세 선택값은 선택 시점에 이미 HUD로 전달됨
@@ -578,6 +578,7 @@ ExecuteSkill
 - `BindWidget`: `NotifyButton`, `NotifyText`
 - 상태: `NotifyName`, `NotifyTime`
 - `SetNotifyInfo(InNotifyType, InNotifyName, InNotifyTime, bIsSelected)`: 이름·시간과 선택 색상 표시
+- `SetSelected(bIsSelected)`, `GetNotifyName()`: 카드 선택 색상 갱신과 목록의 현재 카드 비교
 - 클릭 → `OnNotifySelected(NotifyName)`
 
 #### `USKAnimNotifySelectionWidget`
@@ -585,9 +586,9 @@ ExecuteSkill
 - 부모: `UUserWidget`
 - `BindWidget`: `NotifyListBox`, `SelectedNotifyText`
 - 클래스 참조: `WBP_AnimNotifyCard`
-- 상태: `AvailableNotifies`, `SelectedNotify`, `SelectedNotifyTime`
+- 상태: `AvailableNotifies`, `SelectedNotify`, `SelectedNotifyTime`, `NotifyCards`
 - `PopulateNotifyList(Montage, CurrentNotifyName)`: `USKSkillAnimNotify_Trigger`이고 `NotifyTriggerName`이 유효한 이벤트만 카드로 만들고 현재 선택 복원
-- 카드 이벤트 구독 → 선택 이름 표시 → `OnAnimNotifySelected(NotifyName)`
+- 카드 이벤트 구독 → 모든 카드의 이름을 비교해 선택 색상 갱신 → 선택 이름 표시 → `OnAnimNotifySelected(NotifyName)`
 - 카드에는 시간이 보이지만 저장과 이벤트에는 이름만 전달한다.
 - 같은 이름의 트리거가 여러 개면 실행 시 구분하지 못한다.
 
@@ -599,6 +600,7 @@ ExecuteSkill
 - `BindWidget`: `ProjectileSelectButton`, `ProjectileNameText`
 - 상태: `ProjectileClass`
 - `SetProjectileInfo(ProjectileName, ProjectileClass, bIsSelected)`: 클래스 이름과 선택 색상 설정
+- `SetSelected(bIsSelected)`, `GetProjectileClass()`: 카드 선택 색상 갱신과 목록의 현재 카드 비교
 - 클래스 이름을 화면에 표시
 - 클릭 → `OnProjectileCardSelected(ProjectileClass)`
 
@@ -607,9 +609,10 @@ ExecuteSkill
 - 부모: `UUserWidget`
 - `BindWidget`: `ProjectileListBox`, `SelectedEffectPreview`, `SelectedEffectText`
 - 클래스 참조: `WBP_ProjectileCard`
+- 상태: `CurrentProjectile`, `ProjectileCards`
 - `Initialize()`에서 빈 선택으로 `SetProjectileCard(CurrentProjectile)` 호출. 상세 화면 진입 시 HUD의 현재 선택값으로 다시 구성
 - 데이터 서브시스템의 전체 발사체 행으로 카드 생성
-- 카드 클릭 즉시 선택 텍스트를 갱신하고 `OnProjectileSelected`를 브로드캐스트
+- 카드 클릭 즉시 모든 카드의 클래스를 비교해 선택 색상을 갱신하고, 선택 텍스트 갱신 후 `OnProjectileSelected`를 브로드캐스트
 - 레거시 확인 버튼과 확인 핸들러는 제거됨. `SelectedEffectPreview`는 아직 갱신하지 않음
 
 ### 저장 스킬 선택
@@ -749,6 +752,9 @@ USKSkillSelectionWidget::LoadSkillList
 → 스킬 카드 생성
 → OnSkillSelected(SkillID)
 → HUD LoadSkillForEditing
+→ ChooseWeapon에서 기존 WeaponTag 선택 표시
+→ ChooseAnimation에서 기존 SkillMontage 선택 표시
+→ SkillDetail에서 기존 SkillType·StatusEffects·ProjectileActor·NotifyName 선택 표시
 ```
 
 ### 스킬 실행
@@ -791,7 +797,7 @@ C++에서 직접 확인한 클래스 경로:
 - 무기 호환성은 `Weapon` 계층의 Gameplay Tag로 표현한다.
 - 무기 행은 단일 `WeaponTag`, 애니메이션 행은 복수 `CompatibleWeaponTags`를 가진다.
 - 선택 무기 태그가 애니메이션 호환 태그와 같거나 하위일 때 목록에 표시한다.
-- HUD의 `CurrentEditingSkill`이 제작 중인 스킬의 유일한 영구 편집 데이터다. 선택 UI는 화면 진입 시 이 값을 읽어 선택 표시를 복원한다.
+- HUD의 `CurrentEditingSkill`이 제작 중인 스킬의 유일한 영구 편집 데이터다. 선택 UI는 화면 진입 시 이 값을 읽어 무기·애니메이션·타입·상태이상·발사체·노티파이 선택 표시를 복원하며, 발사체와 노티파이는 클릭 시 카드 색상을 즉시 다시 계산한다.
 - 데이터 행과 카드에서 몽타주·썸네일·발사체 클래스를 소프트 참조로 유지한다. 선택 델리게이트와 스킬 저장에는 몽타주와 발사체 소프트 참조를 전달한다.
 - 일반 설정 함수는 소프트 참조 입력을 `const&`로 받는다. 몽타주와 구조체 동적 델리게이트도 `const&`를 사용하고 발사체 클래스 선택 이벤트는 값으로 전달한다.
 - 목록 생성은 몽타주와 발사체 클래스를 동기 로드하지 않는다. 썸네일은 `UImage::SetBrushFromSoftTexture`를 사용한다.

@@ -22,6 +22,10 @@ public:
 	/** 노티파이 정보를 UI에 설정 */
 	void SetNotifyInfo(FName InNotifyType, FName InNotifyName, float InNotifyTime, bool bIsSelected);
 
+	void SetSelected(bool bIsSelected);
+
+	FName GetNotifyName() const;
+
 	/** 노티파이 선택 시 브로드캐스트할 델리게이트 */
 	UPROPERTY(BlueprintAssignable, Category = "AnimNotify Selection")
 	FOnNotifyButtonClicked OnNotifySelected;

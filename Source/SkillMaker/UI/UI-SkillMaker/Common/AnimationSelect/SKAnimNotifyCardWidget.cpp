@@ -29,10 +29,23 @@ void USKAnimNotifyCardWidget::SetNotifyInfo(FName InNotifyType, FName InNotifyNa
 		NotifyText->SetText(FText::FromString(FString::Printf(TEXT("%s (%.2f초)"), *InNotifyType.ToString(), NotifyTime)));
 	}
 
-	if (NotifyButton)
+	SetSelected(bIsSelected);
+}
+
+void USKAnimNotifyCardWidget::SetSelected(bool bIsSelected)
+{
+	if (!NotifyButton)
 	{
-		NotifyButton->SetBackgroundColor(bIsSelected ? FLinearColor(0.15f, 0.55f, 1.0f, 1.0f) : FLinearColor::White);
+		return;
 	}
+
+	NotifyButton->SetBackgroundColor(
+		bIsSelected ? FLinearColor(0.15f, 0.55f, 1.0f, 1.0f) : FLinearColor::White);
+}
+
+FName USKAnimNotifyCardWidget::GetNotifyName() const
+{
+	return NotifyName;
 }
 
 void USKAnimNotifyCardWidget::HandleButtonClicked()

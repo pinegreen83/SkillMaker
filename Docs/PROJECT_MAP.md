@@ -119,7 +119,7 @@
 ### 제작 편집기 UI
 
 - `UI/UI-SkillMaker/UEEditor/SKSkillMakerEditorHUD.h/.cpp`: 메인 위젯 생성, `CurrentEditingSkill` 소유, 저장과 프리뷰 실행을 담당한다. 생성하는 프리뷰는 `BP_SKPreviewCharacter`가 아닌 네이티브 `ASKPreviewCharacter::StaticClass()`이며 스킬 컴포넌트로 실행한다.
-- `UI/UI-SkillMaker/UEEditor/SKSkillMakerEditorMainWidget.h/.cpp`: 신규·수정 상태 전환, 이름 입력, 저장 요청 전달과 선택 위젯 간 연결을 처리한다.
+- `UI/UI-SkillMaker/UEEditor/SKSkillMakerEditorMainWidget.h/.cpp`: 신규·수정 상태 전환, 이름 입력, 저장 요청 전달과 선택 위젯 간 연결을 처리한다. 기존 스킬도 저장 데이터를 로드한 뒤 무기 → 애니메이션 → 세부사항 화면으로 이동한다.
 
 ### 훈련장 UI
 
@@ -137,16 +137,16 @@
 - `Common/WeaponSelect/SKWeaponCardWidget.h/.cpp`: 무기 행 한 개의 카드.
 - `Common/AnimationSelect/SKAnimationSelectionWidget.h/.cpp`: 같은 서브시스템에서 Gameplay Tag 호환성으로 필터링한 애니메이션 목록을 읽는다.
 - `Common/AnimationSelect/SKAnimationCardWidget.h/.cpp`: 애니메이션 행 한 개의 카드.
-- `Common/AnimationSelect/SKAnimNotifySelectionWidget.h/.cpp`: 선택한 몽타주의 유효한 스킬 트리거 노티파이 목록을 표시한다.
-- `Common/AnimationSelect/SKAnimNotifyCardWidget.h/.cpp`: 노티파이 한 개의 카드.
-- `Common/ProjectileSelect/SKProjectileSelectionWidget.h/.cpp`: `USKDataManagerSubsystem`에서 발사체 목록을 읽고 카드 클릭 시 즉시 선택을 적용한다.
-- `Common/ProjectileSelect/SKProjectileCardWidget.h/.cpp`: 발사체 행 한 개의 카드.
+- `Common/AnimationSelect/SKAnimNotifySelectionWidget.h/.cpp`: 선택한 몽타주의 유효한 스킬 트리거 노티파이 목록을 표시하고, 저장된 선택과 클릭한 카드의 선택 색상을 갱신한다.
+- `Common/AnimationSelect/SKAnimNotifyCardWidget.h/.cpp`: 노티파이 한 개의 카드. 선택 상태와 노티파이 이름을 목록 위젯에 제공한다.
+- `Common/ProjectileSelect/SKProjectileSelectionWidget.h/.cpp`: `USKDataManagerSubsystem`에서 발사체 목록을 읽고 저장된 선택을 복원하며, 카드 클릭 시 목록의 선택 색상과 현재 값을 즉시 갱신한다.
+- `Common/ProjectileSelect/SKProjectileCardWidget.h/.cpp`: 발사체 행 한 개의 카드. 선택 상태와 발사체 클래스를 목록 위젯에 제공한다.
 - `Common/StatusEffectSelect/SKStatusEffectCardWidget.h/.cpp`: 옵션 하나의 체크박스·수치를 보관하고 값 변경 델리게이트를 발행한다. 상세 위젯은 열거형으로 카드를 만들고 이벤트를 현재 스킬 데이터에 반영한다.
 
 ## 데이터 소유와 호출 경로
 
 - 리소스 목록: 선택 위젯 → `USKDataManagerSubsystem` → `FSKWeaponData` / `FSKAnimationData` / `FSKProjectileData` 테이블 행. 이 구조체들은 활성 코드이며 `USKDataManager` 객체는 레거시다.
-- 편집: 제작 HUD가 `CurrentEditingSkill` 원본을 단독 소유한다. 상세 위젯은 이벤트 순간 HUD 최신값의 지역 사본에서 선택 필드만 바꾸고 `OnSkillDetailChanged`로 HUD를 즉시 갱신한다. HUD의 `OnEditingSkillChanged`는 현재 선택 요약 UI 연결 지점이다.
+- 편집: 제작 HUD가 `CurrentEditingSkill` 원본을 단독 소유한다. 기존 스킬을 선택하면 저장 데이터를 로드한 뒤 무기 → 애니메이션 → 세부사항 화면을 순서대로 거치며 각 화면이 현재 선택을 표시한다. 상세 위젯은 이벤트 순간 HUD 최신값의 지역 사본에서 선택 필드만 바꾸고 `OnSkillDetailChanged`로 HUD를 즉시 갱신한다. HUD의 `OnEditingSkillChanged`는 현재 선택 요약 UI 연결 지점이다.
 - 저장: 메인 위젯은 이름과 저장 요청만 HUD에 전달한다. HUD가 필수값과 저장 기반을 검증하고 ID를 확정한 뒤 `USKSaveGameSubsystem::SaveSkillData` → `USKPlayerSkillSave::SetSkillData` → `CurrentSkillSet.Skills` → 슬롯 기록으로 이어진다.
 - 이름 있는 스킬셋: `PlayerSkills`는 스킬셋 이름을 `FSKSkillSet`에 연결한다. `SetSkillSet`은 현재 맵을 해당 이름의 항목에 복사한다. 슬롯 순서는 PlayerController가 별도로 보관하며 이 저장 구조에는 표현되지 않는다.
 - 실행: `ASKBaseCharacter::UseSkill` → `ClientRequestUseSkill` → 권한이 없으면 서버 RPC, 있으면 `ExecuteSkill` 직접 호출 → 멀티캐스트 몽타주 → 트리거 노티파이 → 발사체 생성. 발사체의 시각 효과·사운드·충돌·소멸은 연결되어 있고 피해와 상태이상 처리는 미연결 상태다.

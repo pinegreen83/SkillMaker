@@ -26,6 +26,7 @@ void USKAnimNotifySelectionWidget::PopulateNotifyList(UAnimMontage* Montage, FNa
 		NotifyListBox->ClearChildren();
 	}
 	AvailableNotifies.Empty();
+	NotifyCards.Reset();
 	SelectedNotify = CurrentNotifyName;
 	if (SelectedNotifyText)
 	{
@@ -63,6 +64,7 @@ void USKAnimNotifySelectionWidget::PopulateNotifyList(UAnimMontage* Montage, FNa
 		NotifyButton->SetNotifyInfo(NotifyName, NotifyName, NotifyTime, NotifyName == CurrentNotifyName);
 		NotifyButton->OnNotifySelected.AddDynamic(this, &USKAnimNotifySelectionWidget::OnNotifyButtonSelected);
 
+		NotifyCards.Add(NotifyButton);
 		NotifyListBox->AddChild(NotifyButton);
 	}
 }
@@ -85,8 +87,18 @@ void USKAnimNotifySelectionWidget::ExtractNotifiesFromMontage(UAnimMontage* Mont
 void USKAnimNotifySelectionWidget::OnNotifyButtonSelected(FName NotifyName)
 {
 	SelectedNotify = NotifyName;
+	for (USKAnimNotifyCardWidget* NotifyCard : NotifyCards)
+	{
+		if (NotifyCard)
+		{
+			NotifyCard->SetSelected(NotifyCard->GetNotifyName() == SelectedNotify);
+		}
+	}
 
-	SelectedNotifyText->SetText(FText::FromString(FString::Printf(TEXT("%s"), *NotifyName.ToString())));
+	if (SelectedNotifyText)
+	{
+		SelectedNotifyText->SetText(FText::FromName(SelectedNotify));
+	}
 	OnAnimNotifySelected.Broadcast(SelectedNotify);  // NotifyTime 추가
 	SK_LOG(LogSkillMaker, Log, TEXT("애님 노티파이 선택됨: %s"), *NotifyName.ToString());
 }

@@ -23,6 +23,10 @@ public:
 	/** 발사체 정보를 설정 */
 	void SetProjectileInfo(const FString& ProjectileName, const TSoftClassPtr<ASKProjectileActor>& InProjectileClass, bool bIsSelected);
 
+	void SetSelected(bool bIsSelected);
+
+	const TSoftClassPtr<ASKProjectileActor>& GetProjectileClass() const;
+
 	/** 발사체 선택 델리게이트 */
 	UPROPERTY(BlueprintAssignable, Category = "Projectile Selection")
 	FOnProjectileCardSelected OnProjectileCardSelected;

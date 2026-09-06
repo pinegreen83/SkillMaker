@@ -205,7 +205,7 @@ void USKSkillMakerEditorMainWidget::OnSkillSelected(const FName& SkillID)
 	HUDReference->LoadSkillForEditing(SkillID);
 	SK_LOG(LogSkillMaker, Log, TEXT("스킬 선택됨 : %s"), *SkillID.ToString());
 
-	SetSkillMakerState(ESKSkillMakerState::SkillDetail, false);
+	SetSkillMakerState(ESKSkillMakerState::ChooseWeapon, false);
 }
 
 void USKSkillMakerEditorMainWidget::OnWeaponSelected(FGameplayTag WeaponTag)

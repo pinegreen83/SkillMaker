@@ -117,9 +117,7 @@ void ASKSkillMakerEditorHUD::SetSkillWeaponTag(FGameplayTag WeaponTag)
 	CurrentEditingSkill.WeaponTag = WeaponTag;
 	CurrentEditingSkill.SkillMontage.Reset();
 	CurrentEditingSkill.SkillDuration = 0.0f;
-	CurrentEditingSkill.ProjectileActor.Reset();
 	CurrentEditingSkill.NotifyName = NAME_None;
-	CurrentEditingSkill.StatusEffects.Reset();
 	OnEditingSkillChanged.Broadcast(CurrentEditingSkill);
 	SK_LOG(LogSkillMaker, Log, TEXT("무기 태그 설정 : %s"), *WeaponTag.ToString());
 }

@@ -40,6 +40,9 @@ protected:
 	UPROPERTY(EditAnywhere, Category = "UI")
 	TSubclassOf<USKAnimNotifyCardWidget> WBP_AnimNotifyCard;
 
+	UPROPERTY(Transient)
+	TArray<TObjectPtr<USKAnimNotifyCardWidget>> NotifyCards;
+
 private:
 	/** 사용 가능한 애님 노티파이 목록 */
 	TArray<FName> AvailableNotifies;
