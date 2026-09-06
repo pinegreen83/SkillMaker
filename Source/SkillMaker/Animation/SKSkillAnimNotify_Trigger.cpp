@@ -131,8 +131,13 @@ void USKSkillAnimNotify_Trigger::SpawnProjectile(ASKBaseCharacter* Character, co
 		SpawnParameters
 	);
 
-	if(Projectile)
+	if (!Projectile)
 	{
-		Projectile->StartProject(Character);
+		SK_LOG(LogSkillMaker, Error, TEXT("발사체 SpawnActor 실패: %s"), *GetNameSafe(ProjectileClass.Get()));
+		return;
 	}
+
+	SK_LOG(LogSkillMaker, Log, TEXT("발사체 생성 완료: %s / Location=%s / Rotation=%s"),
+		*Projectile->GetName(), *Projectile->GetActorLocation().ToString(), *Projectile->GetActorRotation().ToString());
+	Projectile->StartProject(Character);
 }

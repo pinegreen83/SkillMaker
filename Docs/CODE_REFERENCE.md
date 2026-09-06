@@ -372,11 +372,11 @@ ExecuteSkill
 - 부모: `AActor`
 - 컴포넌트: `CollisionComponent`, `ParticleComponent`, `NiagaraComponent`, `ProjectileComponent`
 - 필드: `SkillOwner`, `ProjectileSound`
-- `StartProject(InSkillOwner)`: 시전자만 저장
+- `StartProject(InSkillOwner)`: 시전자를 저장하고 시전자 충돌을 제외한 뒤 Particle·Niagara 컴포넌트를 표시·활성화하고 발사 사운드를 재생
 - `OnOverlap(...)`: 시전자 외 Actor와 겹치면 캐릭터 여부를 확인하고 소멸
 - `ApplyStatusEffect(TargetCharacter)`: 주석만 있으며 처리 없음
 - 스킬 데이터, 피해, 속성, 색상은 발사체에 전달되지 않는다.
-- `ProjectileSound`는 C++에서 재생하지 않는다.
+- `ProjectileSound`가 있으면 발사체 시작 위치에서 한 번 재생한다. 시각 이펙트나 사운드가 없으면 경고 로그를 남긴다.
 
 ### `USKCombatComponent`
 

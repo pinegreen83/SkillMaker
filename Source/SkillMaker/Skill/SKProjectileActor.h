@@ -57,7 +57,7 @@ protected:
 
 	/** 발사체 사운드 */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Projectile")
-	USoundBase* ProjectileSound;
+	TObjectPtr<USoundBase> ProjectileSound;
 	
 	/** 충돌 처리 함수 */
 	UFUNCTION()

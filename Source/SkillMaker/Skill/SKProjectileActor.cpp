@@ -7,6 +7,7 @@
 #include "Components/SphereComponent.h"
 #include "GameFramework/Character.h"
 #include "GameFramework/ProjectileMovementComponent.h"
+#include "Kismet/GameplayStatics.h"
 #include "Logging/SKLogSkillMakerMacro.h"
 
 // Sets default values
@@ -50,8 +51,49 @@ void ASKProjectileActor::Tick(float DeltaTime)
 void ASKProjectileActor::StartProject(ACharacter* InSkillOwner)
 {
 	SK_LOG(LogSkillMaker, Log, TEXT("Begin"));
-	
+
+	if (!InSkillOwner)
+	{
+		SK_LOG(LogSkillMaker, Warning, TEXT("발사체 시작 실패: 시전자 없음."));
+		return;
+	}
+
 	SkillOwner = InSkillOwner;
+	if (CollisionComponent)
+	{
+		CollisionComponent->IgnoreActorWhenMoving(InSkillOwner, true);
+	}
+
+	bool bHasVisualEffect = false;
+	if (ParticleComponent && ParticleComponent->GetFXSystemAsset())
+	{
+		ParticleComponent->SetVisibility(true);
+		ParticleComponent->SetHiddenInGame(false);
+		ParticleComponent->ActivateSystem(true);
+		bHasVisualEffect = true;
+	}
+
+	if (NiagaraComponent && NiagaraComponent->GetAsset())
+	{
+		NiagaraComponent->SetVisibility(true);
+		NiagaraComponent->SetHiddenInGame(false);
+		NiagaraComponent->Activate(true);
+		bHasVisualEffect = true;
+	}
+
+	if (!bHasVisualEffect)
+	{
+		SK_LOG(LogSkillMaker, Warning, TEXT("발사체에 출력할 시각 이펙트가 없음: %s"), *GetName());
+	}
+
+	if (ProjectileSound)
+	{
+		UGameplayStatics::PlaySoundAtLocation(this, ProjectileSound, GetActorLocation());
+	}
+	else
+	{
+		SK_LOG(LogSkillMaker, Warning, TEXT("발사체에 출력할 사운드가 없음: %s"), *GetName());
+	}
 
 	if (!ProjectileComponent || ProjectileComponent->InitialSpeed == 0.0f)
 	{
@@ -62,15 +104,20 @@ void ASKProjectileActor::StartProject(ACharacter* InSkillOwner)
 void ASKProjectileActor::OnOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp,
 								   int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
-	if (OtherActor && OtherActor != this && OtherActor != SkillOwner)
+	if (!OtherActor || OtherActor == this || OtherActor == SkillOwner || OtherActor == GetOwner())
 	{
-		ACharacter* HitCharacter = Cast<ACharacter>(OtherActor);
-		if (HitCharacter)
-		{
-			ApplyStatusEffect(HitCharacter);
-		}
-		Destroy();
+		return;
 	}
+
+	SK_LOG(LogSkillMaker, Log, TEXT("발사체 충돌: Projectile=%s / OtherActor=%s / OtherComponent=%s"),
+		*GetName(), *GetNameSafe(OtherActor), *GetNameSafe(OtherComp));
+
+	ACharacter* HitCharacter = Cast<ACharacter>(OtherActor);
+	if (HitCharacter)
+	{
+		ApplyStatusEffect(HitCharacter);
+	}
+	Destroy();
 }
 
 void ASKProjectileActor::ApplyStatusEffect(ACharacter* TargetCharacter)

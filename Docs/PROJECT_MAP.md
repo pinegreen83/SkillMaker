@@ -149,8 +149,8 @@
 - 편집: 제작 HUD가 `CurrentEditingSkill` 원본을 단독 소유한다. 상세 위젯은 이벤트 순간 HUD 최신값의 지역 사본에서 선택 필드만 바꾸고 `OnSkillDetailChanged`로 HUD를 즉시 갱신한다. HUD의 `OnEditingSkillChanged`는 현재 선택 요약 UI 연결 지점이다.
 - 저장: 메인 위젯은 이름과 저장 요청만 HUD에 전달한다. HUD가 필수값과 저장 기반을 검증하고 ID를 확정한 뒤 `USKSaveGameSubsystem::SaveSkillData` → `USKPlayerSkillSave::SetSkillData` → `CurrentSkillSet.Skills` → 슬롯 기록으로 이어진다.
 - 이름 있는 스킬셋: `PlayerSkills`는 스킬셋 이름을 `FSKSkillSet`에 연결한다. `SetSkillSet`은 현재 맵을 해당 이름의 항목에 복사한다. 슬롯 순서는 PlayerController가 별도로 보관하며 이 저장 구조에는 표현되지 않는다.
-- 실행: `ASKBaseCharacter::UseSkill` → `ClientRequestUseSkill` → 권한이 없으면 서버 RPC, 있으면 `ExecuteSkill` 직접 호출 → 멀티캐스트 몽타주 → 트리거 노티파이 → 발사체 생성. 발사체와 전투 처리는 미연결 상태다.
-- 프리뷰: HUD가 임시 또는 저장 스킬을 네이티브 프리뷰 캐릭터의 `SkillMap`에 넣고 같은 캐릭터·컴포넌트 진입점을 사용한다. 몽타주 미리보기는 실행 확인했으며 선택한 이펙트·사운드 출력은 아직 동작하지 않는다.
+- 실행: `ASKBaseCharacter::UseSkill` → `ClientRequestUseSkill` → 권한이 없으면 서버 RPC, 있으면 `ExecuteSkill` 직접 호출 → 멀티캐스트 몽타주 → 트리거 노티파이 → 발사체 생성. 발사체의 시각 효과·사운드·충돌·소멸은 연결되어 있고 피해와 상태이상 처리는 미연결 상태다.
+- 프리뷰: HUD가 임시 또는 저장 스킬을 네이티브 프리뷰 캐릭터의 `SkillMap`에 넣고 같은 캐릭터·컴포넌트 진입점을 사용한다. 몽타주와 선택한 트리거 시점의 발사체 이펙트·사운드 출력, 타겟 충돌을 실행 확인했다.
 
 ## 주요 에셋
 
