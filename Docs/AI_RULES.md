@@ -24,6 +24,8 @@
 ## 수정 규칙
 
 - 기존 사용자 변경을 보존한다. 위험한 수정 전에 `git status --short`를 확인한다.
+- AI는 Unreal Editor GUI를 직접 조작하지 않는다. 위젯 블루프린트, 맵 World Settings, 데이터 테이블과 에셋 설정처럼 에디터 조작이 필요한 작업은 필요한 변경 내용과 확인 절차를 사용자에게 전달하고 사용자가 직접 수행한다.
+- AI는 C++·설정·문서처럼 파일 기반으로 검토하고 변경할 수 있는 범위에 집중한다. 에디터 확인이 남아 있으면 실행 완료로 보고하지 않고 사용자 확인 항목으로 구분한다.
 - 명시적인 요청 없이 `Content/**/*.uasset`, `*.umap`, `Binaries/`, `Intermediate/`, `Saved/`, `DerivedDataCache/`, `.idea/`, 자동 생성 IDE 파일을 수정하지 않는다.
 - C++ 변경은 `Source/SkillMaker`, 설정 변경은 `Config`를 우선 사용한다.
 - UMG 바인딩 위젯의 `UPROPERTY(meta = (BindWidget))` 이름을 위젯 블루프린트의 이름과 일치시킨다.

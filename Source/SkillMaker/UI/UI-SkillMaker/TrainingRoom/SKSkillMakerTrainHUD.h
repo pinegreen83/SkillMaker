@@ -8,7 +8,9 @@
 #include "Save/SKPlayerSkillSave.h"
 #include "SKSkillMakerTrainHUD.generated.h"
 
-class USKSkillMakerTrainMainWidget;
+class USKMapNavigationWidget;
+class USKSkillSelectionWidget;
+class USKSkillSlotAssignmentWidget;
 class ASKPlayerCharacter;
 struct FSKSkillSet;
 struct FSKSkillData;
@@ -21,6 +23,9 @@ public:
 	ASKSkillMakerTrainHUD();
 	
 	virtual void BeginPlay() override;
+
+	UFUNCTION(BlueprintCallable, Category = "UI")
+	void ShowSkillSelection();
 
 	UFUNCTION(BlueprintCallable, Category = "Skill")
 	void InitializeNewSkill();
@@ -45,10 +50,16 @@ public:
 
 protected:
 	UPROPERTY(EditDefaultsOnly, Category = "UI")
-	TSubclassOf<USKSkillMakerTrainMainWidget> MainWidgetClass;
+	TSubclassOf<USKSkillSelectionWidget> SkillSelectionWidgetClass;
 
-	UPROPERTY(EditDefaultsOnly, Category = "UI")
-	TObjectPtr<USKSkillMakerTrainMainWidget> MainWidget;
+	UPROPERTY()
+	TObjectPtr<USKSkillSelectionWidget> SkillSelectionWidget;
+
+	UPROPERTY()
+	TObjectPtr<USKSkillSlotAssignmentWidget> SkillSlotAssignmentWidget;
+
+	UPROPERTY()
+	TObjectPtr<USKMapNavigationWidget> NavigationWidget;
 
 	UPROPERTY(BlueprintReadWrite, Category = "Skill")
 	FSKSkillSet CurrentEditingSkillSet;
@@ -57,5 +68,12 @@ protected:
 	FSKSkillData CurrentEditingSkill;
 
 	UPROPERTY()
-	TObjectPtr<ASKPlayerCharacter> PreviewCharacter;
+	TObjectPtr<ASKPlayerCharacter> PlayerCharacter;
+
+private:
+	UFUNCTION()
+	void OnSkillSelected(const FName& SkillID);
+
+	UFUNCTION()
+	void OnSkillSlotSelected(int32 SlotIndex);
 };

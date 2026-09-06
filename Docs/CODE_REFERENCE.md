@@ -56,6 +56,8 @@ UActorComponent
 UUserWidget
 ├─ USKSkillMakerEditorMainWidget
 ├─ USKSkillMakerTrainMainWidget
+├─ USKMapNavigationWidget
+├─ USKSkillSlotAssignmentWidget
 ├─ USKSkillDetailWidget
 ├─ USKSkillSelectionWidget
 ├─ USKSkillCardWidget
@@ -462,7 +464,7 @@ ExecuteSkill
 
 - 부모: `ASKInteractableActor`
 - 필드: `SkillMakerTrainMainWidgetClass`
-- `OnInteract()`: 위젯을 생성하고 현재 플레이어를 `StartSkillMaker`로 전달한 뒤 화면에 추가
+- `OnInteract()`: 현재 플레이어 컨트롤러의 `ASKSkillMakerTrainHUD`를 찾아 `ShowSkillSelection()` 호출
 - 이 생성 경로에서는 훈련 HUD 참조를 위젯에 전달하지 않는다.
 
 ## 제작 UI
@@ -484,6 +486,7 @@ ExecuteSkill
 - `SaveCurrentSkill(SkillName)`: 필수 선택값과 저장 기반을 확인하고 ID를 확정한 뒤 HUD의 현재 스킬을 저장
 - `OnEditingSkillChanged`: HUD 데이터가 초기화·로드·교체되거나 개별 선택값이 바뀔 때 현재 전체 데이터를 전달
 - `PreviewSkillEffect(SkillData)`: 임시 ID를 보완하고 프리뷰 캐릭터의 공통 스킬 실행 경로 사용
+- `BeginPlay()`에서 네이티브 `USKMapNavigationWidget`을 생성해 `/Game/SkillMaker/Map/SkillTrainingMap` 이동 버튼을 표시
 
 ### `USKSkillMakerEditorMainWidget`
 
@@ -519,11 +522,25 @@ ExecuteSkill
 ### `ASKSkillMakerTrainHUD`
 
 - 부모: `AHUD`
-- 필드: `MainWidgetClass`, `MainWidget`, `CurrentEditingSkillSet`, `CurrentEditingSkill`, `PreviewCharacter`
-- 생성자의 기본 위젯 클래스 로드는 주석 처리됨
-- `BeginPlay()`는 클래스가 있으면 위젯을 생성하고 HUD 참조를 전달하지만 화면에 추가하지 않음
+- 필드: `SkillSelectionWidgetClass`, `SkillSelectionWidget`, `SkillSlotAssignmentWidget`, `NavigationWidget`, `CurrentEditingSkillSet`, `CurrentEditingSkill`, `PlayerCharacter`
+- 생성자에서 제작 화면도 사용하는 기존 `/Game/SkillMaker/UI/WBP_SKSkillSelection` 클래스를 로드
+- `BeginPlay()`에서 실제 소유 Pawn을 `ASKPlayerCharacter`로 저장하고 기존 스킬 선택 위젯, 네이티브 슬롯 위젯과 `SkillMakingMap` 이동 버튼을 화면에 추가
+- 저장 스킬 카드 선택 시 SaveGame 데이터를 읽어 슬롯 위젯에 표시
+- 슬롯 선택 시 전체 스킬 데이터를 `ASKPlayerCharacter::SetSkillDataInMap`으로 등록하고 ID를 `ASKPlayerController::SetSkillInSlot`으로 Q/E/R/F 슬롯에 배치
 - 편집 데이터 초기화·로드·getter/setter API는 제작 HUD와 유사함
-- `PreviewCharacter` 타입은 `ASKPlayerCharacter`지만 실제 생성·설정 경로가 확인되지 않음
+
+### `USKSkillSlotAssignmentWidget`
+
+- 부모: `UUserWidget`
+- 블루프린트 에셋 없이 `WidgetTree`로 선택 스킬 문구와 Q/E/R/F 슬롯 버튼을 구성
+- `SetSelectedSkill`로 현재 선택을 표시하고 `SetAssignedSkill`로 슬롯별 스킬 이름을 갱신
+- 슬롯 클릭 시 `OnSkillSlotSelected(SlotIndex)`를 발행
+
+### `USKMapNavigationWidget`
+
+- 부모: `UUserWidget`
+- 블루프린트 에셋 없이 버튼과 문구를 구성
+- HUD가 표시 문구와 목적지 맵을 설정하고 클릭 시 `UGameplayStatics::OpenLevel` 호출
 
 ### `USKSkillMakerTrainMainWidget`
 

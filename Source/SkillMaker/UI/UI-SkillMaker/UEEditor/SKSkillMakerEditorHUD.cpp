@@ -8,6 +8,7 @@
 #include "Game/SKSaveGameSubsystem.h"
 #include "GameFramework/PlayerController.h"
 #include "Logging/SKLogSkillMakerMacro.h"
+#include "UI/UI-SkillMaker/Common/SKMapNavigationWidget.h"
 
 ASKSkillMakerEditorHUD::ASKSkillMakerEditorHUD()
 {
@@ -29,6 +30,19 @@ void ASKSkillMakerEditorHUD::BeginPlay()
 		{
 			MainWidget->SetHUDReference(this);
 			MainWidget->AddToViewport();
+		}
+	}
+
+	if (APlayerController* PlayerController = GetOwningPlayerController())
+	{
+		NavigationWidget = CreateWidget<USKMapNavigationWidget>(PlayerController, USKMapNavigationWidget::StaticClass());
+		if (NavigationWidget)
+		{
+			NavigationWidget->Configure(NSLOCTEXT("MapNavigation", "OpenTraining", "훈련장"),
+				FName(TEXT("/Game/SkillMaker/Map/SkillTrainingMap")));
+			NavigationWidget->AddToViewport(100);
+			NavigationWidget->SetPositionInViewport(FVector2D(24.0f, 24.0f), false);
+			NavigationWidget->SetDesiredSizeInViewport(FVector2D(160.0f, 48.0f));
 		}
 	}
 

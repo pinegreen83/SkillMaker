@@ -115,16 +115,17 @@
 ### 상호작용 오브젝트
 
 - `Prop/SKInteractableActor.h/.cpp`: 상호작용 진입점을 갖는 기본 액터.
-- `Prop/SKSkillStation.h/.cpp`: 조건이 충족되면 훈련장 위젯을 생성하고 현재 플레이어를 전달해 화면에 추가한다. 이 경로는 훈련장 HUD 참조를 지정하지 않는다.
+- `Prop/SKSkillStation.h/.cpp`: 현재 플레이어의 `ASKSkillMakerTrainHUD::ShowSkillSelection`을 호출해 HUD가 소유한 기존 선택 화면을 다시 표시한다.
 
 ### 제작 편집기 UI
 
-- `UI/UI-SkillMaker/UEEditor/SKSkillMakerEditorHUD.h/.cpp`: 메인 위젯 생성, `CurrentEditingSkill` 소유, 저장과 프리뷰 실행을 담당한다. 생성하는 프리뷰는 `BP_SKPreviewCharacter`가 아닌 네이티브 `ASKPreviewCharacter::StaticClass()`이며 스킬 컴포넌트로 실행한다.
+- `UI/UI-SkillMaker/UEEditor/SKSkillMakerEditorHUD.h/.cpp`: 메인 위젯 생성, `CurrentEditingSkill` 소유, 저장과 프리뷰 실행을 담당한다. 생성하는 프리뷰는 `BP_SKPreviewCharacter`가 아닌 네이티브 `ASKPreviewCharacter::StaticClass()`이며 스킬 컴포넌트로 실행한다. 네이티브 맵 이동 위젯을 생성해 `SkillTrainingMap`으로 이동하는 버튼도 표시한다.
 - `UI/UI-SkillMaker/UEEditor/SKSkillMakerEditorMainWidget.h/.cpp`: 생성·수정 모드와 화면 상태 전환, 이름 입력, 저장 요청 전달과 선택 위젯 간 연결을 처리한다. 신규 생성은 이름 입력란을 비우고, 기존 스킬은 저장된 이름을 입력란에 설정한 뒤 무기 → 애니메이션 → 세부사항 화면으로 이동한다. 저장 성공 후에는 초기 선택 화면만 남도록 이동 이력을 초기화한다.
 
 ### 훈련장 UI
 
-- `UI/UI-SkillMaker/TrainingRoom/SKSkillMakerTrainHUD.h/.cpp`: SaveGame 조회 보조 함수가 있고 클래스가 지정되면 `MainWidget`을 생성한다. 기본 클래스 로드는 주석 처리되어 있고 `BeginPlay`는 위젯을 화면에 추가하지 않는다. 선택 핸들러에서 조회 보조 함수를 호출하지 않는다.
+- `UI/UI-SkillMaker/TrainingRoom/SKSkillMakerTrainHUD.h/.cpp`: 기존 `WBP_SKSkillSelection`을 직접 생성해 SaveGame 스킬 목록을 표시한다. 선택한 스킬을 실제 `ASKPlayerCharacter`의 스킬 맵과 `ASKPlayerController`의 Q/E/R/F 슬롯에 등록하며, 네이티브 슬롯 위젯과 `SkillMakingMap` 이동 버튼을 함께 생성한다.
+- `UI/UI-SkillMaker/TrainingRoom/SKSkillSlotAssignmentWidget.h/.cpp`: 블루프린트 에셋 없이 C++에서 구성하는 Q/E/R/F 슬롯 위젯. 현재 선택 스킬과 슬롯별 할당 이름을 표시하고 선택한 슬롯 인덱스를 훈련장 HUD로 전달한다.
 - `UI/UI-SkillMaker/TrainingRoom/SKSkillMakerTrainMainWidget.h/.cpp`: 상태·탐색 골격. 스킬·스킬셋 생성, 수정, 선택, 애니메이션 선택, 편집 완료, 저장 핸들러가 비어 있다. `StartSkillMaker`는 플레이어 참조만 저장한다.
 
 ### 공통 UI 위젯
@@ -132,6 +133,7 @@
 다음 경로는 `Source/SkillMaker/UI/UI-SkillMaker/` 기준이다.
 
 - `Common/SkillSelect/SKSkillSelectionWidget.h/.cpp`: `USKSaveGameSubsystem`에서 저장 스킬 목록을 읽는다.
+- `Common/SKMapNavigationWidget.h/.cpp`: 두 HUD가 생성하는 네이티브 맵 이동 버튼. 제작 화면에서는 `SkillTrainingMap`, 훈련장에서는 `SkillMakingMap`을 대상으로 설정한다.
 - `Common/SkillSelect/SKSkillCardWidget.h/.cpp`: 저장 스킬 한 개의 카드.
 - `Common/SkillSelect/SKSkillDetailWidget.h/.cpp`: 별도 스킬 원본 없이 제작 HUD의 최신값을 사용해 유형·단일 속성·발사체·노티파이·프리뷰를 처리한다. 기존 디버프 패널을 속성 탭으로 사용하고 논타겟 프로토타입에서 사거리 UI를 숨긴다. 탭 패널 직접 참조, 선택 탭 색상, 블루프린트 기본 탭 스크롤 계층 검증도 담당한다.
 - `Common/ElementSelect/SKElementCardWidget.h/.cpp`: 별도 WBP가 없는 네이티브 전체 행 버튼. 속성 Gameplay Tag, 검은색 왼쪽 정렬 이름, 설명 툴팁, 기준 색상과 선택 체크 상태를 보관한다.

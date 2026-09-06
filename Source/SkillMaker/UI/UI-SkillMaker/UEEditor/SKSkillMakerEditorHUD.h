@@ -8,6 +8,7 @@
 #include "SKSkillMakerEditorHUD.generated.h"
 
 class USKSkillMakerEditorMainWidget;
+class USKMapNavigationWidget;
 class ASKPreviewCharacter;
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnEditingSkillChanged, const FSKSkillData&, SkillData);
@@ -61,6 +62,9 @@ protected:
 
 	UPROPERTY()
 	TObjectPtr<USKSkillMakerEditorMainWidget> MainWidget;
+
+	UPROPERTY()
+	TObjectPtr<USKMapNavigationWidget> NavigationWidget;
 
 	UPROPERTY(BlueprintReadWrite, Category = "Skill")
 	FSKSkillData CurrentEditingSkill;
