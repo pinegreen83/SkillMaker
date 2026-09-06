@@ -175,19 +175,38 @@ void USKSkillMakerEditorMainWidget::GoBackToPreviousState()
 	SetSkillMakerState(PreviousState, true);
 }
 
+const TCHAR* USKSkillMakerEditorMainWidget::GetEditModeLogText() const
+{
+	switch (CurrentEditMode)
+	{
+	case ESKSkillEditMode::Create:
+		return TEXT("생성");
+	case ESKSkillEditMode::Modify:
+		return TEXT("수정");
+	default:
+		return TEXT("미지정");
+	}
+}
+
 void USKSkillMakerEditorMainWidget::OnModifySkillClicked()
 {
-	SK_LOG(LogSkillMaker, Log, TEXT("기존 스킬 수정 시작"));
+	CurrentEditMode = ESKSkillEditMode::Modify;
+	SK_LOG(LogSkillMaker, Log, TEXT("[모드: %s] 편집 흐름 시작 - 수정할 스킬 선택"), GetEditModeLogText());
 	OnSkillDataFromTable.Broadcast();
 	SetSkillMakerState(ESKSkillMakerState::ChooseSkill, false);
 }
 
 void USKSkillMakerEditorMainWidget::OnCreateSkillClicked()
 {
-	SK_LOG(LogSkillMaker, Log, TEXT("새로운 스킬 생성 시작"));
+	CurrentEditMode = ESKSkillEditMode::Create;
+	SK_LOG(LogSkillMaker, Log, TEXT("[모드: %s] 편집 흐름 시작"), GetEditModeLogText());
 	if (HUDReference)
 	{
 		HUDReference->InitializeNewSkill();
+	}
+	if (SkillNameInput)
+	{
+		SkillNameInput->SetText(FText::GetEmpty());
 	}
 	SetSkillMakerState(ESKSkillMakerState::ChooseWeapon, false);
 }
@@ -203,7 +222,19 @@ void USKSkillMakerEditorMainWidget::OnSkillSelected(const FName& SkillID)
 	}
 
 	HUDReference->LoadSkillForEditing(SkillID);
-	SK_LOG(LogSkillMaker, Log, TEXT("스킬 선택됨 : %s"), *SkillID.ToString());
+	const FSKSkillData& LoadedSkill = HUDReference->GetCurrentSkillData();
+	if (LoadedSkill.SkillID != SkillID)
+	{
+		SK_LOG(LogSkillMaker, Error, TEXT("[모드: %s] 기존 스킬 로드 실패 - ID: %s"),
+			GetEditModeLogText(), *SkillID.ToString());
+		return;
+	}
+	if (SkillNameInput)
+	{
+		SkillNameInput->SetText(FText::FromString(LoadedSkill.SkillName));
+	}
+	SK_LOG(LogSkillMaker, Log, TEXT("[모드: %s] 기존 스킬 선택 완료 - ID: %s, Name: %s"),
+		GetEditModeLogText(), *SkillID.ToString(), *LoadedSkill.SkillName);
 
 	SetSkillMakerState(ESKSkillMakerState::ChooseWeapon, false);
 }
@@ -240,14 +271,14 @@ void USKSkillMakerEditorMainWidget::OnAnimationSelected(const TSoftObjectPtr<UAn
 
 void USKSkillMakerEditorMainWidget::OnFinishSkillEditing()
 {
-	SK_LOG(LogSkillMaker, Log, TEXT("Begin"));
+	SK_LOG(LogSkillMaker, Log, TEXT("[모드: %s] 세부 설정 완료 - 저장 화면으로 이동"), GetEditModeLogText());
 
 	SetSkillMakerState(ESKSkillMakerState::SaveSkill, false);
 }
 
 void USKSkillMakerEditorMainWidget::OnSaveSkillClicked()
 {
-	SK_LOG(LogSkillMaker, Log, TEXT("Begin"));
+	SK_LOG(LogSkillMaker, Log, TEXT("[모드: %s] 스킬 저장 요청"), GetEditModeLogText());
 
 	if (!HUDReference)
 	{
@@ -268,7 +299,10 @@ void USKSkillMakerEditorMainWidget::OnSaveSkillClicked()
 	}
 	OnSkillDataFromTable.Broadcast();
 
-	SetSkillMakerState(ESKSkillMakerState::ChooseAction, false);
+	PreviousStates.Reset();
+	PreviousStates.Add(ESKSkillMakerState::ChooseAction);
+	SetSkillMakerState(ESKSkillMakerState::ChooseAction, true);
+	CurrentEditMode = ESKSkillEditMode::None;
 }
 
 void USKSkillMakerEditorMainWidget::OnBackClicked()

@@ -143,6 +143,8 @@ void ASKSkillMakerEditorHUD::SetSkillMontage(const TSoftObjectPtr<UAnimMontage>&
 
 bool ASKSkillMakerEditorHUD::SaveCurrentSkill(const FString& SkillName)
 {
+	const bool bIsModifyOperation = !CurrentEditingSkill.SkillID.IsNone();
+
 	if (SkillName.IsEmpty())
 	{
 		SK_LOG(LogSkillMaker, Error, TEXT("스킬 이름이 입력되지 않음."));
@@ -189,7 +191,8 @@ bool ASKSkillMakerEditorHUD::SaveCurrentSkill(const FString& SkillName)
 
 	CurrentEditingSkill = MoveTemp(SaveCandidate);
 	OnEditingSkillChanged.Broadcast(CurrentEditingSkill);
-	SK_LOG(LogSkillMaker, Log, TEXT("스킬 저장 완료: %s"), *CurrentEditingSkill.SkillName);
+	SK_LOG(LogSkillMaker, Log, TEXT("[모드: %s] 스킬 저장 완료: %s"),
+		bIsModifyOperation ? TEXT("수정") : TEXT("생성"), *CurrentEditingSkill.SkillName);
 	return true;
 }
 

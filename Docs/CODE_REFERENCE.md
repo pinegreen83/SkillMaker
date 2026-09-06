@@ -480,7 +480,7 @@ ExecuteSkill
 - 부모: `UUserWidget`
 - 상태 enum: `ChooseAction`, `ChooseSkill`, `ChooseWeapon`, `ChooseAnimation`, `SkillDetail`, `SaveSkill`
 - 책임: 제작 단계 이동, 공통 선택 위젯과 HUD 연결, 저장 요청 전달
-- 상태: `CurrentState`, `PreviousStates`, `HUDReference`
+- 상태: `CurrentState`, `PreviousStates`, `CurrentEditMode`, `HUDReference`
 
 `BindWidget`:
 
@@ -494,13 +494,13 @@ ExecuteSkill
 - `Initialize()`: 하위 위젯 델리게이트와 버튼 클릭 바인딩
 - `SetHUDReference(InHUD)`: HUD와 상세 위젯 연결
 - `SetSkillMakerState(NewState, bFromBackNavigation)`, `GoBackToPreviousState()`
-- `OnModifySkillClicked()`: 목록 새로고침 이벤트 후 기존 스킬 선택 화면
-- `OnCreateSkillClicked()`: HUD의 새 스킬 데이터를 초기화한 뒤 무기 화면 이동
-- `OnSkillSelected(SkillID)`: HUD에 저장 스킬을 로드한 뒤 무기 선택 화면으로 이동
+- `OnModifySkillClicked()`: 수정 모드를 설정하고 목록 새로고침 이벤트 후 기존 스킬 선택 화면으로 이동
+- `OnCreateSkillClicked()`: 생성 모드를 설정하고 HUD의 새 스킬 데이터와 이름 입력란을 초기화한 뒤 무기 화면으로 이동
+- `OnSkillSelected(SkillID)`: HUD에 저장 스킬을 로드하고 기존 이름을 입력란에 설정한 뒤 무기 선택 화면으로 이동
 - `OnWeaponSelected(WeaponTag)`: 애니메이션 선택 화면으로 전환. HUD는 같은 선택 델리게이트를 직접 구독
 - `OnAnimationSelected(SoftMontage)`: 상세 화면으로 전환. HUD는 같은 선택 델리게이트를 직접 구독
-- `OnFinishSkillEditing()`: 저장 이름 화면으로 이동. 상세 선택값은 선택 시점에 이미 HUD로 전달됨
-- `OnSaveSkillClicked()`: 이름을 HUD의 `SaveCurrentSkill`에 전달하고 성공 시 목록 갱신 및 화면 전환
+- `OnFinishSkillEditing()`: 현재 생성·수정 모드를 로그에 표시하고 저장 이름 화면으로 이동. 상세 선택값은 선택 시점에 이미 HUD로 전달됨
+- `OnSaveSkillClicked()`: 현재 모드와 저장 요청을 로그에 표시하고 이름을 HUD의 `SaveCurrentSkill`에 전달한다. 성공하면 목록을 갱신하고 `PreviousStates`를 `ChooseAction` 하나로 초기화한 뒤 초기 화면으로 이동해 뒤로가기 버튼을 숨기고 모드를 초기화한다.
 
 신규 `SkillID`는 저장 후보에 생성하며 저장 성공 후 HUD 원본에 확정한다.
 

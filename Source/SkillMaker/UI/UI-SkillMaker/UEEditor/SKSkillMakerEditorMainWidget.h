@@ -29,6 +29,13 @@ enum class ESKSkillMakerState : uint8
 	SaveSkill
 };
 
+enum class ESKSkillEditMode : uint8
+{
+	None,
+	Create,
+	Modify
+};
+
 UCLASS()
 class SKILLMAKER_API USKSkillMakerEditorMainWidget : public UUserWidget
 {
@@ -83,6 +90,7 @@ protected:
 
 private:
 	void GoBackToPreviousState();
+	const TCHAR* GetEditModeLogText() const;
 	
 	UFUNCTION()
 	void OnModifySkillClicked();
@@ -108,6 +116,7 @@ private:
 	UFUNCTION()
 	void OnBackClicked();
 
-	ESKSkillMakerState CurrentState;
+	ESKSkillMakerState CurrentState = ESKSkillMakerState::ChooseAction;
+	ESKSkillEditMode CurrentEditMode = ESKSkillEditMode::None;
 	TArray<ESKSkillMakerState> PreviousStates;
 };

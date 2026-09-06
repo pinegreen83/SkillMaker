@@ -119,7 +119,7 @@
 ### 제작 편집기 UI
 
 - `UI/UI-SkillMaker/UEEditor/SKSkillMakerEditorHUD.h/.cpp`: 메인 위젯 생성, `CurrentEditingSkill` 소유, 저장과 프리뷰 실행을 담당한다. 생성하는 프리뷰는 `BP_SKPreviewCharacter`가 아닌 네이티브 `ASKPreviewCharacter::StaticClass()`이며 스킬 컴포넌트로 실행한다.
-- `UI/UI-SkillMaker/UEEditor/SKSkillMakerEditorMainWidget.h/.cpp`: 신규·수정 상태 전환, 이름 입력, 저장 요청 전달과 선택 위젯 간 연결을 처리한다. 기존 스킬도 저장 데이터를 로드한 뒤 무기 → 애니메이션 → 세부사항 화면으로 이동한다.
+- `UI/UI-SkillMaker/UEEditor/SKSkillMakerEditorMainWidget.h/.cpp`: 생성·수정 모드와 화면 상태 전환, 이름 입력, 저장 요청 전달과 선택 위젯 간 연결을 처리한다. 신규 생성은 이름 입력란을 비우고, 기존 스킬은 저장된 이름을 입력란에 설정한 뒤 무기 → 애니메이션 → 세부사항 화면으로 이동한다. 저장 성공 후에는 초기 선택 화면만 남도록 이동 이력을 초기화한다.
 
 ### 훈련장 UI
 
