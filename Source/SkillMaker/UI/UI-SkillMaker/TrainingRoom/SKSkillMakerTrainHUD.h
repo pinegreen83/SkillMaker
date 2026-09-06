@@ -27,6 +27,9 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "UI")
 	void ShowSkillSelection();
 
+	UFUNCTION(BlueprintCallable, Category = "UI")
+	void ShowSkillAssignmentOverview();
+
 	UFUNCTION(BlueprintCallable, Category = "Skill")
 	void InitializeNewSkill();
 
@@ -76,4 +79,11 @@ private:
 
 	UFUNCTION()
 	void OnSkillSlotSelected(int32 SlotIndex);
+
+	UFUNCTION()
+	void OnSkillSlotAssignmentCancelled();
+
+	void ShowSkillSlotAssignment();
+	void RefreshSkillAssignmentOverview();
+	void CloseSkillAssignmentUI();
 };

@@ -9,6 +9,7 @@
 
 class UInputMappingContext;
 class UInputAction;
+class UEnhancedInputLocalPlayerSubsystem;
 class ASKPlayerCharacter;
 
 UCLASS()
@@ -17,6 +18,8 @@ class SKILLMAKER_API ASKPlayerController : public APlayerController
 	GENERATED_BODY()
 
 public:
+	ASKPlayerController();
+
 	virtual void BeginPlay() override;
 	virtual void SetupInputComponent() override;
 
@@ -54,6 +57,10 @@ protected:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
 	TObjectPtr<UInputAction> SkillActionF;
 
+	/** 숫자 0으로 스킬 변경 UI를 여는 액션 */
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
+	TObjectPtr<UInputAction> OpenSkillChangeUIAction;
+
 	/** 캐릭터의 스킬 슬롯 */
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Skill")
 	TArray<FName> SkillSlots;
@@ -64,6 +71,22 @@ protected:
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Skill")
 	TMap<FKey, int32> KeyToSkillIndexMap;
+
+	/** C++에서 Q/E/R/F 매핑을 보장하는 런타임 입력 객체 */
+	UPROPERTY(Transient)
+	TObjectPtr<UInputMappingContext> RuntimeSkillMappingContext;
+
+	UPROPERTY(Transient)
+	TObjectPtr<UInputAction> RuntimeSkillActionQ;
+
+	UPROPERTY(Transient)
+	TObjectPtr<UInputAction> RuntimeSkillActionE;
+
+	UPROPERTY(Transient)
+	TObjectPtr<UInputAction> RuntimeSkillActionR;
+
+	UPROPERTY(Transient)
+	TObjectPtr<UInputAction> RuntimeSkillActionF;
 
 public:
 	/** 특정 슬롯의 스킬을 변경하는 함수 */
@@ -81,6 +104,8 @@ public:
 protected:
 	/** 스킬 입력 세팅 */
 	void SkillInputSetup();
+	void EnsureRuntimeSkillInputObjects();
+	void InstallRuntimeSkillInputMapping(UEnhancedInputLocalPlayerSubsystem* InputSubsystem);
 	
 	/** 캐릭터 이동 */
 	void Move(const FInputActionValue& Value);
@@ -95,4 +120,7 @@ protected:
 	
 	/** 특정 키로 스킬 사용 */
 	void UseSkillByKey(FKey PressedKey);
+
+	/** 저장 스킬 선택·슬롯 변경 UI 열기 */
+	void OpenSkillChangeUI();
 };

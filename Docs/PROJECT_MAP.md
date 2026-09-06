@@ -2,11 +2,11 @@
 
 ## 문서 범위
 
-2026-09-07 C++·설정 파일 정적 검토와 제작 UI 실행 확인을 반영했다. 이 문서는 코드의 책임과 소스 위치를 설명하며 전체 실행 흐름의 검증 완료를 뜻하지 않는다. 프로젝트를 시작한 이유와 현재 설계 원칙은 [프로젝트의 출발점과 세계관 방향](PROJECT_VISION.md), 연결 누락·규칙 미준수·실행 확인 항목은 [구현 현황](IMPLEMENTATION_STATUS.md), 개발 시 준수할 기준은 [개발 규칙](CONVENTIONS.md)을 참고한다.
+2026-09-07 C++·설정 파일 정적 검토와 제작·훈련장 UI 실행 확인을 반영했다. 이 문서는 코드의 책임과 소스 위치를 설명하며 전체 실행 흐름의 검증 완료를 뜻하지 않는다. 프로젝트를 시작한 이유와 현재 설계 원칙은 [프로젝트의 출발점과 세계관 방향](PROJECT_VISION.md), 연결 누락·규칙 미준수·실행 확인 항목은 [구현 현황](IMPLEMENTATION_STATUS.md), 개발 시 준수할 기준은 [개발 규칙](CONVENTIONS.md)을 참고한다.
 
 클래스별 상속, 주요 필드·메서드, 델리게이트와 `BindWidget` 연결은 [코드베이스 상세 참조](CODE_REFERENCE.md)에 정리한다.
 
-`UEEditor`와 스킬 제작 편집기는 런타임 모듈이 게임 월드에 생성하는 HUD·UMG 화면을 가리킨다. 별도 Unreal Editor 확장 모듈은 없다. 제작 UI의 주요 사용자 흐름은 실행 확인했지만 블루프린트 그래프 전체와 맵별 월드 설정은 별도로 검토하지 않았다.
+`UEEditor`와 스킬 제작 편집기는 런타임 모듈이 게임 월드에 생성하는 HUD·UMG 화면을 가리킨다. 별도 Unreal Editor 확장 모듈은 없다. 제작 UI와 훈련장의 스킬 선택·슬롯 배치·입력 실행·매핑 현황 흐름은 실행 확인했지만 블루프린트 그래프 전체와 맵별 월드 설정은 별도로 검토하지 않았다.
 
 ## 루트 구성
 
@@ -69,7 +69,7 @@
 
 ### 플레이어 제어
 
-- `Player/SKPlayerController.h/.cpp`: `ASKPlayerController`의 Enhanced Input 설정, 이동·시점·점프·상호작용, Q/E/R/F 슬롯 입력 전달.
+- `Player/SKPlayerController.h/.cpp`: `ASKPlayerController`의 Enhanced Input 설정, 이동·시점·점프·상호작용, Q/E/R/F 슬롯 입력 전달. C++ 런타임 액션과 매핑 컨텍스트로 Q→슬롯 0, E→슬롯 1, R→슬롯 2, F→슬롯 3을 보장하며 키를 누르기 시작할 때 한 번 발동한다. `IA_OpenSkillChangeUI`는 `IMC_Default`의 숫자 0 매핑을 사용해 훈련장 스킬 변경 UI를 다시 연다.
 - `Player/SKSkillMakerController.h/.cpp`: 제작 맵 컨트롤러 `ASKSkillMakerController`. `BeginPlay`에서 마우스 커서와 `GameAndUI` 입력 모드를 활성화한다.
 
 ### 스킬
@@ -125,7 +125,7 @@
 ### 훈련장 UI
 
 - `UI/UI-SkillMaker/TrainingRoom/SKSkillMakerTrainHUD.h/.cpp`: 기존 `WBP_SKSkillSelection`을 직접 생성해 SaveGame 스킬 목록을 표시한다. 선택한 스킬을 실제 `ASKPlayerCharacter`의 스킬 맵과 `ASKPlayerController`의 Q/E/R/F 슬롯에 등록하며, 네이티브 슬롯 위젯과 `SkillMakingMap` 이동 버튼을 함께 생성한다.
-- `UI/UI-SkillMaker/TrainingRoom/SKSkillSlotAssignmentWidget.h/.cpp`: 블루프린트 에셋 없이 C++에서 구성하는 Q/E/R/F 슬롯 위젯. 현재 선택 스킬과 슬롯별 할당 이름을 표시하고 선택한 슬롯 인덱스를 훈련장 HUD로 전달한다.
+- `UI/UI-SkillMaker/TrainingRoom/SKSkillSlotAssignmentWidget.h/.cpp`: 블루프린트 에셋 없이 C++에서 구성하는 Q/E/R/F 슬롯 위젯. 숫자 0 입력 시 현재 슬롯별 스킬 이름을 표시하고, 스킬 선택 버튼으로 저장 목록에 이동한다. 저장 스킬을 고른 뒤에는 Q/E/R/F 중 선택한 슬롯 인덱스를 훈련장 HUD로 전달한다.
 - `UI/UI-SkillMaker/TrainingRoom/SKSkillMakerTrainMainWidget.h/.cpp`: 상태·탐색 골격. 스킬·스킬셋 생성, 수정, 선택, 애니메이션 선택, 편집 완료, 저장 핸들러가 비어 있다. `StartSkillMaker`는 플레이어 참조만 저장한다.
 
 ### 공통 UI 위젯
@@ -179,9 +179,10 @@
   - `IMC_Default`
   - `IA_Move`, `IA_Look`, `IA_Jump`
   - `IA_SkillQ`, `IA_SkillE`, `IA_SkillR`, `IA_SkillF`
+  - `IA_OpenSkillChangeUI`: `IMC_Default`에서 숫자 0에 매핑
 - UI:
   - 제작 편집기: `WBP_SKSkillMakerEditorMain`. `WBP_SKSkillMakeEditorHUD` 에셋도 있지만 현재 C++ HUD는 전자를 직접 로드한다. `WBP_SKSkillDetail`의 기본 탭은 `GeneralTabPanel > GeneralTabScrollBox > GeneralTabContent` 계층을 사용한다.
-  - 훈련장: `WBP_SKSkillMakerTrainMain`, `WBP_SKSkillMakerTrainHUD`.
+  - 훈련장 레거시 에셋: `WBP_SKSkillMakerTrainMain`, `WBP_SKSkillMakerTrainHUD`. 현재 활성 HUD 경로는 기존 `WBP_SKSkillSelection`과 네이티브 슬롯 위젯을 직접 사용한다.
   - 공통 카드·선택 위젯: `Content/SkillMaker/UI` 아래에 있다.
 
 ## 설정과 에셋 연결

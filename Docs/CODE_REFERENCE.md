@@ -322,23 +322,26 @@ UObject
 
 - 부모: `APlayerController`
 - 책임: Enhanced Input 설정, 이동·시점·점프·상호작용·Q/E/R/F 스킬 입력
-- 입력 필드: `DefaultMappingContext`, `MoveAction`, `LookAction`, `JumpAction`, `InteractAction`, `SkillActionQ/E/R/F`
+- 입력 필드: `DefaultMappingContext`, `MoveAction`, `LookAction`, `JumpAction`, `InteractAction`, 기존 에셋 호환용 `SkillActionQ/E/R/F`, `OpenSkillChangeUIAction`
 - 슬롯 필드:
   - `SkillSlots: TArray<FName>`: 4개 슬롯의 SkillID
   - `KeyToSkillSlotMap: TMap<FKey, UInputAction*>`: 키별 InputAction
   - `KeyToSkillIndexMap: TMap<FKey, int32>`: 키별 슬롯 인덱스
+  - `RuntimeSkillMappingContext`, `RuntimeSkillActionQ/E/R/F`: C++에서 고정 키 매핑을 보장하는 런타임 Enhanced Input 객체
 
 주요 API:
 
-- `BeginPlay()`: 입력 매핑을 모두 지운 뒤 기본 컨텍스트 추가, GameOnly 입력 모드 설정
-- `SetupInputComponent()`: InputAction을 내부 처리 함수에 바인딩
+- `BeginPlay()`: 입력 매핑을 모두 지운 뒤 기본 컨텍스트와 Q/E/R/F 런타임 컨텍스트를 추가하고 GameOnly 입력 모드 설정
+- `SetupInputComponent()`: Q/E/R/F 런타임 액션을 `Started` 시점에 한 번씩 내부 처리 함수에 바인딩
+- `OpenSkillChangeUIAction`: `/Game/SkillMaker/Input/Actions/IA_OpenSkillChangeUI`를 직접 로드하고 `Started`에 `OpenSkillChangeUI()`를 바인딩. 숫자 `0` 키 매핑은 `IMC_Default`가 담당
+- `OpenSkillChangeUI()`: 훈련장 HUD를 찾아 현재 Q/E/R/F 매핑 현황 화면을 열며 HUD가 마우스 커서와 GameAndUI 입력 모드를 설정
 - `SetSkillInSlot(SlotIndex, SkillID)`, `GetSkillInSlot(SlotIndex)`
 - `SetKeyForSkillSlot(NewKey, SlotIndex)`
-- `SkillInputSetup()`: Q/E/R/F와 0~3 슬롯 초기화
+- `SkillInputSetup()`: Q/E/R/F와 0~3 슬롯 초기화. Q→슬롯 0, E→슬롯 1, R→슬롯 2, F→슬롯 3 순서를 사용
 - `UseSkillByKey(PressedKey)`: 슬롯 ID를 찾아 플레이어 캐릭터에 전달
 - `TryInteract()`: 전방 200 거리 Visibility 라인 트레이스로 `ASKInteractableActor::OnInteract` 호출
 
-저장 스킬을 캐릭터 `SkillMap`과 슬롯에 넣는 호출자는 현재 없다.
+훈련장 HUD가 저장 스킬 선택 후 캐릭터 `SkillMap`과 선택한 슬롯에 ID를 등록한다.
 
 ### `ASKSkillMakerController`
 
@@ -524,17 +527,20 @@ ExecuteSkill
 - 부모: `AHUD`
 - 필드: `SkillSelectionWidgetClass`, `SkillSelectionWidget`, `SkillSlotAssignmentWidget`, `NavigationWidget`, `CurrentEditingSkillSet`, `CurrentEditingSkill`, `PlayerCharacter`
 - 생성자에서 제작 화면도 사용하는 기존 `/Game/SkillMaker/UI/WBP_SKSkillSelection` 클래스를 로드
-- `BeginPlay()`에서 실제 소유 Pawn을 `ASKPlayerCharacter`로 저장하고 기존 스킬 선택 위젯, 네이티브 슬롯 위젯과 `SkillMakingMap` 이동 버튼을 화면에 추가
+- `BeginPlay()`에서 실제 소유 Pawn을 `ASKPlayerCharacter`로 저장하고 기존 스킬 선택 위젯, 네이티브 슬롯 위젯과 `SkillMakingMap` 이동 버튼을 생성
 - 저장 스킬 카드 선택 시 SaveGame 데이터를 읽어 슬롯 위젯에 표시
 - 슬롯 선택 시 전체 스킬 데이터를 `ASKPlayerCharacter::SetSkillDataInMap`으로 등록하고 ID를 `ASKPlayerController::SetSkillInSlot`으로 Q/E/R/F 슬롯에 배치
+- 화면 전환 시 이전 위젯을 Viewport에서 제거하고 다음 위젯만 추가한다. 실제 Viewport 크기의 절반을 위치로 사용하고 위젯 정렬점을 중앙으로 설정한다. 생성·델리게이트·Viewport·위치·가시성·포커스 결과를 단계별 로그로 기록
 - 편집 데이터 초기화·로드·getter/setter API는 제작 HUD와 유사함
 
 ### `USKSkillSlotAssignmentWidget`
 
 - 부모: `UUserWidget`
-- 블루프린트 에셋 없이 `WidgetTree`로 선택 스킬 문구와 Q/E/R/F 슬롯 버튼을 구성
+- 블루프린트 에셋 없이 `WidgetTree`로 선택 스킬 문구, Q/E/R/F 슬롯 버튼과 스킬 선택 버튼을 구성
 - `SetSelectedSkill`로 현재 선택을 표시하고 `SetAssignedSkill`로 슬롯별 스킬 이름을 갱신
+- `ShowAssignmentOverview()`는 선택 대상 ID를 비우고 슬롯 버튼을 표시 전용으로 잠근 뒤 현재 매핑 안내를 표시
 - 슬롯 클릭 시 `OnSkillSlotSelected(SlotIndex)`를 발행
+- 스킬 선택 클릭 시 `OnAssignmentCancelled`를 발행해 저장 스킬 목록으로 이동
 
 ### `USKMapNavigationWidget`
 
@@ -820,7 +826,7 @@ USKSkillSelectionWidget::LoadSkillList
 → 소프트 발사체 클래스 로드 후 ASKProjectileActor 생성
 ```
 
-훈련장에서 저장 스킬을 캐릭터와 입력 슬롯에 등록하는 중간 연결은 없다.
+훈련장 HUD는 저장 스킬 선택 후 슬롯 위젯을 표시하고, Q/E/R/F 중 선택한 위치에 전체 데이터를 캐릭터 `SkillMap`으로 등록한 뒤 SkillID를 컨트롤러 슬롯에 넣는다. 할당이 끝나면 UI 입력을 닫고 GameOnly 입력으로 돌아가 위 실행 경로를 사용할 수 있다.
 
 ## 블루프린트·에셋 경계
 
@@ -835,7 +841,7 @@ C++에서 직접 확인한 클래스 경로:
 
 - 모든 `BindWidget` 이름과 위젯 타입
 - 카드 클래스 `WBP_SKWeaponCard`, `WBP_SKAnimationCard`, `WBP_SKSkillCard`, `WBP_ProjectileCard`, `WBP_AnimNotifyCard`, `WBP_SKStatusEffectCard`
-- 훈련 HUD/스킬 스테이션의 메인 위젯 클래스
+- `IMC_Default`의 숫자 0 → `IA_OpenSkillChangeUI` 매핑
 - `ASKInteractableActor`의 컴포넌트 참조
 - 데이터 테이블 행의 몽타주·썸네일·발사체 클래스
 - 몽타주의 `USKSkillAnimNotify_Trigger`와 `NotifyTriggerName`

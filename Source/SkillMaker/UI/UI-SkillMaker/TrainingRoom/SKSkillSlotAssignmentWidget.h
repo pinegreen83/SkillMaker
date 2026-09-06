@@ -10,6 +10,7 @@ class UTextBlock;
 struct FSKSkillData;
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnSkillSlotSelected, int32, SlotIndex);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnSkillSlotAssignmentCancelled);
 
 UCLASS()
 class SKILLMAKER_API USKSkillSlotAssignmentWidget : public UUserWidget
@@ -21,9 +22,13 @@ public:
 
 	void SetSelectedSkill(const FSKSkillData& SkillData);
 	void SetAssignedSkill(int32 SlotIndex, const FString& SkillName);
+	void ShowAssignmentOverview();
 
 	UPROPERTY(BlueprintAssignable, Category = "Skill Slot")
 	FOnSkillSlotSelected OnSkillSlotSelected;
+
+	UPROPERTY(BlueprintAssignable, Category = "Skill Slot")
+	FOnSkillSlotAssignmentCancelled OnAssignmentCancelled;
 
 private:
 	void BuildNativeWidget();
@@ -31,6 +36,7 @@ private:
 		TObjectPtr<UTextBlock>& OutTextBlock);
 	void BroadcastSlotSelection(int32 SlotIndex);
 	UTextBlock* GetSlotText(int32 SlotIndex) const;
+	void SetSlotButtonsEnabled(bool bEnabled);
 
 	UPROPERTY()
 	TObjectPtr<UBorder> RootBorder;
@@ -62,6 +68,9 @@ private:
 	UPROPERTY()
 	TObjectPtr<UTextBlock> SkillSlotFText;
 
+	UPROPERTY()
+	TObjectPtr<UButton> CancelButton;
+
 	UFUNCTION()
 	void OnQSlotClicked();
 
@@ -73,6 +82,9 @@ private:
 
 	UFUNCTION()
 	void OnFSlotClicked();
+
+	UFUNCTION()
+	void OnCancelClicked();
 
 	FName SelectedSkillID;
 };

@@ -11,8 +11,11 @@
 
 bool USKSkillSlotAssignmentWidget::Initialize()
 {
+	SK_LOG(LogSkillMaker, Log, TEXT("슬롯 할당 위젯 Initialize 시작: Widget=%s, WidgetTree=%s"),
+		*GetName(), WidgetTree ? TEXT("Valid") : TEXT("None"));
 	if (!Super::Initialize())
 	{
+		SK_LOG(LogSkillMaker, Error, TEXT("슬롯 할당 위젯 Super::Initialize 실패."));
 		return false;
 	}
 
@@ -34,6 +37,16 @@ bool USKSkillSlotAssignmentWidget::Initialize()
 	{
 		SkillSlotFButton->OnClicked.AddDynamic(this, &USKSkillSlotAssignmentWidget::OnFSlotClicked);
 	}
+	if (CancelButton)
+	{
+		CancelButton->OnClicked.AddDynamic(this, &USKSkillSlotAssignmentWidget::OnCancelClicked);
+	}
+
+	SK_LOG(LogSkillMaker, Log,
+		TEXT("슬롯 할당 위젯 Initialize 완료: Root=%s, Q=%s, E=%s, R=%s, F=%s, Cancel=%s"),
+		RootBorder ? TEXT("Valid") : TEXT("None"), SkillSlotQButton ? TEXT("Valid") : TEXT("None"),
+		SkillSlotEButton ? TEXT("Valid") : TEXT("None"), SkillSlotRButton ? TEXT("Valid") : TEXT("None"),
+		SkillSlotFButton ? TEXT("Valid") : TEXT("None"), CancelButton ? TEXT("Valid") : TEXT("None"));
 
 	return true;
 }
@@ -49,7 +62,7 @@ void USKSkillSlotAssignmentWidget::BuildNativeWidget()
 	WidgetTree->RootWidget = RootBorder;
 
 	SelectedSkillText = WidgetTree->ConstructWidget<UTextBlock>(UTextBlock::StaticClass(), TEXT("SelectedSkillText"));
-	SelectedSkillText->SetText(NSLOCTEXT("SkillSlot", "NoSelectedSkill", "선택한 스킬: 없음"));
+	SelectedSkillText->SetText(NSLOCTEXT("SkillSlot", "NoSelectedSkill", "할당할 스킬을 선택해 주세요."));
 	SelectedSkillText->SetColorAndOpacity(FSlateColor(FLinearColor::White));
 	if (UVerticalBoxSlot* SelectedSlot = SlotList->AddChildToVerticalBox(SelectedSkillText))
 	{
@@ -57,13 +70,13 @@ void USKSkillSlotAssignmentWidget::BuildNativeWidget()
 	}
 
 	SkillSlotQButton = CreateSlotButton(TEXT("SkillSlotQButton"), TEXT("SkillSlotQText"),
-		NSLOCTEXT("SkillSlot", "EmptyQ", "Q : 비어 있음"), SkillSlotQText);
+		NSLOCTEXT("SkillSlot", "EmptyQ", "Q 키에 할당"), SkillSlotQText);
 	SkillSlotEButton = CreateSlotButton(TEXT("SkillSlotEButton"), TEXT("SkillSlotEText"),
-		NSLOCTEXT("SkillSlot", "EmptyE", "E : 비어 있음"), SkillSlotEText);
+		NSLOCTEXT("SkillSlot", "EmptyE", "E 키에 할당"), SkillSlotEText);
 	SkillSlotRButton = CreateSlotButton(TEXT("SkillSlotRButton"), TEXT("SkillSlotRText"),
-		NSLOCTEXT("SkillSlot", "EmptyR", "R : 비어 있음"), SkillSlotRText);
+		NSLOCTEXT("SkillSlot", "EmptyR", "R 키에 할당"), SkillSlotRText);
 	SkillSlotFButton = CreateSlotButton(TEXT("SkillSlotFButton"), TEXT("SkillSlotFText"),
-		NSLOCTEXT("SkillSlot", "EmptyF", "F : 비어 있음"), SkillSlotFText);
+		NSLOCTEXT("SkillSlot", "EmptyF", "F 키에 할당"), SkillSlotFText);
 
 	for (UButton* SlotButton : { SkillSlotQButton.Get(), SkillSlotEButton.Get(), SkillSlotRButton.Get(), SkillSlotFButton.Get() })
 	{
@@ -71,6 +84,14 @@ void USKSkillSlotAssignmentWidget::BuildNativeWidget()
 		{
 			ButtonSlot->SetPadding(FMargin(0.0f, 4.0f));
 		}
+	}
+
+	TObjectPtr<UTextBlock> CancelText;
+	CancelButton = CreateSlotButton(TEXT("CancelButton"), TEXT("CancelText"),
+		NSLOCTEXT("SkillSlot", "SelectSkill", "스킬 선택"), CancelText);
+	if (UVerticalBoxSlot* CancelSlot = SlotList->AddChildToVerticalBox(CancelButton))
+	{
+		CancelSlot->SetPadding(FMargin(0.0f, 12.0f, 0.0f, 0.0f));
 	}
 }
 
@@ -88,6 +109,9 @@ UButton* USKSkillSlotAssignmentWidget::CreateSlotButton(const FName& ButtonName,
 void USKSkillSlotAssignmentWidget::SetSelectedSkill(const FSKSkillData& SkillData)
 {
 	SelectedSkillID = SkillData.SkillID;
+	SetSlotButtonsEnabled(true);
+	SK_LOG(LogSkillMaker, Log, TEXT("슬롯 할당 대상 설정: SkillID=%s, SkillName=%s, TextWidget=%s"),
+		*SelectedSkillID.ToString(), *SkillData.SkillName, SelectedSkillText ? TEXT("Valid") : TEXT("None"));
 	if (SelectedSkillText)
 	{
 		SelectedSkillText->SetText(FText::Format(
@@ -103,13 +127,30 @@ void USKSkillSlotAssignmentWidget::SetAssignedSkill(int32 SlotIndex, const FStri
 		static const TCHAR* SlotKeys[] = { TEXT("Q"), TEXT("E"), TEXT("R"), TEXT("F") };
 		if (SlotIndex >= 0 && SlotIndex < UE_ARRAY_COUNT(SlotKeys))
 		{
-			SlotText->SetText(FText::FromString(FString::Printf(TEXT("%s : %s"), SlotKeys[SlotIndex], *SkillName)));
+			const FString DisplayName = SkillName.IsEmpty() ? TEXT("비어 있음") : SkillName;
+			SlotText->SetText(FText::FromString(FString::Printf(TEXT("%s : %s"), SlotKeys[SlotIndex], *DisplayName)));
+			SK_LOG(LogSkillMaker, Log, TEXT("슬롯 현황 표시 갱신: Key=%s, SkillName=%s"),
+				SlotKeys[SlotIndex], *DisplayName);
 		}
 	}
 }
 
+void USKSkillSlotAssignmentWidget::ShowAssignmentOverview()
+{
+	SelectedSkillID = NAME_None;
+	SetSlotButtonsEnabled(false);
+	if (SelectedSkillText)
+	{
+		SelectedSkillText->SetText(NSLOCTEXT(
+			"SkillSlot", "AssignmentOverview", "현재 스킬 매핑\n변경하려면 스킬 선택을 눌러 주세요."));
+	}
+	SK_LOG(LogSkillMaker, Log, TEXT("스킬 매핑 현황 모드 설정 완료: 슬롯 버튼 입력 비활성화."));
+}
+
 void USKSkillSlotAssignmentWidget::BroadcastSlotSelection(int32 SlotIndex)
 {
+	SK_LOG(LogSkillMaker, Log, TEXT("슬롯 버튼 입력 수신: SlotIndex=%d, SelectedSkillID=%s"),
+		SlotIndex, *SelectedSkillID.ToString());
 	if (SelectedSkillID.IsNone())
 	{
 		SK_LOG(LogSkillMaker, Warning, TEXT("슬롯 할당 전에 스킬을 선택해야 함."));
@@ -117,6 +158,7 @@ void USKSkillSlotAssignmentWidget::BroadcastSlotSelection(int32 SlotIndex)
 	}
 
 	OnSkillSlotSelected.Broadcast(SlotIndex);
+	SK_LOG(LogSkillMaker, Log, TEXT("슬롯 선택 델리게이트 전송 완료: SlotIndex=%d"), SlotIndex);
 }
 
 UTextBlock* USKSkillSlotAssignmentWidget::GetSlotText(int32 SlotIndex) const
@@ -133,6 +175,18 @@ UTextBlock* USKSkillSlotAssignmentWidget::GetSlotText(int32 SlotIndex) const
 		return SkillSlotFText;
 	default:
 		return nullptr;
+	}
+}
+
+void USKSkillSlotAssignmentWidget::SetSlotButtonsEnabled(bool bEnabled)
+{
+	for (UButton* SlotButton :
+		{ SkillSlotQButton.Get(), SkillSlotEButton.Get(), SkillSlotRButton.Get(), SkillSlotFButton.Get() })
+	{
+		if (SlotButton)
+		{
+			SlotButton->SetIsEnabled(bEnabled);
+		}
 	}
 }
 
@@ -154,4 +208,10 @@ void USKSkillSlotAssignmentWidget::OnRSlotClicked()
 void USKSkillSlotAssignmentWidget::OnFSlotClicked()
 {
 	BroadcastSlotSelection(3);
+}
+
+void USKSkillSlotAssignmentWidget::OnCancelClicked()
+{
+	SK_LOG(LogSkillMaker, Log, TEXT("스킬 선택 버튼 클릭."));
+	OnAssignmentCancelled.Broadcast();
 }
