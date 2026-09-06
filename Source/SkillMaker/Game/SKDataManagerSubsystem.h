@@ -83,6 +83,9 @@ public:
 
 	UFUNCTION(BlueprintCallable, Category = "Data")
 	TArray<FSKProjectileRow> GetProjectileList();
+
+	UFUNCTION(BlueprintCallable, Category = "Data")
+	TArray<FSKProjectileRow> GetProjectilesForElement(FGameplayTag ElementTag);
 	
 protected:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Data")

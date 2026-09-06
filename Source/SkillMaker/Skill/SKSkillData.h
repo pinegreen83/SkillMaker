@@ -18,6 +18,13 @@ enum class ESkillType : uint8
 };
 
 UENUM(BlueprintType)
+enum class ESKTargetingType : uint8
+{
+	NonTarget UMETA(DisplayName = "논타겟"),
+	TargetActor UMETA(DisplayName = "타겟팅")
+};
+
+UENUM(BlueprintType)
 enum class EStatusEffect : uint8
 {
 	None        UMETA(DisplayName = "None"),
@@ -89,6 +96,12 @@ public:
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, SaveGame, Category = "Skill")
 	ESkillType SkillType;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, SaveGame, Category = "Skill")
+	ESKTargetingType TargetingType;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, SaveGame, Category = "Element", meta = (Categories = "Element"))
+	FGameplayTag ElementTag;
 	
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, SaveGame, Category = "Skill", meta = (Categories = "Weapon"))
 	FGameplayTag WeaponTag;
@@ -143,6 +156,7 @@ public:
 
 	FSKSkillData()
 		: SkillType(ESkillType::Attack)
+		, TargetingType(ESKTargetingType::NonTarget)
 		, SkillDuration(0.0f)
 		, bCanMoveWhileChanneling(false)
 		, CooldownTime(0.0f)

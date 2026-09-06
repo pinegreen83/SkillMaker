@@ -137,3 +137,27 @@ TArray<FSKProjectileRow> USKDataManagerSubsystem::GetProjectileList()
 	
 	return ProjectileList;
 }
+
+TArray<FSKProjectileRow> USKDataManagerSubsystem::GetProjectilesForElement(FGameplayTag ElementTag)
+{
+	TArray<FSKProjectileRow> CompatibleProjectiles;
+	for (const FSKProjectileRow& Projectile : GetProjectileList())
+	{
+		if (!ElementTag.IsValid() || Projectile.Data.SupportedElementTags.IsEmpty())
+		{
+			CompatibleProjectiles.Add(Projectile);
+			continue;
+		}
+
+		for (const FGameplayTag& SupportedElement : Projectile.Data.SupportedElementTags)
+		{
+			if (SupportedElement.IsValid() && ElementTag.MatchesTag(SupportedElement))
+			{
+				CompatibleProjectiles.Add(Projectile);
+				break;
+			}
+		}
+	}
+
+	return CompatibleProjectiles;
+}

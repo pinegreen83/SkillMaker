@@ -34,6 +34,7 @@
 
 ## Git 및 커밋 규칙
 
+- 저장소 용량 정책상 `.gitignore`의 `Content/*` 규칙을 유지한다. `.uasset`과 `.umap`을 `git add -f`로 강제 추가하거나 예외 규칙을 만들지 않는다.
 - 모든 커밋 제목은 `<영문 접두사>: <한글 제목>` 형식으로 작성한다.
 - `feat`, `fix`, `docs`, `refactor`, `test`, `chore` 등 변경 성격을 나타내는 Conventional Commits 접두사를 사용한다.
 - 접두사 없이 커밋 제목을 작성하지 않으며, 접두사 뒤의 제목은 한국어로 작성한다.

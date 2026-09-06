@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "Blueprint/UserWidget.h"
+#include "GameplayTagContainer.h"
 #include "Skill/SKProjectileActor.h"
 #include "SKProjectileSelectionWidget.generated.h"
 
@@ -13,6 +14,7 @@ class UImage;
 class USoundBase;
 class AActor;
 class UWidgetSwitcher;
+class UButton;
 class USKProjectileCardWidget;
 class USKSoundCardWidget;
 
@@ -27,7 +29,8 @@ public:
 	virtual void NativeConstruct() override;
 	virtual bool Initialize() override;
 
-	void SetProjectileCard(const TSoftClassPtr<ASKProjectileActor>& CurrentProjectile);
+	void SetProjectileCard(const TSoftClassPtr<ASKProjectileActor>& CurrentProjectile,
+		FGameplayTag CurrentElementTag = FGameplayTag());
 	
 	UPROPERTY(BlueprintAssignable, Category = "Projectile Selection")
 	FOnProjectileSelected OnProjectileSelected;
@@ -44,6 +47,10 @@ protected:
 	/** 선택된 이펙트 이름 */
 	UPROPERTY(meta = (BindWidget))
 	TObjectPtr<UTextBlock> SelectedEffectText;
+
+	/** 카드 클릭 즉시 선택하므로 기존 확인 버튼은 표시하지 않는다. */
+	UPROPERTY(meta = (BindWidgetOptional))
+	TObjectPtr<UButton> ConfirmButton;
 
 	/** 개별 항목 UI 카드 위젯 클래스 */
 	UPROPERTY(EditAnywhere, Category = "UI")

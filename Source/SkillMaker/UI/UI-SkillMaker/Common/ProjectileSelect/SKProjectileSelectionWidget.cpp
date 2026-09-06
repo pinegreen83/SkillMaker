@@ -7,13 +7,19 @@
 #include "Components/Image.h"
 #include "Components/TextBlock.h"
 #include "Components/WidgetSwitcher.h"
+#include "Components/Button.h"
+#include "Engine/World.h"
 #include "Game/SKDataManagerSubsystem.h"
 #include "Logging/SKLogSkillMakerMacro.h"
 
 void USKProjectileSelectionWidget::NativeConstruct()
 {
 	Super::NativeConstruct();
-	
+
+	if (ConfirmButton)
+	{
+		ConfirmButton->SetVisibility(ESlateVisibility::Collapsed);
+	}
 }
 
 bool USKProjectileSelectionWidget::Initialize()
@@ -29,9 +35,16 @@ bool USKProjectileSelectionWidget::Initialize()
 	return true;
 }
 
-void USKProjectileSelectionWidget::SetProjectileCard(const TSoftClassPtr<ASKProjectileActor>& CurrentProjectile)
+void USKProjectileSelectionWidget::SetProjectileCard(const TSoftClassPtr<ASKProjectileActor>& CurrentProjectile,
+	FGameplayTag CurrentElementTag)
 {
 	SK_LOG(LogSkillMaker, Log, TEXT("Begin"));
+
+	UWorld* World = GetWorld();
+	if (IsDesignTime() || !World || !World->IsGameWorld())
+	{
+		return;
+	}
 	
 	if (!ProjectileListBox || !WBP_ProjectileCard)
 	{
@@ -47,25 +60,45 @@ void USKProjectileSelectionWidget::SetProjectileCard(const TSoftClassPtr<ASKProj
 		SelectedEffectText->SetText(FText::FromString(CurrentProjectile.IsNull() ? TEXT("선택 없음") : CurrentProjectile.GetAssetName()));
 	}
 
-	if(USKDataManagerSubsystem* DataManagerSubsystem = GetWorld()->GetGameInstance()->GetSubsystem<USKDataManagerSubsystem>())
+	bool bFoundCurrentProjectile = CurrentProjectile.IsNull();
+	if (UGameInstance* GameInstance = World->GetGameInstance())
 	{
-		TArray<FSKProjectileRow> ProjectileList = DataManagerSubsystem->GetProjectileList();
-		for (auto& Projectile : ProjectileList)
+		if (USKDataManagerSubsystem* DataManagerSubsystem = GameInstance->GetSubsystem<USKDataManagerSubsystem>())
 		{
-			USKProjectileCardWidget* ProjectileCard = CreateWidget<USKProjectileCardWidget>(this, WBP_ProjectileCard);
-			if (!ProjectileCard) continue;
-	
-			ProjectileCard->SetProjectileInfo(Projectile.Data.ProjectileName, Projectile.Data.ProjectileActor,
-				Projectile.Data.ProjectileActor == CurrentProjectile);
-			ProjectileCard->OnProjectileCardSelected.AddDynamic(this, &USKProjectileSelectionWidget::SelectedProjectile);
+			TArray<FSKProjectileRow> ProjectileList = DataManagerSubsystem->GetProjectilesForElement(CurrentElementTag);
+			for (const FSKProjectileRow& Projectile : ProjectileList)
+			{
+				USKProjectileCardWidget* ProjectileCard = CreateWidget<USKProjectileCardWidget>(this, WBP_ProjectileCard);
+				if (!ProjectileCard) continue;
 
-			ProjectileCards.Add(ProjectileCard);
-			ProjectileListBox->AddChild(ProjectileCard);
+				const bool bIsCurrentProjectile = Projectile.Data.ProjectileActor == CurrentProjectile;
+				bFoundCurrentProjectile |= bIsCurrentProjectile;
+				ProjectileCard->SetProjectileInfo(Projectile.Data.ProjectileName, Projectile.Data.ProjectileActor, bIsCurrentProjectile);
+				ProjectileCard->OnProjectileCardSelected.AddDynamic(this, &USKProjectileSelectionWidget::SelectedProjectile);
+
+				ProjectileCards.Add(ProjectileCard);
+				ProjectileListBox->AddChild(ProjectileCard);
+			}
+		}
+		else
+		{
+			SK_LOG(LogSkillMaker, Error, TEXT("USKDataManagerSubsystem을 찾을 수 없음."));
 		}
 	}
 	else
 	{
-		SK_LOG(LogSkillMaker, Error, TEXT("USKDataManagerSubsystem을 찾을 수 없음."));
+		SK_LOG(LogSkillMaker, Error, TEXT("게임 월드에서 GameInstance를 찾을 수 없음."));
+	}
+
+	if (!bFoundCurrentProjectile)
+	{
+		SelectedProjectileData.Reset();
+		if (SelectedEffectText)
+		{
+			SelectedEffectText->SetText(NSLOCTEXT("ProjectileSelection", "NoSelection", "선택 없음"));
+		}
+		SK_LOG(LogSkillMaker, Log, TEXT("선택한 속성과 호환되지 않는 기존 발사체 선택을 해제함."));
+		OnProjectileSelected.Broadcast(SelectedProjectileData);
 	}
 }
 

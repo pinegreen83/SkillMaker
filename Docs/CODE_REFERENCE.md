@@ -1,11 +1,11 @@
 # 코드베이스 상세 참조
 
-검토 기준일: 2026-09-06
+검토 기준일: 2026-09-07
 검토 범위: `Source/SkillMaker`, `SkillMaker.uproject`, `Config/DefaultEngine.ini`, `Config/DefaultInput.ini`, `Config/DefaultGameplayTags.ini`의 정적 분석
 
 이 문서는 현재 코드에 선언된 타입, 클래스 책임, 주요 필드와 메서드, 델리게이트 연결 및 데이터 흐름을 빠르게 찾기 위한 참조다. 실제 구현 상태와 알려진 결함은 [구현 현황](IMPLEMENTATION_STATUS.md), 큰 폴더 구조와 에셋 위치는 [프로젝트 구조](PROJECT_MAP.md), 변경 규칙은 [개발 규칙](CONVENTIONS.md)을 함께 참고한다.
 
-블루프린트 내부 그래프, 맵의 World Settings, 데이터 테이블 실제 행 값과 에셋 내부 설정은 이번 정적 분석에 포함하지 않았다. `BindWidget`, 클래스 참조와 C++ 호출은 기록하지만 실제 블루프린트 연결 성공을 뜻하지 않는다.
+블루프린트 내부 그래프 전체, 맵의 World Settings와 데이터 테이블 전체 행 값은 이번 정적 분석에 포함하지 않았다. 다만 `WBP_SKSkillDetail`의 `GeneralTabPanel > GeneralTabScrollBox > GeneralTabContent` 계층과 네 탭 패널 바인딩은 명령행 로드 로그와 사용자 실행으로 확인했다. 그 밖의 `BindWidget`, 클래스 참조와 C++ 호출 기록은 실제 블루프린트 연결 성공을 뜻하지 않는다.
 
 ## 모듈과 의존성
 
@@ -129,13 +129,15 @@ UObject
 | `SkillID` | `FName` | 저장·조회·실행의 고정 키 |
 | `SkillName` | `FString` | 사용자 표시명 |
 | `SkillType` | `ESkillType` | 상세 UI 편집. 실행 분기 없음 |
+| `TargetingType` | `ESKTargetingType` | 기본값 `NonTarget`. 타겟팅 실행 분기는 아직 없음 |
+| `ElementTag` | `FGameplayTag` | 상세 UI에서 선택한 단일 `Element` 계층 속성 |
 | `WeaponTag` | `FGameplayTag` | 무기 선택과 애니메이션 호환 필터 |
 | `SkillMontage` | `TSoftObjectPtr<UAnimMontage>` | 선택·저장 중 소프트 참조, 상세/실행 시 로드 |
 | `SkillDuration` | `float` | 몽타주 길이 기록 |
 | `bCanMoveWhileChanneling` | `bool` | 실행 연결 확인되지 않음 |
 | `CooldownTime` | `float` | `USKSkillComponent` 쿨다운 |
 | `Cost` | `float` | 실행 연결 확인되지 않음 |
-| `DamageValue` | `float` | 상세 UI 편집·로그. 명중 피해에 미연결 |
+| `DamageValue` | `float` | 저장·프리뷰 로그에 유지. 활성 상세 편집과 명중 피해에 미연결 |
 | `EffectNotifyNames` | `TArray<FName>` | 선언되어 있으나 활성 실행은 `NotifyName` 사용 |
 | `StatusEffects` | `TArray<FStatusEffectData>` | UI 데이터. 발사체 충돌에는 미연결 |
 | `bAffectEnemies` | `bool` | 대상 필터 미연결 |
@@ -173,9 +175,16 @@ UObject
 근거: `Source/SkillMaker/Data/SKProjectileData.h`
 
 - 부모: `FTableRowBase`
-- 필드: `ProjectileName`, `Description`, `Thumbnail: TSoftObjectPtr<UTexture2D>`, `ProjectileActor: TSoftClassPtr<ASKProjectileActor>`
+- 필드: `ProjectileName`, `Description`, `Thumbnail: TSoftObjectPtr<UTexture2D>`, `ProjectileActor: TSoftClassPtr<ASKProjectileActor>`, `SupportedElementTags: FGameplayTagContainer`
 - `ProjectileActor`가 이펙트·사운드·이동·충돌 구현의 묶음 역할을 한다.
-- 발사체 카드는 클래스를 로드하지 않고 데이터의 `ProjectileName`을 표시한다.
+- 발사체 카드는 클래스를 로드하지 않고 데이터의 `ProjectileName`을 표시한다. 지원 속성이 비어 있는 기존 행은 모든 속성과 호환된다.
+
+#### `FSKElementData`
+
+근거: `Source/SkillMaker/Data/SKElementData.h`
+
+- 필드: `ElementTag`, `DisplayName`, `Description`, `DisplayColor`
+- 프로토타입의 화염·물·바람·대지 카드 표시와 마우스 오버 설명에 사용한다.
 
 #### 조회 결과 래퍼
 
@@ -217,6 +226,7 @@ UObject
 | `GetWeaponList()` | `TArray<FSKWeaponRow>` | 전체 무기 행 복사 |
 | `GetAnimationsForWeapon(WeaponTag)` | `TArray<FSKAnimationRow>`, `FGameplayTag` | 호환 컨테이너의 같거나 상위인 태그가 있으면 애니메이션 반환 |
 | `GetProjectileList()` | `TArray<FSKProjectileRow>` | 전체 발사체 행 복사 |
+| `GetProjectilesForElement(ElementTag)` | `TArray<FSKProjectileRow>` | 선택 속성을 지원하거나 지원 태그가 비어 있는 발사체 행 조회 |
 
 호출자: 무기·애니메이션·발사체 선택 위젯. 레거시 `USKDataManager`는 사용하지 않는다.
 
@@ -470,7 +480,7 @@ ExecuteSkill
 - `InitializeNewSkill()`: 기본 구조체와 이름 `NewSkill`로 초기화
 - `LoadSkillForEditing(SkillID)`: SaveGame 서브시스템에서 로드
 - `GetCurrentSkillData`, `SetCurrentSkillData`: 전체 편집 데이터를 교체하고 `OnEditingSkillChanged` 발행
-- `SetSkillName(SkillName)`, `SetSkillWeaponTag(WeaponTag)`, `SetSkillMontage(SoftMontage)`. 무기를 바꾸면 호환성을 다시 선택해야 하는 몽타주·재생 시간·노티파이는 초기화하고 타입·상태이상·발사체는 유지한다.
+- `SetSkillName(SkillName)`, `SetSkillWeaponTag(WeaponTag)`, `SetSkillMontage(SoftMontage)`. 무기를 바꾸면 호환성을 다시 선택해야 하는 몽타주·재생 시간·노티파이는 초기화하고 타입·속성·발사체는 유지한다.
 - `SaveCurrentSkill(SkillName)`: 필수 선택값과 저장 기반을 확인하고 ID를 확정한 뒤 HUD의 현재 스킬을 저장
 - `OnEditingSkillChanged`: HUD 데이터가 초기화·로드·교체되거나 개별 선택값이 바뀔 때 현재 전체 데이터를 전달
 - `PreviewSkillEffect(SkillData)`: 임시 ID를 보완하고 프리뷰 캐릭터의 공통 스킬 실행 경로 사용
@@ -607,13 +617,30 @@ ExecuteSkill
 #### `USKProjectileSelectionWidget`
 
 - 부모: `UUserWidget`
-- `BindWidget`: `ProjectileListBox`, `SelectedEffectPreview`, `SelectedEffectText`
+- `BindWidget`: `ProjectileListBox`, `SelectedEffectPreview`, `SelectedEffectText`, 선택적 레거시 `ConfirmButton`
 - 클래스 참조: `WBP_ProjectileCard`
 - 상태: `CurrentProjectile`, `ProjectileCards`
-- `Initialize()`에서 빈 선택으로 `SetProjectileCard(CurrentProjectile)` 호출. 상세 화면 진입 시 HUD의 현재 선택값으로 다시 구성
-- 데이터 서브시스템의 전체 발사체 행으로 카드 생성
+- `Initialize()`에서 빈 선택으로 `SetProjectileCard(CurrentProjectile)` 호출. 상세 화면 진입 시 HUD의 현재 발사체와 속성으로 다시 구성
+- 데이터 서브시스템의 발사체 행 중 선택 속성을 지원하거나 지원 태그가 비어 있는 행으로 카드 생성
 - 카드 클릭 즉시 모든 카드의 클래스를 비교해 선택 색상을 갱신하고, 선택 텍스트 갱신 후 `OnProjectileSelected`를 브로드캐스트
-- 레거시 확인 버튼과 확인 핸들러는 제거됨. `SelectedEffectPreview`는 아직 갱신하지 않음
+- 속성 변경으로 기존 발사체가 목록에서 제외되면 선택을 해제하고 변경 이벤트를 발행한다.
+- 레거시 확인 핸들러는 제거됐고 WBP에 남은 선택적 `ConfirmButton`은 화면에서 숨긴다. `SelectedEffectPreview`는 아직 갱신하지 않는다.
+- `SetProjectileCard`는 디자인 타임, 월드 없음, 게임 월드가 아닌 에셋 검증 상황에서 즉시 반환한다. 실제 게임 월드에서 GameInstance나 데이터 서브시스템이 없으면 오류 로그를 남긴다.
+
+### 속성 선택
+
+#### `USKElementCardWidget`
+
+- 별도 WBP 없이 카드 전체를 클릭할 수 있는 네이티브 버튼 안에 체크박스와 이름을 구성한다.
+- Gameplay Tag, 검은색 왼쪽 정렬 표시명, 설명과 기준 색상을 사용하며 설명은 글자 크기 15의 툴팁으로 제공한다.
+- 버튼 클릭 시 체크 상태와 속성색 배경을 함께 갱신하고 `OnElementSelectionChanged(ElementTag, bIsSelected)`를 발행한다.
+
+#### `USKSkillDetailWidget`의 속성 탭
+
+- 기존 WBP의 `StatusEffectTabButton`, `StatusEffectListBox` 이름을 호환 목적으로 유지하면서 탭 문구와 내용을 속성 선택으로 교체한다.
+- 한 카드를 선택하면 나머지 카드의 체크를 해제하고 `CurrentEditingSkill.ElementTag`를 즉시 갱신한다.
+- 수정 화면 진입 시 기존 속성을 복원하고 발사체 목록을 해당 속성으로 다시 필터링한다.
+- `MinRangeSlider`, `MaxRangeSlider`와 문구는 선택적 바인딩으로 찾아 `Collapsed` 처리한다.
 
 ### 저장 스킬 선택
 
@@ -645,21 +672,24 @@ ExecuteSkill
 - 별도 스킬 데이터는 소유하지 않는다. 표시와 변경은 제작 HUD의 `CurrentEditingSkill`을 기준으로 한다.
 - HUD 참조: 제작 HUD와 훈련 HUD를 모두 가지지만 데이터 조회와 변경 델리게이트 연결은 제작 HUD에 의존
 - `BindWidget`:
-  - 탭: `TabSwitcher`, `GeneralTabButton`, `StatusEffectTabButton`, `EffectSoundTabButton`, `AnimNotifyTabButton`
-  - 일반: `SkillTypeComboBox`. `DamageTextBox`, `MinRangeSlider`, `MaxRangeSlider` 바인딩은 레거시 주석 처리
-  - 목록: `StatusEffectListBox`, `ProjectileSelectionWidget`, `AnimNotifySelectionWidget`
+  - 탭: `TabSwitcher`, `GeneralTabPanel`, `StatusEffectTabPanel`, `ProjectileTabPanel`, `AnimNotifyPanel`, 네 탭 버튼
+  - 일반: `GeneralTabScrollBox`, `SkillTypeComboBox`. `DamageTextBox` 입력은 레거시 주석 상태이고 `MinRangeSlider`, `MaxRangeSlider`와 문구는 선택 바인딩 후 숨김
+  - 목록: 속성 목록으로 사용하는 `StatusEffectListBox`, `ProjectileSelectionWidget`, `AnimNotifySelectionWidget`
   - 동작: `PreviewSkillButton`
-- 클래스 참조: `WBP_SKStatusEffectCard`
+- 기존 WBP 호환을 위해 `StatusEffect` 이름을 가진 탭·목록을 유지하지만 런타임 문구와 내용은 속성 선택으로 사용한다.
 
 주요 메서드:
 
-- `NativeConstruct()`: 모든 버튼·입력·하위 선택 델리게이트 바인딩
+- `NativeConstruct()`: 블루프린트에 구성된 기본 탭 스크롤을 설정하고, 탭 버튼과 하위 선택 델리게이트 바인딩, 속성 문구 설정 및 사거리 UI 숨김 처리
+- `ConfigureGeneralTabScrolling()`: WBP의 `GeneralTabPanel > GeneralTabScrollBox > GeneralTabContent` 계층을 검사하고 콘텐츠에 상단 24, 우측 12, 하단 20의 여백과 항상 표시되는 스크롤바를 적용한다. 런타임 위젯 재배치는 하지 않는다.
+- 탭 전환은 자식 인덱스가 아니라 `GeneralTabPanel`, `StatusEffectTabPanel`, `ProjectileTabPanel`, `AnimNotifyPanel` 참조를 사용하며 현재 탭 버튼을 파란색으로 표시
 - `SetSkillMakerEditorHUD`, `SetSkillMakerTrainHUD`
-- `InitializeFromSkillData()`: 제작 HUD의 현재 데이터로 일반값·상태이상·발사체 선택 표시 복원
+- `InitializeFromSkillData()`: 제작 HUD의 현재 데이터로 일반값·속성·발사체 선택 표시 복원
 - `PopularSkillDetails()`: 일반 UI 값 반영
-- `PopulateStatusEffectList()`: 모든 enum 값에 대해 카드 생성
+- `PopulateElementList()`: 화염·물·바람·대지 네이티브 카드를 생성하고 기존 단일 선택 복원
 - `PopulateAnimNotifyList()`: 현재 몽타주에서 유효 트리거 조회
-- `OnProjectileSelected`, `OnNotifySelected`, `OnSkillTypeChanged`, `OnStatusEffectToggled`: HUD 최신값의 지역 사본에서 선택 필드만 변경하고 `OnSkillDetailChanged` 발행
+- `OnElementSelectionChanged`: 한 속성만 선택되도록 카드 상태와 `ElementTag`를 갱신하고 발사체 목록 재구성
+- `OnProjectileSelected`, `OnNotifySelected`, `OnSkillTypeChanged`: HUD 최신값의 지역 사본에서 선택 필드만 변경하고 `OnSkillDetailChanged` 발행
 - `OnPreviewSkillClicked()`: 선택 시점에 동기화된 편집 데이터로 프리뷰
 
 데미지와 범위 필드는 `FSKSkillData` 저장 호환성을 위해 유지하지만 상세 UI 입력 경로에서는 사용하지 않는다.
@@ -670,7 +700,7 @@ ExecuteSkill
 - `BindWidget`: `EffectNameText`, `EffectCheckBox`, `DurationTextBox`, `DOTSlider`; `StackCountTextBox`는 선택 바인딩
 - 상태: `CurrentEffectType`, `CurrentDuration`, `CurrentDOT`, `CurrentStackCount`, `bCurrentCanStack`
 - `InitializeEffectEntry`, `SetStatusEffectData`, `GetCurrentStatusEffectData`
-- 기존 입력 콜백에서 `OnStatusEffectChanged`를 발행하며 상세 위젯의 기존 `OnStatusEffectToggled`가 구독한다.
+- 기존 입력 콜백에서 `OnStatusEffectChanged`를 발행한다. 현재 상세 위젯은 이 카드를 생성하거나 델리게이트를 구독하지 않는다.
 
 ## 델리게이트 연결표
 
@@ -684,7 +714,8 @@ ExecuteSkill
 | `OnAnimNotifySelected` | `USKAnimNotifySelectionWidget` | `USKSkillDetailWidget::OnNotifySelected` | `FName` | 활성 |
 | `OnProjectileCardSelected` | `USKProjectileCardWidget` | `USKProjectileSelectionWidget::SelectedProjectile` | `TSoftClassPtr<ASKProjectileActor>` | 활성 |
 | `OnProjectileSelected` | `USKProjectileSelectionWidget` | `USKSkillDetailWidget::OnProjectileSelected` | `TSoftClassPtr<ASKProjectileActor>` | 활성, 카드 클릭 즉시 발행 |
-| `OnStatusEffectChanged` | `USKStatusEffectCardWidget` | `USKSkillDetailWidget::OnStatusEffectToggled` | `FStatusEffectData`, 활성 여부 | 활성 |
+| `OnElementSelectionChanged` | `USKElementCardWidget` | `USKSkillDetailWidget::OnElementSelectionChanged` | `FGameplayTag`, 선택 여부 | 활성, 단일 선택과 발사체 필터 갱신 |
+| `OnStatusEffectChanged` | `USKStatusEffectCardWidget` | 현재 구독자 없음 | `FStatusEffectData`, 활성 여부 | 레거시 보존 |
 | `OnSkillDetailChanged` | `USKSkillDetailWidget` | `ASKSkillMakerEditorHUD::SetCurrentSkillData` | `const FSKSkillData&` | 활성, 선택 즉시 발행 |
 | `OnEditingSkillChanged` | 제작 HUD | 블루프린트/요약 UI 구독 가능 | `const FSKSkillData&` | 활성, 현재 C++ 구독자는 없음 |
 | `OnSkillCardSelected` | `USKSkillCardWidget` | `USKSkillSelectionWidget::SelectSkill` | `const FName& SkillID` | 활성 |
@@ -696,7 +727,7 @@ ExecuteSkill
 엔진 델리게이트:
 
 - 각 카드와 메인/상세 위젯 버튼은 `UButton::OnClicked`를 `AddDynamic`으로 연결한다.
-- 텍스트 입력은 `OnTextCommitted`, 슬라이더는 `OnValueChanged`, 체크박스는 `OnCheckStateChanged`를 사용한다.
+- 텍스트 입력은 `OnTextCommitted`, 슬라이더는 `OnValueChanged`를 사용한다. 레거시 상태이상 카드는 `OnCheckStateChanged`를 사용하고 네이티브 속성 카드는 전체 행 버튼의 `OnClicked`로 단일 선택을 처리한다.
 - `ASKInteractableActor`는 `OnComponentBeginOverlap`, `OnComponentEndOverlap`을 사용한다.
 
 ## 주요 데이터 흐름
@@ -726,7 +757,7 @@ WeaponTag
 ```text
 ASKSkillMakerEditorHUD::CurrentEditingSkill
 → USKSkillDetailWidget이 최신값 조회
-→ 지역 사본에서 유형/상태이상/발사체/노티파이 중 선택 필드 수정
+→ 지역 사본에서 유형/속성/발사체/노티파이 중 선택 필드 수정
 → OnSkillDetailChanged
 → HUD CurrentEditingSkill 즉시 교체
 → OnEditingSkillChanged
@@ -754,7 +785,7 @@ USKSkillSelectionWidget::LoadSkillList
 → HUD LoadSkillForEditing
 → ChooseWeapon에서 기존 WeaponTag 선택 표시
 → ChooseAnimation에서 기존 SkillMontage 선택 표시
-→ SkillDetail에서 기존 SkillType·StatusEffects·ProjectileActor·NotifyName 선택 표시
+→ SkillDetail에서 기존 SkillType·ElementTag·ProjectileActor·NotifyName 선택 표시
 ```
 
 ### 스킬 실행
@@ -791,20 +822,23 @@ C++에서 직접 확인한 클래스 경로:
 - `ASKInteractableActor`의 컴포넌트 참조
 - 데이터 테이블 행의 몽타주·썸네일·발사체 클래스
 - 몽타주의 `USKSkillAnimNotify_Trigger`와 `NotifyTriggerName`
+- `WBP_SKSkillDetail`의 직접 탭 자식 `GeneralTabPanel`, `StatusEffectTabPanel`, `ProjectileTabPanel`, `AnimNotifyPanel`과 기본 탭 내부의 `GeneralTabScrollBox`
+
+`Content/*`는 저장소 용량 정책에 따라 Git에서 추적하지 않는다. 이 절은 로컬 에셋과 C++ 사이의 계약을 기록하며 에셋 파일을 커밋 대상으로 지정하지 않는다.
 
 ## 현재 리소스 참조 기준선
 
 - 무기 호환성은 `Weapon` 계층의 Gameplay Tag로 표현한다.
 - 무기 행은 단일 `WeaponTag`, 애니메이션 행은 복수 `CompatibleWeaponTags`를 가진다.
 - 선택 무기 태그가 애니메이션 호환 태그와 같거나 하위일 때 목록에 표시한다.
-- HUD의 `CurrentEditingSkill`이 제작 중인 스킬의 유일한 영구 편집 데이터다. 선택 UI는 화면 진입 시 이 값을 읽어 무기·애니메이션·타입·상태이상·발사체·노티파이 선택 표시를 복원하며, 발사체와 노티파이는 클릭 시 카드 색상을 즉시 다시 계산한다.
+- HUD의 `CurrentEditingSkill`이 제작 중인 스킬의 유일한 영구 편집 데이터다. 선택 UI는 화면 진입 시 이 값을 읽어 무기·애니메이션·타입·속성·발사체·노티파이 선택 표시를 복원하며, 속성·발사체·노티파이는 클릭 시 카드 상태를 즉시 다시 계산한다.
 - 데이터 행과 카드에서 몽타주·썸네일·발사체 클래스를 소프트 참조로 유지한다. 선택 델리게이트와 스킬 저장에는 몽타주와 발사체 소프트 참조를 전달한다.
 - 일반 설정 함수는 소프트 참조 입력을 `const&`로 받는다. 몽타주와 구조체 동적 델리게이트도 `const&`를 사용하고 발사체 클래스 선택 이벤트는 값으로 전달한다.
 - 목록 생성은 몽타주와 발사체 클래스를 동기 로드하지 않는다. 썸네일은 `UImage::SetBrushFromSoftTexture`를 사용한다.
 - 몽타주는 상세 화면에서 노티파이를 읽을 때와 스킬 실행 시, 발사체 클래스는 노티파이 실행 시에만 동기 로드한다.
 - `DT_WeaponData`, `DT_AnimationData`, `DT_ProjectileData`의 레거시 필드와 `Test1` SaveGame은 새 필드로 자동 변환되지 않는다. 사용자가 확인한 제작 흐름에 필요한 현재 값은 동작하지만 아직 사용하지 않은 행과 이전 저장 데이터는 별도로 점검한다.
 - 무기 및 애니메이션 호환 태그는 빈 값으로 두지 않는다. 애니메이션의 상위 태그는 그 하위 무기 태그를 포괄한다.
-- 이펙트·사운드의 속성 호환 비트마스크, 복합 속성의 독립 비트, 속성별 색상과 색상 변경 허용 여부는 확정된 다음 구현 범위이며 현재 코드에는 없다.
+- 스킬 속성은 단일 `ElementTag`, 이펙트·사운드 호환 범위는 `SupportedElementTags`로 표현한다. 속성 카드 기준 색상과 설명은 구현했으며 실제 이펙트 색상 변경은 아직 연결하지 않았다.
 - 데이터 양이 늘어날 경우 스킬 로드 단계의 선행 로드·캐시와 목록의 페이징·가상화를 검토한다. 현재 실행 시 동기 로드 기준과 혼동하지 않는다.
 - 패키징에서는 문자열 경로로 찾는 데이터 테이블과 그 안의 소프트 참조 리소스가 쿠킹 대상에 포함되는지 검증한다.
 

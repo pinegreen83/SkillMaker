@@ -2,7 +2,7 @@
 
 ## 문서 범위
 
-2026-09-06 C++·설정 파일 정적 검토와 제작 UI 실행 확인을 반영했다. 이 문서는 코드의 책임과 소스 위치를 설명하며 전체 실행 흐름의 검증 완료를 뜻하지 않는다. 프로젝트를 시작한 이유와 현재 설계 원칙은 [프로젝트의 출발점과 세계관 방향](PROJECT_VISION.md), 연결 누락·규칙 미준수·실행 확인 항목은 [구현 현황](IMPLEMENTATION_STATUS.md), 개발 시 준수할 기준은 [개발 규칙](CONVENTIONS.md)을 참고한다.
+2026-09-07 C++·설정 파일 정적 검토와 제작 UI 실행 확인을 반영했다. 이 문서는 코드의 책임과 소스 위치를 설명하며 전체 실행 흐름의 검증 완료를 뜻하지 않는다. 프로젝트를 시작한 이유와 현재 설계 원칙은 [프로젝트의 출발점과 세계관 방향](PROJECT_VISION.md), 연결 누락·규칙 미준수·실행 확인 항목은 [구현 현황](IMPLEMENTATION_STATUS.md), 개발 시 준수할 기준은 [개발 규칙](CONVENTIONS.md)을 참고한다.
 
 클래스별 상속, 주요 필드·메서드, 델리게이트와 `BindWidget` 연결은 [코드베이스 상세 참조](CODE_REFERENCE.md)에 정리한다.
 
@@ -87,13 +87,14 @@
 
 - `Data/SKWeaponData.h`: 단일 `WeaponTag`를 가진 무기 행 구조체 `FSKWeaponData`.
 - `Data/SKAnimationData.h`: `CompatibleWeaponTags`와 소프트 몽타주·썸네일을 가진 애니메이션 행 구조체 `FSKAnimationData`.
-- `Data/SKProjectileData.h`: 소프트 발사체 클래스와 썸네일을 가진 발사체 행 구조체 `FSKProjectileData`.
+- `Data/SKProjectileData.h`: 소프트 발사체 클래스·썸네일과 지원 속성 태그 컨테이너를 가진 발사체 행 구조체 `FSKProjectileData`.
+- `Data/SKElementData.h`: 속성 태그와 카드 표시명·설명·기준 색상을 가진 `FSKElementData`.
 - `Data/SKDataManager.h/.cpp`: 레거시 자리표시 객체 `USKDataManager`. 현재 리소스 목록 조회는 `USKDataManagerSubsystem`을 통한다.
 
 ### 전역 시스템
 
 - `Game/SKGameInstance.h/.cpp`: 프로젝트 GameInstance 클래스 `USKGameInstance`. 현재 `Init()`은 `Super::Init()`만 호출한다.
-- `Game/SKDataManagerSubsystem.h/.cpp`: `UGameInstanceSubsystem` 기반 활성 리소스 조회 서브시스템. 기본 무기·애니메이션·발사체 테이블을 로드하고 UI에 목록을 반환한다.
+- `Game/SKDataManagerSubsystem.h/.cpp`: `UGameInstanceSubsystem` 기반 활성 리소스 조회 서브시스템. 기본 무기·애니메이션·발사체 테이블을 로드하고 무기·속성 호환 조건에 맞는 목록을 반환한다.
 - `Game/SKSaveGameSubsystem.h/.cpp`: `UGameInstanceSubsystem` 기반 활성 스킬 저장 서브시스템. `USKPlayerSkillSave`를 로드·생성하고 `SkillID`로 저장하며 목록·단일 조회 API를 제공한다.
 
 ### 저장
@@ -132,16 +133,17 @@
 
 - `Common/SkillSelect/SKSkillSelectionWidget.h/.cpp`: `USKSaveGameSubsystem`에서 저장 스킬 목록을 읽는다.
 - `Common/SkillSelect/SKSkillCardWidget.h/.cpp`: 저장 스킬 한 개의 카드.
-- `Common/SkillSelect/SKSkillDetailWidget.h/.cpp`: 별도 스킬 원본 없이 제작 HUD의 최신값을 사용해 유형·상태이상·발사체·노티파이·프리뷰를 처리한다. 선택값은 델리게이트로 HUD에 즉시 전달하며 데미지·범위 입력은 레거시 주석 상태다.
+- `Common/SkillSelect/SKSkillDetailWidget.h/.cpp`: 별도 스킬 원본 없이 제작 HUD의 최신값을 사용해 유형·단일 속성·발사체·노티파이·프리뷰를 처리한다. 기존 디버프 패널을 속성 탭으로 사용하고 논타겟 프로토타입에서 사거리 UI를 숨긴다. 탭 패널 직접 참조, 선택 탭 색상, 블루프린트 기본 탭 스크롤 계층 검증도 담당한다.
+- `Common/ElementSelect/SKElementCardWidget.h/.cpp`: 별도 WBP가 없는 네이티브 전체 행 버튼. 속성 Gameplay Tag, 검은색 왼쪽 정렬 이름, 설명 툴팁, 기준 색상과 선택 체크 상태를 보관한다.
 - `Common/WeaponSelect/SKWeaponSelectionWidget.h/.cpp`: `USKDataManagerSubsystem`에서 무기 목록을 읽는다.
 - `Common/WeaponSelect/SKWeaponCardWidget.h/.cpp`: 무기 행 한 개의 카드.
 - `Common/AnimationSelect/SKAnimationSelectionWidget.h/.cpp`: 같은 서브시스템에서 Gameplay Tag 호환성으로 필터링한 애니메이션 목록을 읽는다.
 - `Common/AnimationSelect/SKAnimationCardWidget.h/.cpp`: 애니메이션 행 한 개의 카드.
 - `Common/AnimationSelect/SKAnimNotifySelectionWidget.h/.cpp`: 선택한 몽타주의 유효한 스킬 트리거 노티파이 목록을 표시하고, 저장된 선택과 클릭한 카드의 선택 색상을 갱신한다.
 - `Common/AnimationSelect/SKAnimNotifyCardWidget.h/.cpp`: 노티파이 한 개의 카드. 선택 상태와 노티파이 이름을 목록 위젯에 제공한다.
-- `Common/ProjectileSelect/SKProjectileSelectionWidget.h/.cpp`: `USKDataManagerSubsystem`에서 발사체 목록을 읽고 저장된 선택을 복원하며, 카드 클릭 시 목록의 선택 색상과 현재 값을 즉시 갱신한다.
+- `Common/ProjectileSelect/SKProjectileSelectionWidget.h/.cpp`: `USKDataManagerSubsystem`에서 발사체 목록을 읽고 선택 속성으로 필터링한다. 저장된 선택 복원과 클릭 즉시 적용을 처리하고 레거시 확인 버튼을 숨긴다. 디자인 타임과 에셋 검증 월드에서는 GameInstance 조회를 건너뛴다.
 - `Common/ProjectileSelect/SKProjectileCardWidget.h/.cpp`: 발사체 행 한 개의 카드. 선택 상태와 발사체 클래스를 목록 위젯에 제공한다.
-- `Common/StatusEffectSelect/SKStatusEffectCardWidget.h/.cpp`: 옵션 하나의 체크박스·수치를 보관하고 값 변경 델리게이트를 발행한다. 상세 위젯은 열거형으로 카드를 만들고 이벤트를 현재 스킬 데이터에 반영한다.
+- `Common/StatusEffectSelect/SKStatusEffectCardWidget.h/.cpp`: 레거시 상태이상 카드. 코드와 저장 데이터는 보존하지만 현재 제작 상세 탭에서는 생성하지 않는다.
 
 ## 데이터 소유와 호출 경로
 
@@ -176,7 +178,7 @@
   - `IA_Move`, `IA_Look`, `IA_Jump`
   - `IA_SkillQ`, `IA_SkillE`, `IA_SkillR`, `IA_SkillF`
 - UI:
-  - 제작 편집기: `WBP_SKSkillMakerEditorMain`. `WBP_SKSkillMakeEditorHUD` 에셋도 있지만 현재 C++ HUD는 전자를 직접 로드한다.
+  - 제작 편집기: `WBP_SKSkillMakerEditorMain`. `WBP_SKSkillMakeEditorHUD` 에셋도 있지만 현재 C++ HUD는 전자를 직접 로드한다. `WBP_SKSkillDetail`의 기본 탭은 `GeneralTabPanel > GeneralTabScrollBox > GeneralTabContent` 계층을 사용한다.
   - 훈련장: `WBP_SKSkillMakerTrainMain`, `WBP_SKSkillMakerTrainHUD`.
   - 공통 카드·선택 위젯: `Content/SkillMaker/UI` 아래에 있다.
 
@@ -194,3 +196,4 @@
 - 발사체 카드는 클릭 시 선택하고 이벤트를 즉시 전파한다. 레거시 확인 버튼의 C++ 바인딩과 핸들러는 제거됐다.
 - 애님 노티파이 목록에는 유효한 `NotifyTriggerName`을 가진 `USKSkillAnimNotify_Trigger`만 표시하며 `None`은 제외한다.
 - `Config/DefaultEngine.ini`에는 이전 클래스·프로퍼티 이름의 리다이렉트가 있다. 명시적으로 이관이 완료된 경우 외에는 유지한다.
+- 저장소는 용량 관리를 위해 `.gitignore`의 `Content/*` 규칙으로 에셋을 추적하지 않는다. 문서의 에셋 경로는 로컬 프로젝트 구성 기준이며 Git 저장소에 파일이 포함됐다는 뜻이 아니다.

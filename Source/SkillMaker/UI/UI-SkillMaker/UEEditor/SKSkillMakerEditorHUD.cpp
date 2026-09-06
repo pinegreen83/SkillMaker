@@ -156,6 +156,11 @@ bool ASKSkillMakerEditorHUD::SaveCurrentSkill(const FString& SkillName)
 		SK_LOG(LogSkillMaker, Error, TEXT("무기 또는 애니메이션이 설정되지 않아 저장할 수 없음."));
 		return false;
 	}
+	if (!CurrentEditingSkill.ElementTag.IsValid())
+	{
+		SK_LOG(LogSkillMaker, Error, TEXT("속성이 설정되지 않아 저장할 수 없음."));
+		return false;
+	}
 	if (CurrentEditingSkill.ProjectileActor.IsNull() || CurrentEditingSkill.NotifyName.IsNone())
 	{
 		SK_LOG(LogSkillMaker, Error, TEXT("이펙트 또는 발동 지점이 설정되지 않아 저장할 수 없음."));
@@ -232,6 +237,8 @@ void ASKSkillMakerEditorHUD::PreviewSkillEffect(const FSKSkillData& SkillData)
 	SK_LOG(LogSkillMaker, Log, TEXT("SkillID: %s"), *PreviewSkillData.SkillID.ToString());
 	SK_LOG(LogSkillMaker, Log, TEXT("SkillName: %s"), *PreviewSkillData.SkillName);
 	SK_LOG(LogSkillMaker, Log, TEXT("SkillType: %d"), static_cast<int32>(PreviewSkillData.SkillType));
+	SK_LOG(LogSkillMaker, Log, TEXT("TargetingType: %d"), static_cast<int32>(PreviewSkillData.TargetingType));
+	SK_LOG(LogSkillMaker, Log, TEXT("ElementTag: %s"), *PreviewSkillData.ElementTag.ToString());
 	SK_LOG(LogSkillMaker, Log, TEXT("WeaponTag: %s"), *PreviewSkillData.WeaponTag.ToString());
 	SK_LOG(LogSkillMaker, Log, TEXT("Montage: %s"),
 		PreviewSkillData.SkillMontage.IsNull() ? TEXT("None") : *PreviewSkillData.SkillMontage.ToSoftObjectPath().ToString());

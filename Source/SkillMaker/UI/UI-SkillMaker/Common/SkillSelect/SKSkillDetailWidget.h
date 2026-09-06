@@ -13,9 +13,12 @@ class UComboBoxString;
 class UEditableTextBox;
 class USlider;
 class UButton;
+class UPanelWidget;
 class UScrollBox;
+class UTextBlock;
+class UWidget;
 class UWidgetSwitcher;
-class USKStatusEffectCardWidget;
+class USKElementCardWidget;
 class USKProjectileSelectionWidget;
 class USKAnimNotifySelectionWidget;
 
@@ -58,12 +61,32 @@ protected:
 	UPROPERTY(meta = (BindWidget))
 	TObjectPtr<UWidgetSwitcher> TabSwitcher;
 
+	/** WidgetSwitcher의 기본 탭 직접 자식 */
+	UPROPERTY(meta = (BindWidgetOptional))
+	TObjectPtr<UPanelWidget> GeneralTabPanel;
+
+	UPROPERTY(meta = (BindWidgetOptional))
+	TObjectPtr<UWidget> StatusEffectTabPanel;
+
+	UPROPERTY(meta = (BindWidgetOptional))
+	TObjectPtr<UWidget> ProjectileTabPanel;
+
+	UPROPERTY(meta = (BindWidgetOptional))
+	TObjectPtr<UWidget> AnimNotifyPanel;
+
 	/** 탭 버튼들 */
 	UPROPERTY(meta = (BindWidget))
 	TObjectPtr<UButton> GeneralTabButton;
 
+	/** 기존 WBP 이름을 유지하지만 프로토타입에서는 속성 탭으로 사용 */
 	UPROPERTY(meta = (BindWidget))
 	TObjectPtr<UButton> StatusEffectTabButton;
+
+	UPROPERTY(meta = (BindWidgetOptional))
+	TObjectPtr<UTextBlock> StatusEffectTabButtonText;
+
+	UPROPERTY(meta = (BindWidgetOptional))
+	TObjectPtr<UTextBlock> StatusEffectTabText;
 
 	UPROPERTY(meta = (BindWidget))
 	TObjectPtr<UButton> EffectSoundTabButton;
@@ -80,12 +103,9 @@ protected:
 	TObjectPtr<UEditableTextBox> DamageTextBox;
 	*/
 
-	/** 상태 이상 효과 리스트 */
+	/** 기존 WBP 이름을 유지하지만 프로토타입에서는 속성 목록으로 사용 */
 	UPROPERTY(meta = (BindWidget))
 	TObjectPtr<UScrollBox> StatusEffectListBox;
-	
-	UPROPERTY(EditAnywhere, Category = "UI")
-	TSubclassOf<USKStatusEffectCardWidget> WBP_SKStatusEffectCard;
 
 	/** 발사체 선택 위젯 */
 	UPROPERTY(meta = (BindWidget))
@@ -99,13 +119,18 @@ protected:
 	// UPROPERTY(meta = (BindWidget))
 	// TObjectPtr<UButton> AdjustProjectilePositionButton;
 
-	/* Legacy: 프로토타입 세부사항 개편 전 범위 설정 UI
-	UPROPERTY(meta = (BindWidget))
+	/** 논타겟 프로토타입에서는 기존 사거리 UI를 숨긴다. */
+	UPROPERTY(meta = (BindWidgetOptional))
 	TObjectPtr<USlider> MinRangeSlider;
 
-	UPROPERTY(meta = (BindWidget))
+	UPROPERTY(meta = (BindWidgetOptional))
 	TObjectPtr<USlider> MaxRangeSlider;
-	*/
+
+	UPROPERTY(meta = (BindWidgetOptional))
+	TObjectPtr<UTextBlock> MinRangeText;
+
+	UPROPERTY(meta = (BindWidgetOptional))
+	TObjectPtr<UTextBlock> MaxRangeText;
 
 	/** 미리보기 버튼 */
 	UPROPERTY(meta = (BindWidget))
@@ -115,9 +140,13 @@ private:
 	
 	/** UI 요소 -> HUD 데이터로 초기화 */
 	void PopularSkillDetails();
+	void ConfigureGeneralTabScrolling();
+	void SelectTab(UWidget* TabContent, UButton* SelectedTabButton, const TCHAR* TabDisplayName);
+	void UpdateTabButtonSelection(UButton* SelectedTabButton);
+	void LogTabState(const TCHAR* Phase, const FString& RequestedTabName, const UWidget* RequestedContent) const;
 
-	/** 상태이상 선택 창 초기화 */
-	void PopulateStatusEffectList();
+	/** 단일 속성 선택 목록 초기화 */
+	void PopulateElementList();
 
 	/** 애님 노티파이 리스트 초기화 */
 	void PopulateAnimNotifyList();
@@ -127,7 +156,7 @@ private:
 	void OnGeneralTabClicked();
 
 	UFUNCTION()
-	void OnStatusEffectTabClicked();
+	void OnElementTabClicked();
 
 	UFUNCTION()
 	void OnEffectSoundTabClicked();
@@ -144,9 +173,9 @@ private:
 	void OnDamageChanged(const FText& Text, ETextCommit::Type CommitMethod);
 	*/
 
-	/** 상태 이상 선택 / 해제 시 호출 */
+	/** 속성 선택 / 해제 시 호출 */
 	UFUNCTION()
-	void OnStatusEffectToggled(const FStatusEffectData& EffectData, bool bIsChecked);
+	void OnElementSelectionChanged(FGameplayTag ElementTag, bool bIsSelected);
 
 	/* Legacy: 프로토타입 세부사항 개편 전 범위 설정 이벤트
 	UFUNCTION()
@@ -167,5 +196,11 @@ private:
 	/** 미리보기 실행 */
 	UFUNCTION()
 	void OnPreviewSkillClicked();
-	
+
+	UPROPERTY(Transient)
+	TArray<TObjectPtr<USKElementCardWidget>> ElementCards;
+
+	/** GeneralTabPanel 내부에서 GeneralTabContent를 감싸는 블루프린트 ScrollBox */
+	UPROPERTY(meta = (BindWidgetOptional))
+	TObjectPtr<UScrollBox> GeneralTabScrollBox;
 };
