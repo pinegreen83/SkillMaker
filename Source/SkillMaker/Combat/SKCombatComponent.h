@@ -32,6 +32,10 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Combat")
 	void TakeDamage(float DamageAmount);
 
+	/** 발사체가 전달한 스킬 정보로 최종 피해를 계산하고 적용 */
+	UFUNCTION(BlueprintCallable, Category = "Combat")
+	void ApplySkillImpact(const FSKSkillImpactData& ImpactData);
+
 	/** 상태 이상 적용 */
 	UFUNCTION(BlueprintCallable, Category = "Combat")
 	void ApplyStatusEffect(EStatusEffect EffectType, float Duration);
@@ -62,6 +66,9 @@ private:
 
 	/** 사망 처리 */
 	void HandleDeath();
+
+	/** 속성·공격자·대상 보정이 추가될 최종 피해 계산 진입점 */
+	float CalculateFinalDamage(const FSKSkillImpactData& ImpactData) const;
 	
 	/** 상태 이상 관리용 타이머 */
 	TMap<EStatusEffect, FTimerHandle> StatusEffectTimers;

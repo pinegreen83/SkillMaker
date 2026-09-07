@@ -98,10 +98,9 @@ protected:
 	UPROPERTY(meta = (BindWidget))
 	TObjectPtr<UComboBoxString> SkillTypeComboBox;
 
-	/* Legacy: 프로토타입 세부사항 개편 전 데미지 입력 UI
-	UPROPERTY(meta = (BindWidget))
+	/** 기본 탭의 데미지 입력 */
+	UPROPERTY(meta = (BindWidgetOptional))
 	TObjectPtr<UEditableTextBox> DamageTextBox;
-	*/
 
 	/** 기존 WBP 이름을 유지하지만 프로토타입에서는 속성 목록으로 사용 */
 	UPROPERTY(meta = (BindWidget))
@@ -168,10 +167,8 @@ private:
 	UFUNCTION()
 	void OnSkillTypeChanged(FString SelectedItem, ESelectInfo::Type SelectionType);
 
-	/* Legacy: 프로토타입 세부사항 개편 전 데미지 입력 이벤트
 	UFUNCTION()
-	void OnDamageChanged(const FText& Text, ETextCommit::Type CommitMethod);
-	*/
+	void OnDamageTextChanged(const FText& Text);
 
 	/** 속성 선택 / 해제 시 호출 */
 	UFUNCTION()

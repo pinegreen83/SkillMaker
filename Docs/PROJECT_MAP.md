@@ -2,11 +2,11 @@
 
 ## 문서 범위
 
-2026-09-07 C++·설정 파일 정적 검토와 제작·훈련장 UI 실행 확인을 반영했다. 이 문서는 코드의 책임과 소스 위치를 설명하며 전체 실행 흐름의 검증 완료를 뜻하지 않는다. 프로젝트를 시작한 이유와 현재 설계 원칙은 [프로젝트의 출발점과 세계관 방향](PROJECT_VISION.md), 연결 누락·규칙 미준수·실행 확인 항목은 [구현 현황](IMPLEMENTATION_STATUS.md), 개발 시 준수할 기준은 [개발 규칙](CONVENTIONS.md)을 참고한다.
+2026-09-07 C++·설정 파일 정적 검토와 제작·훈련장 UI 및 발사체 피해 실행 확인을 반영했다. 이 문서는 코드의 책임과 소스 위치를 설명하며 최초 프로토타입 밖의 전체 시스템 검증 완료를 뜻하지 않는다. 프로젝트를 시작한 이유와 현재 설계 원칙은 [프로젝트의 출발점과 세계관 방향](PROJECT_VISION.md), 연결 누락·규칙 미준수·실행 확인 항목은 [구현 현황](IMPLEMENTATION_STATUS.md), 개발 시 준수할 기준은 [개발 규칙](CONVENTIONS.md)을 참고한다.
 
 클래스별 상속, 주요 필드·메서드, 델리게이트와 `BindWidget` 연결은 [코드베이스 상세 참조](CODE_REFERENCE.md)에 정리한다.
 
-`UEEditor`와 스킬 제작 편집기는 런타임 모듈이 게임 월드에 생성하는 HUD·UMG 화면을 가리킨다. 별도 Unreal Editor 확장 모듈은 없다. 제작 UI와 훈련장의 스킬 선택·슬롯 배치·입력 실행·매핑 현황 흐름은 실행 확인했지만 블루프린트 그래프 전체와 맵별 월드 설정은 별도로 검토하지 않았다.
+`UEEditor`와 스킬 제작 편집기는 런타임 모듈이 게임 월드에 생성하는 HUD·UMG 화면을 가리킨다. 별도 Unreal Editor 확장 모듈은 없다. 제작 UI, 훈련장의 스킬 선택·슬롯 배치·입력 실행·매핑 현황, 발사체 피해 흐름은 실행 확인했지만 블루프린트 그래프 전체와 맵별 월드 설정은 별도로 검토하지 않았다.
 
 ## 루트 구성
 
@@ -74,9 +74,9 @@
 
 ### 스킬
 
-- `Skill/SKSkillData.h`: 스킬 열거형·데이터 구조체. `FSKSkillData`는 `FTableRowBase`를 상속하고 SaveGame 저장에도 사용한다. 무기는 Gameplay Tag로, 몽타주·발사체·BlendSpace는 소프트 참조로 보관한다. 필드 선언과 실행 지원 여부는 구분한다.
+- `Skill/SKSkillData.h`: 스킬 열거형·데이터 구조체. `FSKSkillData`는 `FTableRowBase`를 상속하고 SaveGame 저장에도 사용한다. `FSKSkillImpactData`는 표현 리소스를 제외한 발사 시점의 전투 정보와 공격자를 복사한다. 무기는 Gameplay Tag로, 몽타주·발사체·BlendSpace는 소프트 참조로 보관한다.
 - `Skill/SKSkillComponent.h/.cpp`: 스킬 맵, 쿨다운 기록, 서버 RPC, `ASKBaseCharacter`를 통한 멀티캐스트 몽타주 실행. 서버 RPC는 쿨다운을 검사하지만 권한 보유자의 직접 진입 분기는 검사를 건너뛴다.
-- `Skill/SKProjectileActor.h/.cpp`: `ASKProjectileActor`의 이동·충돌·수명·시전자 참조. 스킬의 피해·효과 데이터를 전달받지 않으며 충돌 피해는 없다. 상태이상 적용은 주석만 남은 미완성 함수다.
+- `Skill/SKProjectileActor.h/.cpp`: `ASKProjectileActor`의 이동·충돌·수명·시전자 참조. 전투 정보·공격자 스냅샷을 보관하고 `ASKBaseCharacter` 충돌 시 대상의 전투 컴포넌트에 전달한다.
 - `Skill/SKSkillManager.h/.cpp`: 레거시 데이터 테이블 기반 `USKSkillManager`. 기존 데이터 이관을 명시적으로 수행하는 경우 외에는 신규 흐름과 연결하지 않는다.
 
 ### 전투
@@ -153,8 +153,8 @@
 - 편집: 제작 HUD가 `CurrentEditingSkill` 원본을 단독 소유한다. 기존 스킬을 선택하면 저장 데이터를 로드한 뒤 무기 → 애니메이션 → 세부사항 화면을 순서대로 거치며 각 화면이 현재 선택을 표시한다. 상세 위젯은 이벤트 순간 HUD 최신값의 지역 사본에서 선택 필드만 바꾸고 `OnSkillDetailChanged`로 HUD를 즉시 갱신한다. HUD의 `OnEditingSkillChanged`는 현재 선택 요약 UI 연결 지점이다.
 - 저장: 메인 위젯은 이름과 저장 요청만 HUD에 전달한다. HUD가 필수값과 저장 기반을 검증하고 ID를 확정한 뒤 `USKSaveGameSubsystem::SaveSkillData` → `USKPlayerSkillSave::SetSkillData` → `CurrentSkillSet.Skills` → 슬롯 기록으로 이어진다.
 - 이름 있는 스킬셋: `PlayerSkills`는 스킬셋 이름을 `FSKSkillSet`에 연결한다. `SetSkillSet`은 현재 맵을 해당 이름의 항목에 복사한다. 슬롯 순서는 PlayerController가 별도로 보관하며 이 저장 구조에는 표현되지 않는다.
-- 실행: `ASKBaseCharacter::UseSkill` → `ClientRequestUseSkill` → 권한이 없으면 서버 RPC, 있으면 `ExecuteSkill` 직접 호출 → 멀티캐스트 몽타주 → 트리거 노티파이 → 발사체 생성. 발사체의 시각 효과·사운드·충돌·소멸은 연결되어 있고 피해와 상태이상 처리는 미연결 상태다.
-- 프리뷰: HUD가 임시 또는 저장 스킬을 네이티브 프리뷰 캐릭터의 `SkillMap`에 넣고 같은 캐릭터·컴포넌트 진입점을 사용한다. 몽타주와 선택한 트리거 시점의 발사체 이펙트·사운드 출력, 타겟 충돌을 실행 확인했다.
+- 실행: `ASKBaseCharacter::UseSkill` → `ClientRequestUseSkill` → 권한이 없으면 서버 RPC, 있으면 `ExecuteSkill` 직접 호출 → 멀티캐스트 몽타주 → 트리거 노티파이 → 전투 정보·공격자 스냅샷을 가진 발사체 생성 → 대상 `USKCombatComponent`의 피해 계산·체력 감소. 상태이상 데이터는 전달되지만 실제 자동 적용은 미연결 상태다.
+- 프리뷰: HUD가 임시 또는 저장 스킬을 네이티브 프리뷰 캐릭터의 `SkillMap`에 넣고 같은 캐릭터·컴포넌트 진입점을 사용한다. 몽타주와 선택한 트리거 시점의 발사체 이펙트·사운드 출력, 전투 정보·공격자 전달, 타겟 충돌과 피해·사망 처리를 실행 확인했다.
 
 ## 주요 에셋
 

@@ -81,7 +81,9 @@ void ASKSkillMakerEditorHUD::LoadSkillForEditing(const FName& SkillID)
 			{
 				CurrentEditingSkill = SkillData;
 				OnEditingSkillChanged.Broadcast(CurrentEditingSkill);
-				SK_LOG(LogSkillMaker, Log, TEXT("스킬 로드 완료 : %s"), *CurrentEditingSkill.SkillName);
+				SK_LOG(LogSkillMaker, Log, TEXT("스킬 로드 완료: SkillID=%s / SkillName=%s / DamageValue=%.2f"),
+					*CurrentEditingSkill.SkillID.ToString(), *CurrentEditingSkill.SkillName,
+					CurrentEditingSkill.DamageValue);
 				return;
 			}
 		}
@@ -107,6 +109,8 @@ void ASKSkillMakerEditorHUD::SetCurrentSkillData(const FSKSkillData& SkillData)
 {
 	CurrentEditingSkill = SkillData;
 	OnEditingSkillChanged.Broadcast(CurrentEditingSkill);
+	SK_LOG(LogSkillMaker, Log, TEXT("현재 편집 스킬 갱신: SkillID=%s / SkillName=%s / DamageValue=%.2f"),
+		*CurrentEditingSkill.SkillID.ToString(), *CurrentEditingSkill.SkillName, CurrentEditingSkill.DamageValue);
 }
 
 void ASKSkillMakerEditorHUD::SetSkillName(const FString& SkillName)
@@ -201,6 +205,11 @@ bool ASKSkillMakerEditorHUD::SaveCurrentSkill(const FString& SkillName)
 	{
 		SaveCandidate.SkillID = FName(*FGuid::NewGuid().ToString());
 	}
+	SK_LOG(LogSkillMaker, Log,
+		TEXT("스킬 저장 후보 확인: Mode=%s / SkillID=%s / SkillName=%s / DamageValue=%.2f / Element=%s / Projectile=%s / Notify=%s"),
+		bIsModifyOperation ? TEXT("수정") : TEXT("생성"), *SaveCandidate.SkillID.ToString(),
+		*SaveCandidate.SkillName, SaveCandidate.DamageValue, *SaveCandidate.ElementTag.ToString(),
+		*SaveCandidate.ProjectileActor.ToSoftObjectPath().ToString(), *SaveCandidate.NotifyName.ToString());
 
 	if (!SaveGameSubsystem->SaveSkillData(SaveCandidate.SkillID, SaveCandidate))
 	{
@@ -210,8 +219,9 @@ bool ASKSkillMakerEditorHUD::SaveCurrentSkill(const FString& SkillName)
 
 	CurrentEditingSkill = MoveTemp(SaveCandidate);
 	OnEditingSkillChanged.Broadcast(CurrentEditingSkill);
-	SK_LOG(LogSkillMaker, Log, TEXT("[모드: %s] 스킬 저장 완료: %s"),
-		bIsModifyOperation ? TEXT("수정") : TEXT("생성"), *CurrentEditingSkill.SkillName);
+	SK_LOG(LogSkillMaker, Log, TEXT("[모드: %s] 스킬 저장 완료: SkillID=%s / SkillName=%s / DamageValue=%.2f"),
+		bIsModifyOperation ? TEXT("수정") : TEXT("생성"), *CurrentEditingSkill.SkillID.ToString(),
+		*CurrentEditingSkill.SkillName, CurrentEditingSkill.DamageValue);
 	return true;
 }
 

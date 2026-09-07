@@ -103,9 +103,16 @@ void USKSkillDetailWidget::NativeConstruct()
 		SkillTypeComboBox->OnSelectionChanged.AddDynamic(this, &USKSkillDetailWidget::OnSkillTypeChanged);
 	}
 
-	/* Legacy: 프로토타입 세부사항 개편 전 데미지 이벤트 바인딩
-	DamageTextBox->OnTextCommitted.AddDynamic(this, &USKSkillDetailWidget::OnDamageChanged);
-	*/
+	if (DamageTextBox)
+	{
+		DamageTextBox->OnTextChanged.AddUniqueDynamic(this, &USKSkillDetailWidget::OnDamageTextChanged);
+		SK_LOG(LogSkillMaker, Log, TEXT("데미지 입력 바인딩 완료: Widget=%s / CurrentText=%s"),
+			*DamageTextBox->GetName(), *DamageTextBox->GetText().ToString());
+	}
+	else
+	{
+		SK_LOG(LogSkillMaker, Warning, TEXT("데미지 입력 바인딩 생략: DamageTextBox가 위젯에 없음."));
+	}
 
 	if (MinRangeSlider) MinRangeSlider->SetVisibility(ESlateVisibility::Collapsed);
 	if (MaxRangeSlider) MaxRangeSlider->SetVisibility(ESlateVisibility::Collapsed);
@@ -360,9 +367,12 @@ void USKSkillDetailWidget::PopularSkillDetails()
 		}
 	}
 
-	/* Legacy: 프로토타입 세부사항 개편 전 데미지 UI 초기화
-	DamageTextBox->SetText(FText::AsNumber(SkillData.DamageValue));
-	*/
+	if (DamageTextBox)
+	{
+		DamageTextBox->SetText(FText::AsNumber(SkillData.DamageValue));
+		SK_LOG(LogSkillMaker, Log, TEXT("데미지 입력값 복원: SkillID=%s / DamageValue=%.2f"),
+			*SkillData.SkillID.ToString(), SkillData.DamageValue);
+	}
 }
 
 void USKSkillDetailWidget::PopulateElementList()
@@ -441,15 +451,40 @@ void USKSkillDetailWidget::OnSkillTypeChanged(FString SelectedItem, ESelectInfo:
 	OnSkillDetailChanged.Broadcast(SkillData);
 }
 
-/* Legacy: 프로토타입 세부사항 개편 전 데미지·범위 변경 처리
-void USKSkillDetailWidget::OnDamageChanged(const FText& Text, ETextCommit::Type CommitMethod)
+void USKSkillDetailWidget::OnDamageTextChanged(const FText& Text)
 {
-	if (!EditingSkillData.IsSet())
-		return;
+	const FString InputValue = Text.ToString().TrimStartAndEnd();
+	SK_LOG(LogSkillMaker, Log, TEXT("데미지 입력 변경 수신: RawValue=%s / HUD=%s"),
+		*InputValue, SkillMakerEditorHUDReference ? TEXT("Valid") : TEXT("None"));
 
-	EditingSkillData->DamageValue = FCString::Atof(*Text.ToString());
+	if (!SkillMakerEditorHUDReference)
+	{
+		SK_LOG(LogSkillMaker, Warning, TEXT("데미지 입력 반영 실패: 제작 HUD 없음."));
+		return;
+	}
+
+	if (InputValue.IsEmpty() || !InputValue.IsNumeric())
+	{
+		SK_LOG(LogSkillMaker, Warning, TEXT("데미지 입력 반영 보류: 숫자가 아닌 값. RawValue=%s"), *InputValue);
+		return;
+	}
+
+	const float ParsedDamage = FCString::Atof(*InputValue);
+	if (!FMath::IsFinite(ParsedDamage) || ParsedDamage < 0.0f)
+	{
+		SK_LOG(LogSkillMaker, Warning, TEXT("데미지 입력 거부: 0 이상의 유한한 값이 아님. RawValue=%s"),
+			*InputValue);
+		return;
+	}
+
+	FSKSkillData SkillData = SkillMakerEditorHUDReference->GetCurrentSkillData();
+	const float PreviousDamage = SkillData.DamageValue;
+	SkillData.DamageValue = ParsedDamage;
+	OnSkillDetailChanged.Broadcast(SkillData);
+	SK_LOG(LogSkillMaker, Log,
+		TEXT("데미지 HUD 반영 완료: SkillID=%s / PreviousDamage=%.2f / DamageValue=%.2f"),
+		*SkillData.SkillID.ToString(), PreviousDamage, SkillData.DamageValue);
 }
-*/
 
 void USKSkillDetailWidget::OnElementSelectionChanged(FGameplayTag ElementTag, bool bIsSelected)
 {

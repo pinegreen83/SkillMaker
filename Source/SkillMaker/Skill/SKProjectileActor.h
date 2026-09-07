@@ -5,9 +5,10 @@
 #include "CoreMinimal.h"
 #include "Components/PrimitiveComponent.h"
 #include "GameFramework/Actor.h"
+#include "Skill/SKSkillData.h"
 #include "SKProjectileActor.generated.h"
 
-class ACharacter;
+class ASKBaseCharacter;
 class UNiagaraComponent;
 class USphereComponent;
 class UParticleSystemComponent;
@@ -30,13 +31,20 @@ protected:
 public:	
 	virtual void Tick(float DeltaTime) override;
 
-	/** 이펙트 실행 함수 */
+	/** 충돌이 활성화되기 전에 시전자와 전투 정보를 저장 */
+	void InitializeProjectile(ASKBaseCharacter* InSkillOwner, const FSKSkillImpactData& InImpactData);
+
+	/** 생성 완료 후 이펙트와 사운드 실행 */
 	UFUNCTION(BlueprintCallable, Category = "Effect")
-	void StartProject(ACharacter* InSkillOwner);
+	void StartProject();
 	
 	/** 스킬을 사용한 캐릭터 */
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Effect")
-	TObjectPtr<ACharacter> SkillOwner;
+	TObjectPtr<ASKBaseCharacter> SkillOwner;
+
+	/** 발사 순간에 복사한 전투 판정 정보 */
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Combat")
+	FSKSkillImpactData ImpactData;
 
 protected:
 	/** 파티클 시스템 */
@@ -65,6 +73,8 @@ protected:
 				   int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
 
 private:
-	/** 상태이상 적용 함수 */
-	void ApplyStatusEffect(ACharacter* TargetCharacter);
+	/** 대상의 전투 컴포넌트에 스킬 충격 정보를 전달 */
+	void ApplySkillImpact(ASKBaseCharacter* TargetCharacter);
+
+	bool bHasImpactData = false;
 };

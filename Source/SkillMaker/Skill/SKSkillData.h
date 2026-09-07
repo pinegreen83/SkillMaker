@@ -6,6 +6,7 @@
 #include "SKSkillData.generated.h"
 
 class ASKProjectileActor;
+class ASKBaseCharacter;
 class UAnimMontage;
 class UBlendSpace;
 
@@ -167,5 +168,90 @@ public:
 		, MinRange(0.0f)
 		, MaxRange(0.0f)
 		, bUseMoveBlendSpace(false)
+	{}
+};
+
+/**
+ * 발사 순간의 스킬 전투 정보입니다.
+ * 애니메이션과 발사체 표현 리소스는 제외하고, 충돌 결과 계산에 필요한 값과 공격자를 복사합니다.
+ */
+USTRUCT(BlueprintType)
+struct FSKSkillImpactData
+{
+	GENERATED_BODY()
+
+public:
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Skill Impact")
+	FName SkillID;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Skill Impact")
+	FString SkillName;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Skill Impact")
+	ESkillType SkillType = ESkillType::Attack;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Skill Impact")
+	ESKTargetingType TargetingType = ESKTargetingType::NonTarget;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Skill Impact")
+	FGameplayTag ElementTag;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Skill Impact")
+	FGameplayTag WeaponTag;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Skill Impact")
+	float SkillDuration = 0.0f;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Skill Impact")
+	bool bCanMoveWhileChanneling = false;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Skill Impact")
+	float CooldownTime = 0.0f;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Skill Impact")
+	float Cost = 0.0f;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Skill Impact")
+	float DamageValue = 0.0f;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Skill Impact")
+	TArray<FStatusEffectData> StatusEffects;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Skill Impact")
+	bool bAffectEnemies = true;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Skill Impact")
+	bool bAffectAllies = false;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Skill Impact")
+	float MinRange = 0.0f;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Skill Impact")
+	float MaxRange = 0.0f;
+
+	/** 이 공격을 발생시킨 캐릭터 */
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Transient, Category = "Skill Impact")
+	TObjectPtr<ASKBaseCharacter> SourceCharacter;
+
+	FSKSkillImpactData() = default;
+
+	FSKSkillImpactData(const FSKSkillData& SkillData, ASKBaseCharacter* InSourceCharacter)
+		: SkillID(SkillData.SkillID)
+		, SkillName(SkillData.SkillName)
+		, SkillType(SkillData.SkillType)
+		, TargetingType(SkillData.TargetingType)
+		, ElementTag(SkillData.ElementTag)
+		, WeaponTag(SkillData.WeaponTag)
+		, SkillDuration(SkillData.SkillDuration)
+		, bCanMoveWhileChanneling(SkillData.bCanMoveWhileChanneling)
+		, CooldownTime(SkillData.CooldownTime)
+		, Cost(SkillData.Cost)
+		, DamageValue(SkillData.DamageValue)
+		, StatusEffects(SkillData.StatusEffects)
+		, bAffectEnemies(SkillData.bAffectEnemies)
+		, bAffectAllies(SkillData.bAffectAllies)
+		, MinRange(SkillData.MinRange)
+		, MaxRange(SkillData.MaxRange)
+		, SourceCharacter(InSourceCharacter)
 	{}
 };

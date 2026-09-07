@@ -47,7 +47,7 @@ void USKSkillAnimNotify_Trigger::Notify(USkeletalMeshComponent* MeshComp, UAnimS
 			}
 
 			SK_LOG(LogSkillMaker, Log, TEXT("발사체 : %s 스폰"), *ProjectileClass->GetName());
-			SpawnProjectile(Character, ProjectileClass);
+			SpawnProjectile(Character, ProjectileClass, SkillData);
 		}
 	}
 	else
@@ -55,9 +55,6 @@ void USKSkillAnimNotify_Trigger::Notify(USkeletalMeshComponent* MeshComp, UAnimS
 		SK_LOG(LogSkillMaker, Log, TEXT("애님 노티파이 실행 실패: %s, 이름이 다름 : %s != %s"), *SkillData.SkillName, *NotifyTriggerName.ToString(), *SkillData.NotifyName.ToString());
 	}
 	
-	// SpawnSkillEffect(Character, SkillData);
-	// ApplyAOEEffect(Character, SkillData);
-	// SpawnProjectile(Character, SkillData);
 }
 
 FString USKSkillAnimNotify_Trigger::GetNotifyName_Implementation() const
@@ -108,7 +105,8 @@ void USKSkillAnimNotify_Trigger::ApplyAOEEffect(ASKBaseCharacter* Character, con
 	}
 }
 
-void USKSkillAnimNotify_Trigger::SpawnProjectile(ASKBaseCharacter* Character, const TSubclassOf<ASKProjectileActor> ProjectileClass)
+void USKSkillAnimNotify_Trigger::SpawnProjectile(ASKBaseCharacter* Character,
+	const TSubclassOf<ASKProjectileActor> ProjectileClass, const FSKSkillData& SkillData)
 {
 	SK_LOG(LogSkillMaker, Log, TEXT("Begin"));
 
@@ -120,16 +118,9 @@ void USKSkillAnimNotify_Trigger::SpawnProjectile(ASKBaseCharacter* Character, co
 	FVector SpawnLocation = Character->GetActorLocation() + Character->GetActorForwardVector() * 100.f;
 	FRotator SpawnRotation = Character->GetActorRotation();
 
-	FActorSpawnParameters SpawnParameters;
-	SpawnParameters.Owner = Character;
-	SpawnParameters.Instigator = Character;
-
-	ASKProjectileActor* Projectile = World->SpawnActor<ASKProjectileActor>(
-		ProjectileClass,
-		SpawnLocation,
-		SpawnRotation,
-		SpawnParameters
-	);
+	const FTransform SpawnTransform(SpawnRotation, SpawnLocation);
+	ASKProjectileActor* Projectile = World->SpawnActorDeferred<ASKProjectileActor>(
+		ProjectileClass, SpawnTransform, Character, Character, ESpawnActorCollisionHandlingMethod::AlwaysSpawn);
 
 	if (!Projectile)
 	{
@@ -137,7 +128,22 @@ void USKSkillAnimNotify_Trigger::SpawnProjectile(ASKBaseCharacter* Character, co
 		return;
 	}
 
-	SK_LOG(LogSkillMaker, Log, TEXT("발사체 생성 완료: %s / Location=%s / Rotation=%s"),
+	const FSKSkillImpactData ImpactData(SkillData, Character);
+	SK_LOG(LogSkillMaker, Log,
+		TEXT("발사체 공격 정보 생성: Projectile=%s / Source=%s / SkillID=%s / SkillName=%s / BaseDamage=%.2f / Element=%s / StatusEffectCount=%d"),
+		*Projectile->GetName(), *Character->GetName(), *ImpactData.SkillID.ToString(), *ImpactData.SkillName,
+		ImpactData.DamageValue, *ImpactData.ElementTag.ToString(), ImpactData.StatusEffects.Num());
+	SK_LOG(LogSkillMaker, Log,
+		TEXT("발사체 공격 정보 상세: SkillType=%d / TargetingType=%d / Weapon=%s / Duration=%.2f / CanMove=%s / Cooldown=%.2f / Cost=%.2f / Range=%.2f~%.2f / AffectEnemies=%s / AffectAllies=%s"),
+		static_cast<int32>(ImpactData.SkillType), static_cast<int32>(ImpactData.TargetingType),
+		*ImpactData.WeaponTag.ToString(), ImpactData.SkillDuration,
+		ImpactData.bCanMoveWhileChanneling ? TEXT("True") : TEXT("False"), ImpactData.CooldownTime,
+		ImpactData.Cost, ImpactData.MinRange, ImpactData.MaxRange,
+		ImpactData.bAffectEnemies ? TEXT("True") : TEXT("False"),
+		ImpactData.bAffectAllies ? TEXT("True") : TEXT("False"));
+	Projectile->InitializeProjectile(Character, ImpactData);
+	UGameplayStatics::FinishSpawningActor(Projectile, SpawnTransform);
+	SK_LOG(LogSkillMaker, Log, TEXT("발사체 생성 완료: %s / Location=%s / Rotation=%s / ImpactInitialized=True"),
 		*Projectile->GetName(), *Projectile->GetActorLocation().ToString(), *Projectile->GetActorRotation().ToString());
-	Projectile->StartProject(Character);
+	Projectile->StartProject();
 }

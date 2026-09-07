@@ -171,7 +171,9 @@ void ASKSkillMakerTrainHUD::LoadSkillForEditing(const FName& SkillID)
 			if (SaveGameSubsystem->GetSkillDataByID(SkillID, SkillData))
 			{
 				CurrentEditingSkill = SkillData;
-				SK_LOG(LogSkillMaker, Log, TEXT("스킬 로드 완료 : %s"), *CurrentEditingSkill.SkillName);
+				SK_LOG(LogSkillMaker, Log, TEXT("스킬 로드 완료: SkillID=%s / SkillName=%s / DamageValue=%.2f"),
+					*CurrentEditingSkill.SkillID.ToString(), *CurrentEditingSkill.SkillName,
+					CurrentEditingSkill.DamageValue);
 				return;
 			}
 		}

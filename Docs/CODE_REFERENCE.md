@@ -139,15 +139,15 @@ UObject
 | `bCanMoveWhileChanneling` | `bool` | 실행 연결 확인되지 않음 |
 | `CooldownTime` | `float` | `USKSkillComponent` 쿨다운 |
 | `Cost` | `float` | 실행 연결 확인되지 않음 |
-| `DamageValue` | `float` | 저장·프리뷰 로그에 유지. 활성 상세 편집과 명중 피해에 미연결 |
+| `DamageValue` | `float` | 기본 탭 입력, 저장·프리뷰 로그, 발사체 충격 스냅샷과 현재 명중 피해 계산의 기본값. 장기 계산 규칙으로 교체 예정 |
 | `EffectNotifyNames` | `TArray<FName>` | 선언되어 있으나 활성 실행은 `NotifyName` 사용 |
-| `StatusEffects` | `TArray<FStatusEffectData>` | UI 데이터. 발사체 충돌에는 미연결 |
+| `StatusEffects` | `TArray<FStatusEffectData>` | 발사체 충격 스냅샷을 거쳐 전투 컴포넌트까지 전달·기록. 실제 효과 적용은 미연결 |
 | `bAffectEnemies` | `bool` | 대상 필터 미연결 |
 | `bAffectAllies` | `bool` | 대상 필터 미연결 |
 | `ProjectileActor` | `TSoftClassPtr<ASKProjectileActor>` | 선택된 이펙트·사운드 발사체 클래스의 소프트 참조 |
 | `NotifyName` | `FName` | 실행할 `USKSkillAnimNotify_Trigger` 이름 |
-| `MinRange` | `float` | UI 편집. 활성 발사체 경로에서 미사용 |
-| `MaxRange` | `float` | UI 편집, 비활성 근접·광역 보조 함수에서 사용 |
+| `MinRange` | `float` | 저장 호환용 필드. 현재 상세 UI에서는 숨김, 활성 발사체 경로에서 미사용 |
+| `MaxRange` | `float` | 저장 호환용 필드. 현재 상세 UI에서는 숨김, 비활성 근접·광역 보조 함수에서 사용 |
 | `bUseMoveBlendSpace` | `bool` | 실행 연결 확인되지 않음 |
 | `MoveSkillBlendSpace` | `TSoftObjectPtr<UBlendSpace>` | 실행 연결 확인되지 않음 |
 
@@ -386,11 +386,12 @@ ExecuteSkill
 
 - 부모: `AActor`
 - 컴포넌트: `CollisionComponent`, `ParticleComponent`, `NiagaraComponent`, `ProjectileComponent`
-- 필드: `SkillOwner`, `ProjectileSound`
-- `StartProject(InSkillOwner)`: 시전자를 저장하고 시전자 충돌을 제외한 뒤 Particle·Niagara 컴포넌트를 표시·활성화하고 발사 사운드를 재생
-- `OnOverlap(...)`: 시전자 외 Actor와 겹치면 캐릭터 여부를 확인하고 소멸
-- `ApplyStatusEffect(TargetCharacter)`: 주석만 있으며 처리 없음
-- 스킬 데이터, 피해, 속성, 색상은 발사체에 전달되지 않는다.
+- 필드: `SkillOwner`, `ImpactData`, `ProjectileSound`
+- `InitializeProjectile(InSkillOwner, InImpactData)`: 지연 생성 중 시전자와 발사 시점의 전투 정보 스냅샷을 먼저 저장하고 시전자 충돌을 제외
+- `StartProject()`: 생성 완료 후 Particle·Niagara 컴포넌트를 표시·활성화하고 발사 사운드를 재생
+- `OnOverlap(...)`: 시전자 외 Actor와 겹치면 `ASKBaseCharacter` 여부를 확인하고 소멸
+- `ApplySkillImpact(TargetCharacter)`: 권한이 있는 대상의 `USKCombatComponent`에 스킬 충격 정보를 전달
+- `FSKSkillImpactData`는 식별자·타입·타기팅·속성·무기·지속시간·이동 가능 여부·쿨다운·코스트·기본 피해·상태이상·대상 플래그·범위와 공격자를 보관한다. 몽타주·노티파이·BlendSpace·발사체 클래스는 포함하지 않는다.
 - `ProjectileSound`가 있으면 발사체 시작 위치에서 한 번 재생한다. 시각 이펙트나 사운드가 없으면 경고 로그를 남긴다.
 
 ### `USKCombatComponent`
@@ -398,6 +399,8 @@ ExecuteSkill
 - 부모: `UActorComponent`, 기본 복제 활성화
 - 필드: 복제되는 `MaxHealth`, `CurrentHealth`; `StatusEffectTimers`; `OwnerCharacter`
 - `TakeDamage(DamageAmount)`: 서버 권한으로 전달 후 체력 감소·사망 처리
+- `ApplySkillImpact(ImpactData)`: 공격자와 스킬 전투 정보를 검증하고 `CalculateFinalDamage` 결과를 체력에 적용
+- `CalculateFinalDamage(ImpactData)`: 현재는 음수를 막은 `DamageValue`를 반환하며 이후 속성·공격자·대상 보정의 확장 지점
 - `ApplyStatusEffect(EffectType, Duration)`: 서버 RPC 또는 멀티캐스트 실행
 - `HandleDeath()`: 소유 캐릭터 파괴
 - `GetLifetimeReplicatedProps`: 체력 필드 등록
@@ -408,7 +411,7 @@ ExecuteSkill
 - Burn/Poison은 데이터의 DPS 대신 고정 `5.0f`를 사용한다.
 - Slow는 원래 속도 저장 없이 `×0.5`, 해제 시 `×2`를 사용한다.
 - Shock/Curse 처리가 없다.
-- 발사체 충돌에서 이 컴포넌트로 연결되지 않는다.
+- 발사체 충돌은 이 컴포넌트의 직접 피해 경로에 연결됐지만 상태이상 데이터의 자동 적용은 아직 하지 않는다.
 
 ## 애니메이션
 
@@ -429,7 +432,7 @@ ExecuteSkill
 - 필드: `NotifyTriggerName`, `StatusEffects`, `StatusDuration`, `AppliedBuffs`
 - 델리게이트: `OnSkillNotifyTriggered(FName)` 선언은 있으나 브로드캐스트·구독이 확인되지 않음
 - `Notify(...)`: 캐릭터의 `CurrentSkillData`를 읽고 이름이 `NotifyName`과 같으면 발사체 생성
-- `SpawnProjectile(Character, ProjectileClass)`: 캐릭터 전방 100 위치에 생성하고 `StartProject(Character)` 호출
+- `SpawnProjectile(Character, ProjectileClass, SkillData)`: 발사체를 지연 생성하고 전투 정보·공격자 스냅샷을 먼저 초기화한 뒤 생성을 완료해 충돌 이벤트보다 데이터 주입이 앞서도록 보장
 - `ApplyAOEEffect(Character, SkillData)`: 광역 상태이상 보조 함수. 활성 `Notify` 경로에서 호출되지 않음
 
 ### `USKSkillAnimNotify_HitCheck`
@@ -684,7 +687,7 @@ ExecuteSkill
 - 제작 메인 위젯 설정 시 `OnSkillDataFromTable`을 구독해 목록 갱신
 - 훈련 메인 위젯 설정은 참조만 저장
 - 카드 이벤트 구독 → `OnSkillSelected(SkillID)` 재전파
-- `OnSkillSelected`의 UPROPERTY 지정자가 `BlueprintCallable`로 작성되어 있다. 멀티캐스트 델리게이트를 블루프린트에서 구독시키려는 의도라면 `BlueprintAssignable`이 맞으며, 현재 선언은 UHT 검증 대상이다.
+- `OnSkillSelected`의 UPROPERTY 지정자가 `BlueprintCallable`로 작성되어 있다. 현재 에디터 타깃 빌드와 C++ `AddDynamic`/`AddUniqueDynamic` 구독은 동작하지만, 블루프린트에서 이벤트를 구독시키려는 공개 계약이라면 `BlueprintAssignable`로 바꿀지 결정해야 한다.
 
 ### 세부사항
 
@@ -696,14 +699,14 @@ ExecuteSkill
 - HUD 참조: 제작 HUD와 훈련 HUD를 모두 가지지만 데이터 조회와 변경 델리게이트 연결은 제작 HUD에 의존
 - `BindWidget`:
   - 탭: `TabSwitcher`, `GeneralTabPanel`, `StatusEffectTabPanel`, `ProjectileTabPanel`, `AnimNotifyPanel`, 네 탭 버튼
-  - 일반: `GeneralTabScrollBox`, `SkillTypeComboBox`. `DamageTextBox` 입력은 레거시 주석 상태이고 `MinRangeSlider`, `MaxRangeSlider`와 문구는 선택 바인딩 후 숨김
+  - 일반: `GeneralTabScrollBox`, `SkillTypeComboBox`, 선택적 `DamageTextBox`. 데미지는 입력 변경 즉시 HUD에 반영하고 기존 저장값을 복원하며, `MinRangeSlider`, `MaxRangeSlider`와 문구는 선택 바인딩 후 숨김
   - 목록: 속성 목록으로 사용하는 `StatusEffectListBox`, `ProjectileSelectionWidget`, `AnimNotifySelectionWidget`
   - 동작: `PreviewSkillButton`
 - 기존 WBP 호환을 위해 `StatusEffect` 이름을 가진 탭·목록을 유지하지만 런타임 문구와 내용은 속성 선택으로 사용한다.
 
 주요 메서드:
 
-- `NativeConstruct()`: 블루프린트에 구성된 기본 탭 스크롤을 설정하고, 탭 버튼과 하위 선택 델리게이트 바인딩, 속성 문구 설정 및 사거리 UI 숨김 처리
+- `NativeConstruct()`: 블루프린트에 구성된 기본 탭 스크롤을 설정하고, 탭 버튼·데미지 입력·하위 선택 델리게이트 바인딩, 속성 문구 설정 및 사거리 UI 숨김 처리
 - `ConfigureGeneralTabScrolling()`: WBP의 `GeneralTabPanel > GeneralTabScrollBox > GeneralTabContent` 계층을 검사하고 콘텐츠에 상단 24, 우측 12, 하단 20의 여백과 항상 표시되는 스크롤바를 적용한다. 런타임 위젯 재배치는 하지 않는다.
 - 탭 전환은 자식 인덱스가 아니라 `GeneralTabPanel`, `StatusEffectTabPanel`, `ProjectileTabPanel`, `AnimNotifyPanel` 참조를 사용하며 현재 탭 버튼을 파란색으로 표시
 - `SetSkillMakerEditorHUD`, `SetSkillMakerTrainHUD`
@@ -715,7 +718,7 @@ ExecuteSkill
 - `OnProjectileSelected`, `OnNotifySelected`, `OnSkillTypeChanged`: HUD 최신값의 지역 사본에서 선택 필드만 변경하고 `OnSkillDetailChanged` 발행
 - `OnPreviewSkillClicked()`: 선택 시점에 동기화된 편집 데이터로 프리뷰
 
-데미지와 범위 필드는 `FSKSkillData` 저장 호환성을 위해 유지하지만 상세 UI 입력 경로에서는 사용하지 않는다.
+`DamageValue`는 기본 탭의 선택적 `DamageTextBox::OnTextChanged`에서 0 이상의 유한한 숫자를 받아 HUD 최신값에 즉시 반영하고 기존 저장값을 복원한다. 범위 필드는 저장 호환성을 위해 유지하지만 상세 UI 입력 경로에서는 사용하지 않는다.
 
 #### `USKStatusEffectCardWidget`
 
@@ -742,7 +745,7 @@ ExecuteSkill
 | `OnSkillDetailChanged` | `USKSkillDetailWidget` | `ASKSkillMakerEditorHUD::SetCurrentSkillData` | `const FSKSkillData&` | 활성, 선택 즉시 발행 |
 | `OnEditingSkillChanged` | 제작 HUD | 블루프린트/요약 UI 구독 가능 | `const FSKSkillData&` | 활성, 현재 C++ 구독자는 없음 |
 | `OnSkillCardSelected` | `USKSkillCardWidget` | `USKSkillSelectionWidget::SelectSkill` | `const FName& SkillID` | 활성 |
-| `OnSkillSelected` | `USKSkillSelectionWidget` | 제작/훈련 메인 위젯 | `const FName& SkillID` | 제작 활성, 훈련 핸들러 비어 있음 |
+| `OnSkillSelected` | `USKSkillSelectionWidget` | 제작 메인 위젯, 훈련장 HUD, 레거시 훈련 메인 위젯 | `const FName& SkillID` | 제작과 현재 훈련 HUD 경로 활성, 레거시 훈련 메인 핸들러는 비어 있음 |
 | `OnSkillDataFromTable` | 제작 메인 위젯 | `USKSkillSelectionWidget::LoadSkillList` | 없음 | 기존 수정 진입·저장 후 발행 |
 | `OnSkillDataFromSaveGame` | 훈련 메인 위젯 | 확인되지 않음 | 없음 | 미연결 |
 | `OnSkillNotifyTriggered` | 트리거 노티파이 | 확인되지 않음 | `FName` | 선언만 존재 |
@@ -750,7 +753,7 @@ ExecuteSkill
 엔진 델리게이트:
 
 - 각 카드와 메인/상세 위젯 버튼은 `UButton::OnClicked`를 `AddDynamic`으로 연결한다.
-- 텍스트 입력은 `OnTextCommitted`, 슬라이더는 `OnValueChanged`를 사용한다. 레거시 상태이상 카드는 `OnCheckStateChanged`를 사용하고 네이티브 속성 카드는 전체 행 버튼의 `OnClicked`로 단일 선택을 처리한다.
+- 스킬 이름 등 확정형 텍스트 입력은 `OnTextCommitted`, 데미지 입력은 즉시 HUD에 보존하기 위해 `OnTextChanged`, 슬라이더는 `OnValueChanged`를 사용한다. 레거시 상태이상 카드는 `OnCheckStateChanged`를 사용하고 네이티브 속성 카드는 전체 행 버튼의 `OnClicked`로 단일 선택을 처리한다.
 - `ASKInteractableActor`는 `OnComponentBeginOverlap`, `OnComponentEndOverlap`을 사용한다.
 
 ## 주요 데이터 흐름
@@ -780,7 +783,7 @@ WeaponTag
 ```text
 ASKSkillMakerEditorHUD::CurrentEditingSkill
 → USKSkillDetailWidget이 최신값 조회
-→ 지역 사본에서 유형/속성/발사체/노티파이 중 선택 필드 수정
+→ 지역 사본에서 유형/데미지/속성/발사체/노티파이 중 선택 필드 수정
 → OnSkillDetailChanged
 → HUD CurrentEditingSkill 즉시 교체
 → OnEditingSkillChanged
@@ -808,7 +811,7 @@ USKSkillSelectionWidget::LoadSkillList
 → HUD LoadSkillForEditing
 → ChooseWeapon에서 기존 WeaponTag 선택 표시
 → ChooseAnimation에서 기존 SkillMontage 선택 표시
-→ SkillDetail에서 기존 SkillType·ElementTag·ProjectileActor·NotifyName 선택 표시
+→ SkillDetail에서 기존 SkillType·DamageValue·ElementTag·ProjectileActor·NotifyName 선택 표시
 ```
 
 ### 스킬 실행
@@ -823,7 +826,10 @@ USKSkillSelectionWidget::LoadSkillList
 → 소프트 몽타주 로드 후 재생
 → USKSkillAnimNotify_Trigger
 → 이름 일치
-→ 소프트 발사체 클래스 로드 후 ASKProjectileActor 생성
+→ 소프트 발사체 클래스 로드 후 ASKProjectileActor 지연 생성
+→ FSKSkillImpactData에 전투 정보와 SourceCharacter 스냅샷 저장
+→ 발사체 충돌 시 대상 ASKBaseCharacter의 USKCombatComponent 조회
+→ ApplySkillImpact → CalculateFinalDamage → TakeDamage
 ```
 
 훈련장 HUD는 저장 스킬 선택 후 슬롯 위젯을 표시하고, Q/E/R/F 중 선택한 위치에 전체 데이터를 캐릭터 `SkillMap`으로 등록한 뒤 SkillID를 컨트롤러 슬롯에 넣는다. 할당이 끝나면 UI 입력을 닫고 GameOnly 입력으로 돌아가 위 실행 경로를 사용할 수 있다.

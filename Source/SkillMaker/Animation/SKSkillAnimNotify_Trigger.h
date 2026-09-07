@@ -26,7 +26,8 @@ protected:
 	void ApplyAOEEffect(ASKBaseCharacter* Character, const FSKSkillData& SkillData);
 
 	/** 발사체 생성 */
-	void SpawnProjectile(ASKBaseCharacter* Character, const TSubclassOf<ASKProjectileActor> ProjectileClass);
+	void SpawnProjectile(ASKBaseCharacter* Character, const TSubclassOf<ASKProjectileActor> ProjectileClass,
+		const FSKSkillData& SkillData);
 	
 public:
 	UPROPERTY(BlueprintAssignable, Category = "Skill")

@@ -6,6 +6,7 @@
 #include "Net/UnrealNetwork.h"
 #include "GameFramework/Character.h"
 #include "GameFramework/CharacterMovementComponent.h"
+#include "Logging/SKLogSkillMakerMacro.h"
 #include "TimerManager.h"
 
 USKCombatComponent::USKCombatComponent()
@@ -30,18 +31,90 @@ void USKCombatComponent::TakeDamage(float DamageAmount)
 {
 	if(GetOwnerRole() < ROLE_Authority)
 	{
+		SK_LOG(LogSkillMaker, Log, TEXT("클라이언트 피해 요청을 서버로 전달: Target=%s / Damage=%.2f"),
+			*GetNameSafe(GetOwner()), DamageAmount);
 		ServerTakeDamage(DamageAmount);
 		return;
 	}
 
+	const float HealthBefore = CurrentHealth;
 	CurrentHealth = FMath::Clamp(CurrentHealth - DamageAmount, 0.0f, MaxHealth);
-	UE_LOG(LogTemp, Log, TEXT("전투 컴포넌트 : 체력 감소 -> 현재 체력 : %f"), CurrentHealth);
+	SK_LOG(LogSkillMaker, Log,
+		TEXT("체력 감소: Target=%s / Damage=%.2f / HealthBefore=%.2f / HealthAfter=%.2f / MaxHealth=%.2f"),
+		*GetNameSafe(GetOwner()), DamageAmount, HealthBefore, CurrentHealth, MaxHealth);
 
 	if(CurrentHealth <= 0.0f)
 	{
 		HandleDeath();
-		UE_LOG(LogTemp, Log, TEXT("캐릭터 사망 : %s"), *OwnerCharacter->GetName());
 	}
+}
+
+void USKCombatComponent::ApplySkillImpact(const FSKSkillImpactData& ImpactData)
+{
+	SK_LOG(LogSkillMaker, Log,
+		TEXT("스킬 충격 수신: Source=%s / Target=%s / SkillID=%s / SkillName=%s / BaseDamage=%.2f / Element=%s / StatusEffectCount=%d"),
+		*GetNameSafe(ImpactData.SourceCharacter), *GetNameSafe(GetOwner()), *ImpactData.SkillID.ToString(),
+		*ImpactData.SkillName, ImpactData.DamageValue, *ImpactData.ElementTag.ToString(), ImpactData.StatusEffects.Num());
+	SK_LOG(LogSkillMaker, Log,
+		TEXT("스킬 충격 상세 수신: SkillType=%d / TargetingType=%d / Weapon=%s / Duration=%.2f / CanMove=%s / Cooldown=%.2f / Cost=%.2f / Range=%.2f~%.2f / AffectEnemies=%s / AffectAllies=%s"),
+		static_cast<int32>(ImpactData.SkillType), static_cast<int32>(ImpactData.TargetingType),
+		*ImpactData.WeaponTag.ToString(), ImpactData.SkillDuration,
+		ImpactData.bCanMoveWhileChanneling ? TEXT("True") : TEXT("False"), ImpactData.CooldownTime,
+		ImpactData.Cost, ImpactData.MinRange, ImpactData.MaxRange,
+		ImpactData.bAffectEnemies ? TEXT("True") : TEXT("False"),
+		ImpactData.bAffectAllies ? TEXT("True") : TEXT("False"));
+
+	if (GetOwnerRole() < ROLE_Authority)
+	{
+		SK_LOG(LogSkillMaker, Warning,
+			TEXT("스킬 충격 적용 거부: 대상에 서버 권한 없음. Target=%s / SkillID=%s"),
+			*GetNameSafe(GetOwner()), *ImpactData.SkillID.ToString());
+		return;
+	}
+
+	if (!OwnerCharacter || !ImpactData.SourceCharacter || ImpactData.SkillID.IsNone())
+	{
+		SK_LOG(LogSkillMaker, Error,
+			TEXT("스킬 충격 적용 실패: OwnerCharacter=%s / Source=%s / SkillID=%s"),
+			*GetNameSafe(OwnerCharacter), *GetNameSafe(ImpactData.SourceCharacter), *ImpactData.SkillID.ToString());
+		return;
+	}
+
+	if (OwnerCharacter == ImpactData.SourceCharacter)
+	{
+		SK_LOG(LogSkillMaker, Warning, TEXT("자기 자신에 대한 스킬 충격 차단: Character=%s / SkillID=%s"),
+			*OwnerCharacter->GetName(), *ImpactData.SkillID.ToString());
+		return;
+	}
+
+	const float FinalDamage = CalculateFinalDamage(ImpactData);
+	SK_LOG(LogSkillMaker, Log,
+		TEXT("최종 피해 계산 완료: Source=%s / Target=%s / SkillID=%s / BaseDamage=%.2f / FinalDamage=%.2f"),
+		*ImpactData.SourceCharacter->GetName(), *OwnerCharacter->GetName(), *ImpactData.SkillID.ToString(),
+		ImpactData.DamageValue, FinalDamage);
+
+	for (const FStatusEffectData& StatusEffect : ImpactData.StatusEffects)
+	{
+		SK_LOG(LogSkillMaker, Log,
+			TEXT("상태이상 전투 정보 수신: SkillID=%s / Type=%d / Duration=%.2f / DPS=%.2f / CanStack=%s / MaxStack=%d"),
+			*ImpactData.SkillID.ToString(), static_cast<int32>(StatusEffect.EffectType), StatusEffect.Duration,
+			StatusEffect.DamagePerSecond, StatusEffect.bCanStack ? TEXT("True") : TEXT("False"), StatusEffect.MaxStack);
+	}
+
+	if (FinalDamage <= 0.0f)
+	{
+		SK_LOG(LogSkillMaker, Warning, TEXT("적용할 피해가 없어 체력 변경 생략: SkillID=%s / FinalDamage=%.2f"),
+			*ImpactData.SkillID.ToString(), FinalDamage);
+		return;
+	}
+
+	TakeDamage(FinalDamage);
+}
+
+float USKCombatComponent::CalculateFinalDamage(const FSKSkillImpactData& ImpactData) const
+{
+	// 속성 공격력, 저항, 무기 보정 등은 이 함수에 단계적으로 추가합니다.
+	return FMath::Max(0.0f, ImpactData.DamageValue);
 }
 
 bool USKCombatComponent::ServerTakeDamage_Validate(float DamageAmount)
@@ -143,7 +216,7 @@ void USKCombatComponent::MulticastApplyStatusEffect_Implementation(EStatusEffect
 void USKCombatComponent::HandleDeath()
 {
 	if (!OwnerCharacter) return;
-	UE_LOG(LogTemp, Log, TEXT("캐릭터 사망: %s"), *OwnerCharacter->GetName());
+	SK_LOG(LogSkillMaker, Log, TEXT("캐릭터 사망: %s"), *OwnerCharacter->GetName());
 	OwnerCharacter->Destroy();
 }
 

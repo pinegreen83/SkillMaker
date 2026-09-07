@@ -17,6 +17,8 @@ void USKSaveGameSubsystem::Initialize(FSubsystemCollectionBase& Collection)
 bool USKSaveGameSubsystem::SaveSkillData(const FName InSkillID, const FSKSkillData& InSaveData)
 {
 	SK_LOG(LogSkillMaker, Log, TEXT("Begin"));
+	SK_LOG(LogSkillMaker, Log, TEXT("SaveGame 스킬 저장 요청: SkillID=%s / SkillName=%s / DamageValue=%.2f"),
+		*InSkillID.ToString(), *InSaveData.SkillName, InSaveData.DamageValue);
 
 	if (InSkillID.IsNone())
 	{
@@ -70,7 +72,17 @@ bool USKSaveGameSubsystem::GetSkillDataByID(const FName& InSkillID, FSKSkillData
 		return false;
 	}
 
-	return PlayerSkillSave->GetSkillDataByID(InSkillID, OutSkillData);
+	const bool bFound = PlayerSkillSave->GetSkillDataByID(InSkillID, OutSkillData);
+	if (bFound)
+	{
+		SK_LOG(LogSkillMaker, Log, TEXT("SaveGame 스킬 조회 완료: SkillID=%s / SkillName=%s / DamageValue=%.2f"),
+			*OutSkillData.SkillID.ToString(), *OutSkillData.SkillName, OutSkillData.DamageValue);
+	}
+	else
+	{
+		SK_LOG(LogSkillMaker, Warning, TEXT("SaveGame 스킬 조회 실패: SkillID=%s"), *InSkillID.ToString());
+	}
+	return bFound;
 }
 
 FSKSkillSet USKSaveGameSubsystem::GetSkillSet(const FName& InSkillID)
